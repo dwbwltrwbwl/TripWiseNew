@@ -49,7 +49,7 @@ builder.Services.AddCors(options =>
 
 // База данных
 builder.Services.AddDbContext<TripWiseContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"), new MySqlServerVersion(new Version(8, 0, 0))));
 
 // Регистрация сервисов
 builder.Services.AddScoped<IHotelService, HotelService>();
