@@ -1,0 +1,813 @@
+﻿@model TripWise.Models.ViewModels.EditProfileViewModel
+@{
+    ViewData["Title"] = "Редактирование профиля";
+}
+<div class="mobile-header-spacer d-block d-lg-none" style="height: 70px;"></div>
+<div class="container mt-4">
+    <!-- Заголовок страницы (остается как на десктопе) -->
+    <div class="page-header-section mb-5">
+        <div class="page-header-icon">
+            <i class="fas fa-user-edit text-white"></i>
+        </div>
+        <div class="page-header-content">
+            <h1 class="page-title">
+                Редактирование профиля
+            </h1>
+            <p class="page-subtitle">Обновите информацию о себе</p>
+        </div>
+    </div>
+
+    <!-- ОДНА ФОРМА ДЛЯ ВСЕГО -->
+    <form asp-action="Edit" method="post" enctype="multipart/form-data" class="row">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="CurrentAvatarPath" />
+
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center p-4">
+                    <!-- Контейнер для аватара -->
+                    <div class="avatar-upload-container mb-3">
+                        <!-- Текущий аватар или инициалы -->
+                        <div id="currentAvatarContainer">
+                            @if (!string.IsNullOrEmpty(Model.CurrentAvatarPath))
+                            {
+                                <img src="@Model.CurrentAvatarPath" class="avatar-image" alt="Avatar" id="currentAvatar" />
+                            }
+                            else
+                            {
+                                <div class="avatar-circle-lg">
+                                    <div class="avatar-initials-lg">
+                                        @(Model.FirstName?.Length > 0 ? Model.FirstName[0].ToString().ToUpper() : "")@(Model.LastName?.Length > 0 ? Model.LastName[0].ToString().ToUpper() : "")
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Предпросмотр нового аватара (изначально скрыт) -->
+                        <div id="avatarPreviewContainer" style="display: none;">
+                            <img id="previewImage" src="#" alt="Preview" class="avatar-image preview-avatar" />
+                            <div class="preview-badge">
+                                <i class="fas fa-check-circle"></i> Новое фото
+                            </div>
+                        </div>
+
+                        <!-- Кнопка загрузки -->
+                        <label for="avatarInput" class="avatar-upload-btn" title="Загрузить новое фото">
+                            <i class="fas fa-camera"></i>
+                        </label>
+                        <input type="file" id="avatarInput" name="Avatar" accept="image/*" style="display: none;" />
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.CurrentAvatarPath))
+                    {
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="checkbox" id="RemoveAvatar" name="RemoveAvatar" value="true">
+                            <label class="form-check-label small" for="RemoveAvatar">
+                                <i class="fas fa-trash-alt me-1"></i>Удалить текущее фото
+                            </label>
+                        </div>
+                    }
+
+                    <p class="text-muted small mb-0 mt-2">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Поддерживаемые форматы: JPG, PNG, GIF<br>
+                        Макс. размер: 2 MB
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="section-subtitle mb-0">
+                        <i class="fas fa-info-circle text-primary me-2"></i>
+                        Основная информация
+                    </h5>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="LastName" class="form-label fw-semibold">
+                                Фамилия <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="LastName" class="form-control form-control-lg"
+                                   maxlength="100" placeholder="Иванов" />  <!-- Было 50, стало 100 -->
+                            <span asp-validation-for="LastName" class="text-danger small"></span>
+                            <small class="text-muted" id="lastNameCounter">0/100</small>  <!-- Было 0/50, стало 0/100 -->
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="FirstName" class="form-label fw-semibold">
+                                Имя <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="FirstName" class="form-control form-control-lg"
+                                   maxlength="100" placeholder="Иван" />  <!-- Было 50, стало 100 -->
+                            <span asp-validation-for="FirstName" class="text-danger small"></span>
+                            <small class="text-muted" id="firstNameCounter">0/100</small>  <!-- Было 0/50, стало 0/100 -->
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="MiddleName" class="form-label fw-semibold">
+                                Отчество
+                            </label>
+                            <input asp-for="MiddleName" class="form-control form-control-lg"
+                                   maxlength="100" placeholder="Иванович" />  <!-- Было 50, стало 100 -->
+                            <span asp-validation-for="MiddleName" class="text-danger small"></span>
+                            <small class="text-muted" id="middleNameCounter">0/100</small>  <!-- Было 0/50, стало 0/100 -->
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Email" class="form-label fw-semibold">
+                                Email <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Email" class="form-control form-control-lg"
+                                   type="email" maxlength="255" placeholder="example@mail.com" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                            <small class="text-muted" id="emailCounter">0/255</small>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Age" class="form-label fw-semibold">
+                                Возраст
+                            </label>
+                            <input asp-for="Age" type="number" class="form-control form-control-lg"
+                                   min="1" max="120" step="1" placeholder="25" />
+                            <span asp-validation-for="Age" class="text-danger small"></span>
+                            <small class="text-muted">от 1 до 120 лет</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-white border-0 py-3 px-4">
+                    <div class="d-flex flex-wrap justify-content-between gap-3">
+                        <a asp-action="Profile" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Назад
+                        </a>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <i class="fas fa-save me-2"></i>Сохранить изменения
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    /* Стили для заголовка страницы (КАК НА ДЕСКТОПЕ - НЕ МЕНЯЕТСЯ) */
+    .page-header-section {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 25px 30px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .page-header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(to bottom, #0379D9, #40B624);
+        }
+
+    .page-header-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #0379D9, #40B624);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 4px 15px rgba(3, 121, 217, 0.2);
+        flex-shrink: 0;
+    }
+
+    .page-header-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .page-title {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 800;
+        font-size: 2.5rem;
+        color: #0379D9;
+        margin: 0 0 8px 0;
+        line-height: 1.2;
+        word-break: break-word;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        font-size: 1.1rem;
+        margin: 0;
+        line-height: 1.4;
+        word-break: break-word;
+        max-width: 600px;
+    }
+
+    .section-subtitle {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        font-size: 1.3rem;
+        color: #334155;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    /* Аватар */
+    .avatar-upload-container {
+        position: relative;
+        width: 150px;
+        height: 150px;
+        margin: 0 auto;
+    }
+
+    .avatar-image {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid white;
+        box-shadow: 0 4px 15px rgba(3, 121, 217, 0.2);
+    }
+
+    .preview-avatar {
+        position: relative;
+    }
+
+    .preview-badge {
+        position: absolute;
+        bottom: -5px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #40B624;
+        color: white;
+        font-size: 0.7rem;
+        padding: 2px 8px;
+        border-radius: 20px;
+        white-space: nowrap;
+    }
+
+    .avatar-circle-lg {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0379D9, #40B624);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        box-shadow: 0 4px 15px rgba(3, 121, 217, 0.2);
+        border: 4px solid white;
+    }
+
+    .avatar-initials-lg {
+        color: white;
+        font-size: 4rem;
+        font-weight: 700;
+        font-family: 'Nunito', sans-serif;
+        text-transform: uppercase;
+    }
+
+    .avatar-upload-btn {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #0379D9;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: 2px solid white;
+        transition: all 0.3s ease;
+        z-index: 10;
+    }
+
+        .avatar-upload-btn:hover {
+            background: #0356a8;
+            transform: scale(1.1);
+        }
+
+    /* Форма */
+    .form-control-lg {
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        padding: 12px 16px;
+        font-family: 'Nunito', sans-serif;
+        transition: all 0.3s ease;
+    }
+
+        .form-control-lg:focus {
+            border-color: #0379D9;
+            box-shadow: 0 0 0 0.2rem rgba(3, 121, 217, 0.25);
+            outline: none;
+        }
+
+    .form-label {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #334155;
+    }
+
+    .form-check-input {
+        width: 1.2em;
+        height: 1.2em;
+        margin-right: 0.5rem;
+        cursor: pointer;
+    }
+
+        .form-check-input:checked {
+            background-color: #0379D9;
+            border-color: #0379D9;
+        }
+
+    .form-check-label {
+        font-family: 'Nunito', sans-serif;
+        cursor: pointer;
+    }
+
+    /* Кнопки */
+    .btn {
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        font-family: 'Nunito', sans-serif;
+        padding: 12px 24px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #0379D9, #40B624);
+        border: none;
+        box-shadow: 0 4px 12px rgba(3, 121, 217, 0.2);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(3, 121, 217, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background: #94a3b8;
+            transform: none;
+            cursor: not-allowed;
+        }
+
+    .btn-outline-secondary {
+        border: 2px solid #e2e8f0;
+        color: #64748b;
+        background: white;
+    }
+
+        .btn-outline-secondary:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+            color: #334155;
+            transform: translateY(-2px);
+        }
+
+    /* Карточка */
+    .card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+        .card:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+    .card-header {
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .card-footer {
+        border-top: 1px solid #e2e8f0;
+    }
+
+    /* Счетчики */
+    small.text-muted {
+        font-size: 0.7rem;
+        display: block;
+        margin-top: 4px;
+    }
+
+    /* ========== МОБИЛЬНАЯ АДАПТАЦИЯ (ШАПКА НЕ МЕНЯЕТСЯ) ========== */
+    @@media (max-width: 768px) {
+        /* Шапка ОСТАЕТСЯ как на десктопе - горизонтальной */
+        .page-header-section
+
+    {
+        flex-direction: row;
+        text-align: left;
+        padding: 20px;
+        gap: 15px;
+    }
+
+    .page-header-section::before {
+        width: 6px;
+        height: 100%;
+        top: 0;
+        left: 0;
+        background: linear-gradient(to bottom, #0379D9, #40B624);
+    }
+
+    .page-header-icon {
+        width: 55px;
+        height: 55px;
+        font-size: 1.5rem;
+    }
+
+    .page-title {
+        font-size: 1.6rem;
+        margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.2rem;
+    }
+
+    .avatar-upload-container {
+        width: 120px;
+        height: 120px;
+    }
+
+    .avatar-image {
+        width: 120px;
+        height: 120px;
+    }
+
+    .avatar-circle-lg {
+        width: 120px;
+        height: 120px;
+    }
+
+    .avatar-initials-lg {
+        font-size: 3rem;
+    }
+
+    .avatar-upload-btn {
+        width: 35px;
+        height: 35px;
+        bottom: 3px;
+        right: 3px;
+    }
+
+    .btn {
+        width: 100%;
+    }
+
+    .d-flex.flex-wrap {
+        flex-direction: column;
+    }
+
+        .d-flex.flex-wrap .btn {
+            width: 100%;
+        }
+
+    .card-body {
+        padding: 20px !important;
+    }
+
+    }
+
+    @@media (max-width: 576px) {
+        .page-header-section
+
+    {
+        padding: 15px;
+        gap: 12px;
+    }
+
+    .page-header-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.3rem;
+    }
+
+    .page-title {
+        font-size: 1.4rem;
+    }
+
+    .page-subtitle {
+        font-size: 0.85rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.1rem;
+    }
+
+    .avatar-upload-container {
+        width: 100px;
+        height: 100px;
+    }
+
+    .avatar-image {
+        width: 100px;
+        height: 100px;
+    }
+
+    .avatar-circle-lg {
+        width: 100px;
+        height: 100px;
+    }
+
+    .avatar-initials-lg {
+        font-size: 2.5rem;
+    }
+
+    .form-control-lg {
+        padding: 10px 14px;
+        font-size: 0.95rem;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        font-size: 0.95rem;
+    }
+
+    .preview-badge {
+        font-size: 0.6rem;
+        bottom: -8px;
+    }
+
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // Счетчики символов (максимум 50 для ФИО)
+                function initCharCounters() {
+            const lastNameInput = document.getElementById('LastName');
+            if (lastNameInput) {
+                lastNameInput.addEventListener('input', function() {
+                    updateCounter('LastName', 'lastNameCounter', 100);  // Было 50, стало 100
+                });
+                updateCounter('LastName', 'lastNameCounter', 100);  // Было 50, стало 100
+            }
+
+            const firstNameInput = document.getElementById('FirstName');
+            if (firstNameInput) {
+                firstNameInput.addEventListener('input', function() {
+                    updateCounter('FirstName', 'firstNameCounter', 100);  // Было 50, стало 100
+                });
+                updateCounter('FirstName', 'firstNameCounter', 100);  // Было 50, стало 100
+            }
+
+            const middleNameInput = document.getElementById('MiddleName');
+            if (middleNameInput) {
+                middleNameInput.addEventListener('input', function() {
+                    updateCounter('MiddleName', 'middleNameCounter', 100);  // Было 50, стало 100
+                });
+                updateCounter('MiddleName', 'middleNameCounter', 100);  // Было 50, стало 100
+            }
+
+            const emailInput = document.getElementById('Email');
+            if (emailInput) {
+                emailInput.addEventListener('input', function() {
+                    updateCounter('Email', 'emailCounter', 255);
+                });
+                updateCounter('Email', 'emailCounter', 255);
+            }
+        }
+
+        function updateCounter(inputId, counterId, maxLength) {
+            const input = document.getElementById(inputId);
+            const counter = document.getElementById(counterId);
+            if (input && counter) {
+                const length = input.value.length;
+                counter.textContent = `${length}/${maxLength}`;
+                if (length >= maxLength) {
+                    counter.style.color = '#dc3545';
+                } else if (length >= maxLength - 5) {
+                    counter.style.color = '#ffc107';
+                } else {
+                    counter.style.color = '#6c757d';
+                }
+            }
+        }
+
+        // Предпросмотр аватара
+        const avatarInput = document.getElementById('avatarInput');
+        const currentAvatarContainer = document.getElementById('currentAvatarContainer');
+        const previewContainer = document.getElementById('avatarPreviewContainer');
+        const previewImage = document.getElementById('previewImage');
+        const removeCheckbox = document.getElementById('RemoveAvatar');
+
+        if (avatarInput) {
+            avatarInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Проверка размера
+                    if (file.size > 2 * 1024 * 1024) {
+                        alert('Файл слишком большой. Максимальный размер 2MB');
+                        this.value = '';
+                        return;
+                    }
+
+                    // Проверка типа
+                    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                    if (!allowedTypes.includes(file.type)) {
+                        alert('Неподдерживаемый тип файла. Разрешены: JPG, PNG, GIF');
+                        this.value = '';
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImage.src = e.target.result;
+                        currentAvatarContainer.style.display = 'none';
+                        previewContainer.style.display = 'block';
+                    }
+                    reader.readAsDataURL(file);
+
+                    // Снимаем галочку удаления если была отмечена
+                    if (removeCheckbox) {
+                        removeCheckbox.checked = false;
+                    }
+                }
+            });
+        }
+
+        // Удаление аватара
+        if (removeCheckbox) {
+            removeCheckbox.addEventListener('change', function(e) {
+                if (e.target.checked) {
+                    previewContainer.style.display = 'none';
+                    if (avatarInput) avatarInput.value = '';
+                    currentAvatarContainer.style.display = 'block';
+                }
+            });
+        }
+
+        // Валидация формы перед отправкой
+        const form = document.querySelector('form');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Функция для отображения ошибки под полем
+        function showFieldError(inputElement, message) {
+            if (!inputElement) return;
+            inputElement.classList.add('is-invalid');
+
+            // Ищем или создаем элемент для ошибки
+            let errorDiv = inputElement.parentElement.querySelector('.field-error');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.className = 'field-error text-danger small mt-1';
+                inputElement.parentElement.appendChild(errorDiv);
+            }
+            errorDiv.textContent = message;
+        }
+
+        function clearFieldError(inputElement) {
+            if (!inputElement) return;
+            inputElement.classList.remove('is-invalid');
+            const errorDiv = inputElement.parentElement.querySelector('.field-error');
+            if (errorDiv) {
+                errorDiv.textContent = '';
+            }
+        }
+
+        function validateForm() {
+            let isValid = true;
+
+            const lastName = document.getElementById('LastName');
+            const firstName = document.getElementById('FirstName');
+            const email = document.getElementById('Email');
+            const age = document.getElementById('Age');
+
+                // Валидация фамилии
+        if (lastName) {
+            const lastNameValue = lastName.value.trim();
+            if (!lastNameValue) {
+                showFieldError(lastName, 'Фамилия обязательна для заполнения');
+                isValid = false;
+            } else if (lastNameValue.length < 2) {
+                showFieldError(lastName, 'Фамилия должна содержать минимум 2 символа');
+                isValid = false;
+            } else if (lastNameValue.length > 100) {  // Было 50, стало 100
+                showFieldError(lastName, 'Фамилия не может превышать 100 символов');
+                isValid = false;
+            } else if (!/^[а-яА-ЯёЁa-zA-Z\s\-]+$/.test(lastNameValue)) {
+                showFieldError(lastName, 'Фамилия может содержать только буквы, пробелы и дефис');
+                isValid = false;
+            } else {
+                clearFieldError(lastName);
+            }
+        }
+
+        // Валидация имени
+        if (firstName) {
+            const firstNameValue = firstName.value.trim();
+            if (!firstNameValue) {
+                showFieldError(firstName, 'Имя обязательно для заполнения');
+                isValid = false;
+            } else if (firstNameValue.length < 2) {
+                showFieldError(firstName, 'Имя должно содержать минимум 2 символа');
+                isValid = false;
+            } else if (firstNameValue.length > 100) {  // Было 50, стало 100
+                showFieldError(firstName, 'Имя не может превышать 100 символов');
+                isValid = false;
+            } else if (!/^[а-яА-ЯёЁa-zA-Z\s\-]+$/.test(firstNameValue)) {
+                showFieldError(firstName, 'Имя может содержать только буквы, пробелы и дефис');
+                isValid = false;
+            } else {
+                clearFieldError(firstName);
+            }
+        }
+
+        // Валидация отчества (опционально)
+        const middleName = document.getElementById('MiddleName');
+        if (middleName) {
+            const middleNameValue = middleName.value.trim();
+            if (middleNameValue && middleNameValue.length > 100) {  // Было 50, стало 100
+                showFieldError(middleName, 'Отчество не может превышать 100 символов');
+                isValid = false;
+            } else if (middleNameValue && !/^[а-яА-ЯёЁa-zA-Z\s\-]+$/.test(middleNameValue)) {
+                showFieldError(middleName, 'Отчество может содержать только буквы, пробелы и дефис');
+                isValid = false;
+            } else {
+                clearFieldError(middleName);
+            }
+        }
+
+            // Валидация email
+            const emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+            if (email) {
+                const emailValue = email.value.trim();
+                if (!emailValue) {
+                    showFieldError(email, 'Email обязателен для заполнения');
+                    isValid = false;
+                } else if (emailValue.length > 255) {
+                    showFieldError(email, 'Email не может превышать 255 символов');
+                    isValid = false;
+                } else if (!emailRegex.test(emailValue)) {
+                    showFieldError(email, 'Введите корректный email адрес');
+                    isValid = false;
+                } else {
+                    clearFieldError(email);
+                }
+            }
+
+            // Валидация возраста (опционально)
+            if (age && age.value) {
+                const ageValue = parseInt(age.value);
+                if (isNaN(ageValue) || ageValue < 1 || ageValue > 120) {
+                    showFieldError(age, 'Возраст должен быть от 1 до 120 лет');
+                    isValid = false;
+                } else {
+                    clearFieldError(age);
+                }
+            }
+
+            return isValid;
+        }
+
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                if (!validateForm()) {
+                    e.preventDefault();
+                    showNotification('Пожалуйста, исправьте ошибки в форме', 'danger');
+                }
+            });
+        }
+
+        // Уведомления
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            notification.style.cssText = 'top:20px; right:20px; z-index:9999; min-width:280px; max-width:350px; border-radius:12px;';
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            notification.innerHTML = `<div class="d-flex align-items-center"><i class="fas ${icon} me-2"></i><div class="flex-grow-1">${message}</div><button type="button" class="btn-close ms-2" data-bs-dismiss="alert"></button></div>`;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 5000);
+        }
+
+        // Инициализация
+        initCharCounters();
+    </script>
+}

@@ -1,0 +1,65 @@
+﻿<!-- Views/Friends/Index.cshtml -->
+@{
+    ViewData["Title"] = "Друзья";
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">Мои друзья</h1>
+
+    <div class="row">
+        <!-- Левая колонка: список друзей -->
+        <div class="col-md-5">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Друзья</h5>
+                </div>
+                <div class="card-body p-0" id="friendsList" style="max-height: 500px; overflow-y: auto;">
+                    <div class="text-center p-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Загрузка...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">Запросы в друзья</h5>
+                </div>
+                <div class="card-body p-0" id="friendRequests" style="max-height: 300px; overflow-y: auto;">
+                    <div class="text-center p-3">
+                        <div class="spinner-border text-warning" role="status">
+                            <span class="visually-hidden">Загрузка...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Правая колонка: поиск -->
+        <div class="col-md-7">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Найти друзей</h5>
+                </div>
+                <div class="card-body">
+                    <input type="text"
+                           class="form-control form-control-lg mb-3"
+                           id="searchUsersInput"
+                           placeholder="Введите имя или email..."
+                           autocomplete="off">
+
+                    <div id="searchResults" style="max-height: 500px; overflow-y: auto;">
+                        <div class="text-center text-muted p-3">
+                            Начните вводить имя для поиска
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/friends.js"></script>
+}

@@ -1,0 +1,578 @@
+﻿@model IEnumerable<TripWise.Models.User>
+@{
+    ViewData["Title"] = "Управление пользователями";
+    Layout = "_AdminLayout";
+}
+<div class="container-fluid px-4">
+    <!-- Заголовок и статистика -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h1 class="h3 mb-2 text-gray-800">
+                <i class="fas fa-users me-2"></i>Управление пользователями
+            </h1>
+            <p class="text-muted">Всего пользователей: <strong>@Model.Count()</strong></p>
+        </div>
+        <div>
+            <button class="btn btn-success" onclick="exportToExcel()">
+                <i class="fas fa-file-excel me-2"></i>Экспорт в Excel
+            </button>
+        </div>
+    </div>
+
+    <!-- Фильтры и поиск -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-filter me-2"></i>Фильтры
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" class="form-control" id="searchInput" placeholder="Поиск по имени или email...">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="roleFilter">
+                        <option value="all">Все роли</option>
+                        <option value="1">Администраторы</option>
+                        <option value="2">Пользователи</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="statusFilter">
+                        <option value="all">Все статусы</option>
+                        <option value="active">Активные</option>
+                        <option value="blocked">Заблокированные</option>
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <button class="btn btn-outline-secondary w-100" onclick="resetFilters()" title="Сбросить фильтры">
+                        <i class="fas fa-undo-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Таблица пользователей - адаптивная -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h6 class="m-0 font-weight-bold text-primary">Список пользователей</h6>
+            <span class="badge bg-primary" id="visibleCount">Всего: @Model.Count()</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="usersTable" style="min-width: 800px;">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 60px;">ID</th>
+                            <th style="min-width: 150px;">Пользователь</th>
+                            <th style="min-width: 180px;">Email</th>
+                            <th style="width: 120px;">Роль</th>
+                            <th style="width: 120px;">Статус</th>
+                            <th style="width: 100px;">Возраст</th>
+                            <th style="min-width: 100px;">Дата регистрации</th>
+                            <th style="width: 70px;">Аватар</th>
+                            <th style="width: 100px;">Статистика</th>
+                            <th style="min-width: 130px;">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model)
+                        {
+                            <tr>
+                                <td><strong>#@user.IdUser</strong></td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        @if (!string.IsNullOrEmpty(user.AvatarPath))
+                                        {
+                                            <img src="@user.AvatarPath" class="rounded-circle me-2" width="30" height="30" style="object-fit: cover;">
+                                        }
+                                        else
+                                        {
+                                            <div class="avatar-circle-sm me-2">
+                                                @(user.FirstName?.Length > 0 ? user.FirstName[0].ToString() : "")@(user.LastName?.Length > 0 ? user.LastName[0].ToString() : "")
+                                            </div>
+                                        }
+                                        <div>
+                                            <div class="fw-bold text-truncate" style="max-width: 200px;">
+                                                @user.LastName @user.FirstName
+                                            </div>
+                                            @if (!string.IsNullOrEmpty(user.MiddleName))
+                                            {
+                                                <small class="text-muted text-truncate d-block" style="max-width: 200px;">@user.MiddleName</small>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate" style="max-width: 180px;" title="@user.Email">
+                                        @user.Email
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (user.IdRole == 1)
+                                    {
+                                        <span class="badge bg-danger">Администратор</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-primary">Пользователь</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (user.IsBlocked)
+                                    {
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-ban me-1"></i>Заблокирован
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle me-1"></i>Активен
+                                        </span>
+                                    }
+                                </td>
+                                <td>@(user.Age?.ToString() ?? "—")</td>
+                                <td>
+                                    <div title="@user.CreatedAt.ToString("dd.MM.yyyy HH:mm")">
+                                        @user.CreatedAt.ToString("dd.MM.yyyy")
+                                        <br />
+                                        <small class="text-muted">@user.CreatedAt.ToString("HH:mm")</small>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    @if (!string.IsNullOrEmpty(user.AvatarPath))
+                                    {
+                                        <span class="badge bg-success">Есть</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Нет</span>
+                                    }
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-info" onclick="showUserStats(@user.IdUser)" title="Статистика">
+                                        <i class="fas fa-chart-bar"></i>
+                                    </button>
+                                </td>
+                                <td>
+                                    @if (user.IdRole != 1)
+                                    {
+                                        if (user.IsBlocked)
+                                        {
+                                            <button class="btn btn-sm btn-success" onclick="unblockUser(@user.IdUser, '@user.Email')" title="Разблокировать">
+                                                <i class="fas fa-unlock-alt"></i> Разблок.
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-sm btn-warning" onclick="blockUser(@user.IdUser, '@user.Email')" title="Заблокировать">
+                                                <i class="fas fa-ban"></i> Блок.
+                                            </button>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">(Админ)</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно статистики пользователя -->
+<div class="modal fade" id="userStatsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Статистика пользователя</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="userStatsContent">
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Адаптивные стили для таблицы */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Для экранов меньше 768px */
+    @@media (max-width: 768px) {
+        .table-responsive {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 0.75rem;
+        }
+
+        .badge {
+            font-size: 0.7rem;
+        }
+    }
+
+    /* Для очень маленьких экранов - карточки вместо таблицы */
+    @@media (max-width: 576px) {
+        #usersTable thead {
+            display: none;
+        }
+
+        #usersTable tbody tr {
+            display: block;
+            margin-bottom: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        #usersTable tbody td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border: none;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+            #usersTable tbody td:last-child {
+                border-bottom: none;
+            }
+
+            #usersTable tbody td:before {
+                content: attr(data-label);
+                font-weight: bold;
+                width: 40%;
+                color: #64748b;
+            }
+
+        .table td:nth-child(1):before {
+            content: "ID:";
+        }
+
+        .table td:nth-child(2):before {
+            content: "Пользователь:";
+        }
+
+        .table td:nth-child(3):before {
+            content: "Email:";
+        }
+
+        .table td:nth-child(4):before {
+            content: "Роль:";
+        }
+
+        .table td:nth-child(5):before {
+            content: "Статус:";
+        }
+
+        .table td:nth-child(6):before {
+            content: "Возраст:";
+        }
+
+        .table td:nth-child(7):before {
+            content: "Дата регистрации:";
+        }
+
+        .table td:nth-child(8):before {
+            content: "Аватар:";
+        }
+
+        .table td:nth-child(9):before {
+            content: "Статистика:";
+        }
+
+        .table td:nth-child(10):before {
+            content: "Действия:";
+        }
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // Применение фильтров (автоматическое)
+        function applyFilters() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const role = document.getElementById('roleFilter').value;
+            const status = document.getElementById('statusFilter').value;
+
+            const rows = document.querySelectorAll('#usersTable tbody tr');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const name = row.cells[1]?.innerText?.toLowerCase() || '';
+                const email = row.cells[2]?.innerText?.toLowerCase() || '';
+                const roleCell = row.cells[3]?.innerText || '';
+                const statusCell = row.cells[4]?.innerText || '';
+                const isBlocked = statusCell.includes('Заблокирован');
+
+                let show = true;
+
+                // Поиск
+                if (search && !name.includes(search) && !email.includes(search)) {
+                    show = false;
+                }
+
+                // Фильтр по роли
+                if (role !== 'all') {
+                    const isAdmin = roleCell.includes('Администратор');
+                    if ((role === '1' && !isAdmin) || (role === '2' && isAdmin)) {
+                        show = false;
+                    }
+                }
+
+                // Фильтр по статусу
+                if (status !== 'all') {
+                    if (status === 'active' && isBlocked) show = false;
+                    if (status === 'blocked' && !isBlocked) show = false;
+                }
+
+                row.style.display = show ? '' : 'none';
+                if (show) visibleCount++;
+            });
+
+            // Обновляем счетчик
+            const totalRows = rows.length;
+            const countSpan = document.getElementById('visibleCount');
+            if (countSpan) {
+                if (visibleCount === totalRows) {
+                    countSpan.innerHTML = `Всего: ${totalRows}`;
+                    countSpan.className = 'badge bg-primary';
+                } else {
+                    countSpan.innerHTML = `Показано: ${visibleCount} / ${totalRows}`;
+                    countSpan.className = 'badge bg-info';
+                }
+            }
+        }
+
+        // Сброс всех фильтров
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('roleFilter').value = 'all';
+            document.getElementById('statusFilter').value = 'all';
+            applyFilters();
+        }
+
+        // Показать статистику пользователя
+        function showUserStats(userId) {
+            const modal = new bootstrap.Modal(document.getElementById('userStatsModal'));
+
+            fetch(`/Admin/GetUserStats/${userId}`)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('userStatsContent').innerHTML = html;
+                    modal.show();
+                })
+                .catch(error => {
+                    document.getElementById('userStatsContent').innerHTML =
+                        '<div class="alert alert-danger">Ошибка загрузки статистики</div>';
+                    modal.show();
+                });
+        }
+
+        // Блокировка пользователя
+        function blockUser(userId, email) {
+            if (confirm(`Вы уверены, что хотите заблокировать пользователя ${email}?`)) {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+
+                fetch(`/Admin/BlockUser/${userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Пользователь успешно заблокирован');
+                        location.reload();
+                    } else {
+                        alert('Ошибка: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Ошибка при блокировке пользователя');
+                });
+            }
+        }
+
+        // Разблокировка пользователя
+        function unblockUser(userId, email) {
+            if (confirm(`Вы уверены, что хотите разблокировать пользователя ${email}?`)) {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+
+                fetch(`/Admin/UnblockUser/${userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Пользователь успешно разблокирован');
+                        location.reload();
+                    } else {
+                        alert('Ошибка: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Ошибка при разблокировке пользователя');
+                });
+            }
+        }
+
+                // Экспорт в Excel
+        function exportToExcel() {
+            // Показываем индикатор загрузки
+            const exportBtn = document.querySelector('.btn-success');
+            const originalHtml = exportBtn.innerHTML;
+            exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Экспорт...';
+            exportBtn.disabled = true;
+
+            // Собираем данные из отфильтрованной таблицы
+            const rows = document.querySelectorAll('#usersTable tbody tr');
+            const visibleRows = Array.from(rows).filter(row => row.style.display !== 'none');
+
+            if (visibleRows.length === 0) {
+                alert('Нет данных для экспорта');
+                exportBtn.innerHTML = originalHtml;
+                exportBtn.disabled = false;
+                return;
+            }
+
+            // Формируем данные для Excel
+            const excelData = [];
+
+            // Заголовки
+            excelData.push([
+                'ID',
+                'Фамилия',
+                'Имя',
+                'Отчество',
+                'Email',
+                'Роль',
+                'Статус',
+                'Возраст',
+                'Дата регистрации',
+                'Время регистрации',
+                'Аватар'
+            ]);
+
+            // Данные строк
+            visibleRows.forEach(row => {
+                const cells = row.cells;
+
+                // Извлекаем ФИО из второй ячейки
+                const nameDiv = cells[1]?.querySelector('.fw-bold');
+                const fullName = nameDiv ? nameDiv.innerText.trim() : '';
+                const nameParts = fullName.split(' ');
+                const lastName = nameParts[0] || '';
+                const firstName = nameParts[1] || '';
+
+                // Отчество из второй ячейки
+                const middleNameSpan = cells[1]?.querySelector('small');
+                const middleName = middleNameSpan ? middleNameSpan.innerText.trim() : '';
+
+                excelData.push([
+                    cells[0]?.innerText.replace('#', '') || '',
+                    lastName,
+                    firstName,
+                    middleName,
+                    cells[2]?.innerText.trim() || '',
+                    cells[3]?.innerText.trim() || '',
+                    cells[4]?.innerText.trim() || '',
+                    cells[5]?.innerText.trim() || '',
+                    cells[6]?.innerText.split('\n')[0]?.trim() || '',
+                    cells[6]?.querySelector('small')?.innerText.trim() || '',
+                    cells[7]?.innerText.trim() || ''
+                ]);
+            });
+
+            // Отправляем на сервер (ПРАВИЛЬНЫЙ URL с учетом маршрутизации)
+            fetch('/Admin/ExportUsersData', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                },
+                body: JSON.stringify(excelData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                // Создаем ссылку для скачивания
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const now = new Date();
+        const filename = `users_${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}.csv`;                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                alert(`Экспортировано ${visibleRows.length} пользователей`);
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                alert('Ошибка при экспорте: ' + error.message);
+            })
+            .finally(() => {
+                exportBtn.innerHTML = originalHtml;
+                exportBtn.disabled = false;
+            });
+        }
+
+        // Установка автоматических фильтров
+        document.getElementById('searchInput').addEventListener('input', function() {
+            applyFilters();
+        });
+
+        document.getElementById('searchInput').addEventListener('keyup', function(e) {
+            applyFilters();
+        });
+
+        document.getElementById('roleFilter').addEventListener('change', function() {
+            applyFilters();
+        });
+
+        document.getElementById('statusFilter').addEventListener('change', function() {
+            applyFilters();
+        });
+
+        // Инициализация - применяем фильтры при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            applyFilters();
+        });
+    </script>
+}

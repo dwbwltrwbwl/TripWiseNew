@@ -1,0 +1,1657 @@
+USE [master]
+GO
+/****** Object:  Database [TripWise]    Script Date: 16.03.2026 17:29:50 ******/
+CREATE DATABASE [TripWise]
+ CONTAINMENT = NONE
+ ON  PRIMARY 
+( NAME = N'TripWise', FILENAME = N'C:\Users\user\TripWise.mdf' , SIZE = 73728KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
+ LOG ON 
+( NAME = N'TripWise_log', FILENAME = N'C:\Users\user\TripWise_log.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
+ WITH CATALOG_COLLATION = DATABASE_DEFAULT
+GO
+ALTER DATABASE [TripWise] SET COMPATIBILITY_LEVEL = 150
+GO
+IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
+begin
+EXEC [TripWise].[dbo].[sp_fulltext_database] @action = 'enable'
+end
+GO
+ALTER DATABASE [TripWise] SET ANSI_NULL_DEFAULT OFF 
+GO
+ALTER DATABASE [TripWise] SET ANSI_NULLS OFF 
+GO
+ALTER DATABASE [TripWise] SET ANSI_PADDING OFF 
+GO
+ALTER DATABASE [TripWise] SET ANSI_WARNINGS OFF 
+GO
+ALTER DATABASE [TripWise] SET ARITHABORT OFF 
+GO
+ALTER DATABASE [TripWise] SET AUTO_CLOSE ON 
+GO
+ALTER DATABASE [TripWise] SET AUTO_SHRINK OFF 
+GO
+ALTER DATABASE [TripWise] SET AUTO_UPDATE_STATISTICS ON 
+GO
+ALTER DATABASE [TripWise] SET CURSOR_CLOSE_ON_COMMIT OFF 
+GO
+ALTER DATABASE [TripWise] SET CURSOR_DEFAULT  GLOBAL 
+GO
+ALTER DATABASE [TripWise] SET CONCAT_NULL_YIELDS_NULL OFF 
+GO
+ALTER DATABASE [TripWise] SET NUMERIC_ROUNDABORT OFF 
+GO
+ALTER DATABASE [TripWise] SET QUOTED_IDENTIFIER OFF 
+GO
+ALTER DATABASE [TripWise] SET RECURSIVE_TRIGGERS OFF 
+GO
+ALTER DATABASE [TripWise] SET  ENABLE_BROKER 
+GO
+ALTER DATABASE [TripWise] SET AUTO_UPDATE_STATISTICS_ASYNC OFF 
+GO
+ALTER DATABASE [TripWise] SET DATE_CORRELATION_OPTIMIZATION OFF 
+GO
+ALTER DATABASE [TripWise] SET TRUSTWORTHY OFF 
+GO
+ALTER DATABASE [TripWise] SET ALLOW_SNAPSHOT_ISOLATION OFF 
+GO
+ALTER DATABASE [TripWise] SET PARAMETERIZATION SIMPLE 
+GO
+ALTER DATABASE [TripWise] SET READ_COMMITTED_SNAPSHOT ON 
+GO
+ALTER DATABASE [TripWise] SET HONOR_BROKER_PRIORITY OFF 
+GO
+ALTER DATABASE [TripWise] SET RECOVERY SIMPLE 
+GO
+ALTER DATABASE [TripWise] SET  MULTI_USER 
+GO
+ALTER DATABASE [TripWise] SET PAGE_VERIFY CHECKSUM  
+GO
+ALTER DATABASE [TripWise] SET DB_CHAINING OFF 
+GO
+ALTER DATABASE [TripWise] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF ) 
+GO
+ALTER DATABASE [TripWise] SET TARGET_RECOVERY_TIME = 60 SECONDS 
+GO
+ALTER DATABASE [TripWise] SET DELAYED_DURABILITY = DISABLED 
+GO
+ALTER DATABASE [TripWise] SET ACCELERATED_DATABASE_RECOVERY = OFF  
+GO
+ALTER DATABASE [TripWise] SET QUERY_STORE = OFF
+GO
+USE [TripWise]
+GO
+/****** Object:  Table [dbo].[UserAuthTokens]    Script Date: 16.03.2026 17:29:50 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[UserAuthTokens](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[UserId] [int] NOT NULL,
+	[Token] [nvarchar](500) NOT NULL,
+	[CreatedAt] [datetime2](7) NOT NULL,
+	[ExpiresAt] [datetime2](7) NOT NULL,
+ CONSTRAINT [PK_UserAuthTokens] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Users]    Script Date: 16.03.2026 17:29:50 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Users](
+	[idUser] [int] IDENTITY(1,1) NOT NULL,
+	[last_name] [nvarchar](100) NULL,
+	[first_name] [nvarchar](100) NOT NULL,
+	[middle_name] [nvarchar](100) NULL,
+	[email] [nvarchar](255) NOT NULL,
+	[passwordHash] [nvarchar](max) NOT NULL,
+	[age] [int] NULL,
+	[createdAt] [datetime2](7) NOT NULL,
+	[idRole] [int] NOT NULL,
+	[AvatarPath] [nvarchar](max) NULL,
+ CONSTRAINT [PK_Users] PRIMARY KEY CLUSTERED 
+(
+	[idUser] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  View [dbo].[vActiveAuthTokens]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+/****** Создаем представление для удобного просмотра активных токенов ******/
+CREATE VIEW [dbo].[vActiveAuthTokens]
+AS
+SELECT 
+    ut.Id,
+    ut.UserId,
+    u.email AS UserEmail,
+    CONCAT(u.last_name, ' ', u.first_name) AS UserFullName,
+    ut.Token,
+    ut.CreatedAt,
+    ut.ExpiresAt,
+    DATEDIFF(DAY, GETUTCDATE(), ut.ExpiresAt) AS DaysUntilExpiration
+FROM [dbo].[UserAuthTokens] ut
+INNER JOIN [dbo].[Users] u ON ut.UserId = u.idUser
+WHERE ut.ExpiresAt > GETUTCDATE()
+GO
+/****** Object:  Table [dbo].[__EFMigrationsHistory]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[__EFMigrationsHistory](
+	[MigrationId] [nvarchar](150) NOT NULL,
+	[ProductVersion] [nvarchar](32) NOT NULL,
+ CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY CLUSTERED 
+(
+	[MigrationId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[ChatMembers]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ChatMembers](
+	[idChatMember] [int] IDENTITY(1,1) NOT NULL,
+	[idChat] [int] NOT NULL,
+	[idUser] [int] NOT NULL,
+	[joinedAt] [datetime2](7) NOT NULL,
+	[lastReadAt] [datetime2](7) NULL,
+	[role] [nvarchar](20) NOT NULL,
+ CONSTRAINT [PK_ChatMembers] PRIMARY KEY CLUSTERED 
+(
+	[idChatMember] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[ChatMessageReads]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ChatMessageReads](
+	[idChatMessageRead] [int] IDENTITY(1,1) NOT NULL,
+	[idMessage] [int] NOT NULL,
+	[idUser] [int] NOT NULL,
+	[readAt] [datetime2](7) NOT NULL,
+ CONSTRAINT [PK_ChatMessageReads] PRIMARY KEY CLUSTERED 
+(
+	[idChatMessageRead] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[ChatMessages]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ChatMessages](
+	[idMessage] [int] IDENTITY(1,1) NOT NULL,
+	[message] [nvarchar](max) NOT NULL,
+	[sentAt] [datetime2](7) NOT NULL,
+	[idTrip] [int] NULL,
+	[idUser] [int] NOT NULL,
+	[idPoint] [int] NULL,
+	[attachmentName] [nvarchar](255) NULL,
+	[attachmentSize] [bigint] NULL,
+	[attachmentType] [nvarchar](50) NULL,
+	[attachmentUrl] [nvarchar](500) NULL,
+	[editedAt] [datetime2](7) NULL,
+	[idChat] [int] NOT NULL,
+	[replyToId] [int] NULL,
+ CONSTRAINT [PK_ChatMessages] PRIMARY KEY CLUSTERED 
+(
+	[idMessage] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Chats]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Chats](
+	[idChat] [int] IDENTITY(1,1) NOT NULL,
+	[name] [nvarchar](200) NOT NULL,
+	[description] [nvarchar](500) NULL,
+	[type] [nvarchar](20) NOT NULL,
+	[idTrip] [int] NULL,
+	[createdById] [int] NOT NULL,
+	[createdAt] [datetime2](7) NOT NULL,
+	[lastMessageAt] [datetime2](7) NULL,
+ CONSTRAINT [PK_Chats] PRIMARY KEY CLUSTERED 
+(
+	[idChat] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[DocumentFolders]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[DocumentFolders](
+	[IdFolder] [int] IDENTITY(1,1) NOT NULL,
+	[Name] [nvarchar](100) NOT NULL,
+	[Description] [nvarchar](500) NOT NULL,
+	[Color] [nvarchar](50) NOT NULL,
+	[UserId] [int] NOT NULL,
+	[CreatedAt] [datetime2](7) NOT NULL,
+ CONSTRAINT [PK_DocumentFolders] PRIMARY KEY CLUSTERED 
+(
+	[IdFolder] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Documents]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Documents](
+	[idDocument] [int] IDENTITY(1,1) NOT NULL,
+	[fileName] [nvarchar](255) NOT NULL,
+	[fileType] [nvarchar](50) NOT NULL,
+	[FileSize] [bigint] NOT NULL,
+	[filePath] [nvarchar](500) NULL,
+	[description] [nvarchar](500) NULL,
+	[uploadedAt] [datetime2](7) NOT NULL,
+	[idTrip] [int] NOT NULL,
+	[uploadedById] [int] NOT NULL,
+ CONSTRAINT [PK_Documents] PRIMARY KEY CLUSTERED 
+(
+	[idDocument] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[ExpenseCategories]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ExpenseCategories](
+	[idExpenseCategory] [int] IDENTITY(1,1) NOT NULL,
+	[ExpenseCategoryName] [nvarchar](100) NULL,
+ CONSTRAINT [PK_ExpenseCategories] PRIMARY KEY CLUSTERED 
+(
+	[idExpenseCategory] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Expenses]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Expenses](
+	[idExpense] [int] IDENTITY(1,1) NOT NULL,
+	[title] [nvarchar](200) NOT NULL,
+	[amount] [decimal](18, 2) NOT NULL,
+	[idExpenseCategory] [int] NOT NULL,
+	[expenseDate] [datetime2](7) NOT NULL,
+	[createdAt] [datetime2](7) NOT NULL,
+	[idTrip] [int] NOT NULL,
+	[paidById] [int] NOT NULL,
+	[idPoint] [int] NULL,
+ CONSTRAINT [PK_Expenses] PRIMARY KEY CLUSTERED 
+(
+	[idExpense] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[ExpenseShares]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ExpenseShares](
+	[idExpenseShare] [int] IDENTITY(1,1) NOT NULL,
+	[idExpense] [int] NOT NULL,
+	[idUser] [int] NOT NULL,
+	[shareAmount] [decimal](18, 2) NOT NULL,
+	[isPaid] [bit] NOT NULL,
+ CONSTRAINT [PK_ExpenseShares] PRIMARY KEY CLUSTERED 
+(
+	[idExpenseShare] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[FavoriteFlights]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[FavoriteFlights](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[UserId] [int] NOT NULL,
+	[FlightId] [nvarchar](100) NOT NULL,
+	[Airline] [nvarchar](200) NOT NULL,
+	[AirlineCode] [nvarchar](10) NULL,
+	[FlightNumber] [nvarchar](50) NOT NULL,
+	[DepartureCity] [nvarchar](200) NOT NULL,
+	[ArrivalCity] [nvarchar](200) NOT NULL,
+	[DepartureAirport] [nvarchar](10) NULL,
+	[ArrivalAirport] [nvarchar](10) NULL,
+	[DepartureTime] [datetime2](7) NOT NULL,
+	[ArrivalTime] [datetime2](7) NOT NULL,
+	[Price] [decimal](18, 2) NOT NULL,
+	[Currency] [nvarchar](max) NULL,
+	[Transfers] [int] NOT NULL,
+	[Duration] [int] NOT NULL,
+	[Aircraft] [nvarchar](100) NULL,
+	[IsReturn] [bit] NOT NULL,
+	[BookingUrl] [nvarchar](500) NULL,
+	[SearchParameters] [nvarchar](max) NULL,
+	[AddedDate] [datetime2](7) NOT NULL,
+	[TripDate] [datetime2](7) NULL,
+	[Notes] [nvarchar](1000) NULL,
+ CONSTRAINT [PK_FavoriteFlights] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[FavoriteHotels]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[FavoriteHotels](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[UserId] [int] NOT NULL,
+	[HotelId] [nvarchar](100) NOT NULL,
+	[HotelName] [nvarchar](200) NOT NULL,
+	[HotelAddress] [nvarchar](500) NULL,
+	[Latitude] [float] NULL,
+	[Longitude] [float] NULL,
+	[AccommodationType] [nvarchar](100) NULL,
+	[Stars] [int] NULL,
+	[Phone] [nvarchar](50) NULL,
+	[Website] [nvarchar](500) NULL,
+	[PricePerNight] [decimal](18, 2) NULL,
+	[Currency] [nvarchar](10) NOT NULL,
+	[BookingUrl] [nvarchar](500) NULL,
+	[TagsJson] [nvarchar](max) NULL,
+	[AddedDate] [datetime2](7) NOT NULL,
+	[Notes] [nvarchar](1000) NULL,
+ CONSTRAINT [PK_FavoriteHotels] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[FavoriteTrains]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[FavoriteTrains](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[UserId] [int] NOT NULL,
+	[TrainGroupId] [nvarchar](100) NOT NULL,
+	[ForwardTrainNumber] [nvarchar](20) NOT NULL,
+	[ReturnTrainNumber] [nvarchar](20) NULL,
+	[DepartureStation] [nvarchar](200) NOT NULL,
+	[ArrivalStation] [nvarchar](200) NOT NULL,
+	[DepartureStationId] [nvarchar](50) NULL,
+	[ArrivalStationId] [nvarchar](50) NULL,
+	[DepartureDateTime] [datetime2](7) NOT NULL,
+	[ReturnDepartureDateTime] [datetime2](7) NULL,
+	[ArrivalDateTime] [datetime2](7) NOT NULL,
+	[ReturnArrivalDateTime] [datetime2](7) NULL,
+	[Price] [decimal](18, 2) NOT NULL,
+	[Currency] [nvarchar](10) NOT NULL,
+	[Duration] [int] NOT NULL,
+	[ReturnDuration] [int] NULL,
+	[TrainBrand] [nvarchar](100) NULL,
+	[Carrier] [nvarchar](100) NULL,
+	[IsFirm] [bit] NOT NULL,
+	[IsRoundTrip] [bit] NOT NULL,
+	[Passengers] [int] NOT NULL,
+	[BookingUrl] [nvarchar](500) NULL,
+	[AddedDate] [datetime2](7) NOT NULL,
+	[Notes] [nvarchar](1000) NULL,
+ CONSTRAINT [PK_FavoriteTrains] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[FlightBookings]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[FlightBookings](
+	[Id] [nvarchar](50) NOT NULL,
+	[UserId] [int] NOT NULL,
+	[BookingNumber] [nvarchar](50) NOT NULL,
+	[FlightId] [nvarchar](100) NOT NULL,
+	[Airline] [nvarchar](200) NOT NULL,
+	[AirlineCode] [nvarchar](20) NOT NULL,
+	[AirlineLogo] [nvarchar](max) NOT NULL,
+	[FlightNumber] [nvarchar](20) NOT NULL,
+	[DepartureCity] [nvarchar](200) NOT NULL,
+	[ArrivalCity] [nvarchar](200) NOT NULL,
+	[DepartureAirport] [nvarchar](10) NOT NULL,
+	[ArrivalAirport] [nvarchar](10) NOT NULL,
+	[DepartureDateTime] [datetime2](7) NOT NULL,
+	[ArrivalDateTime] [datetime2](7) NOT NULL,
+	[ReturnFlightId] [nvarchar](100) NULL,
+	[ReturnAirline] [nvarchar](200) NULL,
+	[ReturnFlightNumber] [nvarchar](20) NULL,
+	[ReturnDepartureDateTime] [datetime2](7) NULL,
+	[ReturnArrivalDateTime] [datetime2](7) NULL,
+	[Price] [decimal](18, 2) NOT NULL,
+	[Currency] [nvarchar](10) NOT NULL,
+	[Passengers] [int] NOT NULL,
+	[FlightClass] [nvarchar](20) NOT NULL,
+	[Duration] [int] NOT NULL,
+	[ReturnDuration] [int] NULL,
+	[Transfers] [int] NOT NULL,
+	[ReturnTransfers] [int] NULL,
+	[Aircraft] [nvarchar](max) NOT NULL,
+	[Baggage] [nvarchar](100) NOT NULL,
+	[HandLuggage] [nvarchar](100) NOT NULL,
+	[Meal] [nvarchar](100) NOT NULL,
+	[IsRoundTrip] [bit] NOT NULL,
+	[ContactName] [nvarchar](200) NOT NULL,
+	[ContactEmail] [nvarchar](255) NOT NULL,
+	[ContactPhone] [nvarchar](20) NOT NULL,
+	[PassengersJson] [nvarchar](max) NOT NULL,
+	[SeatNumbers] [nvarchar](500) NOT NULL,
+	[Status] [int] NOT NULL,
+	[PaymentStatus] [int] NOT NULL,
+	[PaymentMethod] [nvarchar](50) NOT NULL,
+	[TransactionId] [nvarchar](100) NOT NULL,
+	[CreatedAt] [datetime2](7) NOT NULL,
+	[ConfirmedAt] [datetime2](7) NULL,
+	[CancelledAt] [datetime2](7) NULL,
+	[BookingReference] [nvarchar](20) NOT NULL,
+	[TicketNumber] [nvarchar](50) NOT NULL,
+	[CancellationReason] [nvarchar](500) NOT NULL,
+	[Notes] [nvarchar](max) NOT NULL,
+ CONSTRAINT [PK_FlightBookings] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[FriendRequests]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[FriendRequests](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[SenderId] [int] NOT NULL,
+	[ReceiverId] [int] NOT NULL,
+	[Message] [nvarchar](max) NULL,
+	[SentAt] [datetime2](7) NOT NULL,
+	[RespondedAt] [datetime2](7) NULL,
+	[Status] [nvarchar](20) NOT NULL,
+ CONSTRAINT [PK_FriendRequests] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Friends]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Friends](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[UserId] [int] NOT NULL,
+	[FriendId] [int] NOT NULL,
+	[CreatedAt] [datetime2](7) NOT NULL,
+	[AcceptedAt] [datetime2](7) NULL,
+	[Status] [nvarchar](20) NOT NULL,
+ CONSTRAINT [PK_Friends] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[HotelBookings]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[HotelBookings](
+	[Id] [nvarchar](50) NOT NULL,
+	[UserId] [int] NOT NULL,
+	[BookingNumber] [nvarchar](50) NOT NULL,
+	[HotelId] [nvarchar](50) NOT NULL,
+	[HotelName] [nvarchar](200) NOT NULL,
+	[HotelAddress] [nvarchar](500) NOT NULL,
+	[HotelPhone] [nvarchar](50) NOT NULL,
+	[HotelWebsite] [nvarchar](500) NOT NULL,
+	[HotelLatitude] [float] NOT NULL,
+	[HotelLongitude] [float] NOT NULL,
+	[AccommodationType] [nvarchar](50) NOT NULL,
+	[Stars] [int] NULL,
+	[CheckInDate] [datetime2](7) NOT NULL,
+	[CheckOutDate] [datetime2](7) NOT NULL,
+	[Nights] [int] NOT NULL,
+	[Guests] [int] NOT NULL,
+	[Rooms] [int] NOT NULL,
+	[PricePerNight] [decimal](18, 2) NOT NULL,
+	[TotalPrice] [decimal](18, 2) NOT NULL,
+	[Currency] [nvarchar](10) NOT NULL,
+	[ContactName] [nvarchar](200) NOT NULL,
+	[ContactEmail] [nvarchar](255) NOT NULL,
+	[ContactPhone] [nvarchar](50) NOT NULL,
+	[SpecialRequests] [nvarchar](1000) NOT NULL,
+	[Status] [int] NOT NULL,
+	[PaymentStatus] [int] NOT NULL,
+	[PaymentMethod] [nvarchar](50) NOT NULL,
+	[TransactionId] [nvarchar](100) NOT NULL,
+	[CreatedAt] [datetime2](7) NOT NULL,
+	[ConfirmedAt] [datetime2](7) NULL,
+	[CancelledAt] [datetime2](7) NULL,
+	[CheckedInAt] [datetime2](7) NULL,
+	[CheckedOutAt] [datetime2](7) NULL,
+	[CancellationReason] [nvarchar](500) NOT NULL,
+	[Notes] [nvarchar](max) NOT NULL,
+ CONSTRAINT [PK_HotelBookings] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[InterestCategories]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[InterestCategories](
+	[idInterestCategory] [int] IDENTITY(1,1) NOT NULL,
+	[InterestCategory] [nvarchar](100) NULL,
+ CONSTRAINT [PK_InterestCategories] PRIMARY KEY CLUSTERED 
+(
+	[idInterestCategory] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[NewsletterSubscriptions]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[NewsletterSubscriptions](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Email] [nvarchar](255) NOT NULL,
+	[SubscribedAt] [datetime2](7) NOT NULL,
+	[IsActive] [bit] NOT NULL,
+	[UnsubscribedAt] [datetime2](7) NULL,
+	[Source] [nvarchar](50) NULL,
+ CONSTRAINT [PK_NewsletterSubscriptions] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[ParticipantRoles]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ParticipantRoles](
+	[idParticipantRole] [int] IDENTITY(1,1) NOT NULL,
+	[ParticipantRole] [nvarchar](50) NULL,
+ CONSTRAINT [PK_ParticipantRoles] PRIMARY KEY CLUSTERED 
+(
+	[idParticipantRole] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[PlannedActivities]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[PlannedActivities](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[UserId] [int] NOT NULL,
+	[ActivityId] [nvarchar](100) NOT NULL,
+	[Name] [nvarchar](200) NOT NULL,
+	[Date] [datetime2](7) NOT NULL,
+	[Time] [time](7) NOT NULL,
+	[Description] [nvarchar](max) NOT NULL,
+	[Category] [nvarchar](50) NOT NULL,
+	[Tags] [nvarchar](max) NOT NULL,
+	[Latitude] [float] NULL,
+	[Longitude] [float] NULL,
+	[Address] [nvarchar](500) NOT NULL,
+	[CreatedAt] [datetime2](7) NOT NULL,
+ CONSTRAINT [PK_PlannedActivities] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[PointsOfInterest]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[PointsOfInterest](
+	[idPoint] [int] IDENTITY(1,1) NOT NULL,
+	[name] [nvarchar](200) NOT NULL,
+	[description] [nvarchar](max) NULL,
+	[latitude] [decimal](18, 2) NOT NULL,
+	[longitude] [decimal](18, 2) NOT NULL,
+	[address] [nvarchar](255) NULL,
+	[idInterestCategory] [int] NOT NULL,
+	[plannedDate] [datetime2](7) NULL,
+	[plannedTime] [time](7) NULL,
+	[cost] [decimal](18, 2) NULL,
+	[bookingLink] [nvarchar](500) NULL,
+	[notes] [nvarchar](max) NULL,
+	[idTrip] [int] NOT NULL,
+	[addedById] [int] NULL,
+ CONSTRAINT [PK_PointsOfInterest] PRIMARY KEY CLUSTERED 
+(
+	[idPoint] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Reviews]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Reviews](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[UserId] [int] NOT NULL,
+	[Name] [nvarchar](100) NOT NULL,
+	[Email] [nvarchar](255) NOT NULL,
+	[Rating] [int] NOT NULL,
+	[Text] [nvarchar](max) NOT NULL,
+	[CreatedAt] [datetime2](7) NOT NULL,
+	[IsApproved] [bit] NOT NULL,
+	[IsDeleted] [bit] NOT NULL,
+ CONSTRAINT [PK_Reviews] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Roles]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Roles](
+	[idRole] [int] IDENTITY(1,1) NOT NULL,
+	[name] [nvarchar](50) NOT NULL,
+ CONSTRAINT [PK_Roles] PRIMARY KEY CLUSTERED 
+(
+	[idRole] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[TrainOrders]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[TrainOrders](
+	[Id] [nvarchar](50) NOT NULL,
+	[UserId] [int] NOT NULL,
+	[OrderNumber] [nvarchar](50) NOT NULL,
+	[TrainNumber] [nvarchar](20) NOT NULL,
+	[ReturnTrainNumber] [nvarchar](20) NULL,
+	[DepartureStationId] [nvarchar](50) NOT NULL,
+	[DepartureStationName] [nvarchar](200) NOT NULL,
+	[ArrivalStationId] [nvarchar](50) NOT NULL,
+	[ArrivalStationName] [nvarchar](200) NOT NULL,
+	[DepartureDateTime] [datetime2](7) NOT NULL,
+	[ArrivalDateTime] [datetime2](7) NULL,
+	[ReturnDepartureDateTime] [datetime2](7) NULL,
+	[ReturnArrivalDateTime] [datetime2](7) NULL,
+	[TotalPrice] [decimal](18, 2) NOT NULL,
+	[Currency] [nvarchar](10) NOT NULL,
+	[Passengers] [int] NOT NULL,
+	[CarType] [nvarchar](50) NOT NULL,
+	[CarClass] [nvarchar](50) NOT NULL,
+	[SeatNumbers] [nvarchar](200) NULL,
+	[CarNumber] [nvarchar](20) NULL,
+	[ContactEmail] [nvarchar](255) NOT NULL,
+	[ContactPhone] [nvarchar](20) NOT NULL,
+	[PassengerFullName] [nvarchar](200) NOT NULL,
+	[PassengerDocumentType] [nvarchar](50) NULL,
+	[PassengerDocumentNumber] [nvarchar](50) NULL,
+	[Status] [int] NOT NULL,
+	[PaymentStatus] [int] NOT NULL,
+	[PaymentMethod] [nvarchar](50) NULL,
+	[TransactionId] [nvarchar](100) NULL,
+	[CreatedAt] [datetime2](7) NOT NULL,
+	[ConfirmedAt] [datetime2](7) NULL,
+	[BookingReference] [nvarchar](50) NULL,
+	[TicketNumber] [nvarchar](50) NULL,
+	[ElectronicTicketUrl] [nvarchar](500) NULL,
+	[Notes] [nvarchar](max) NULL,
+	[IsRoundTrip] [bit] NOT NULL,
+	[Duration] [int] NOT NULL,
+	[ReturnDuration] [int] NULL,
+ CONSTRAINT [PK_TrainOrders] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[TrainPassengers]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[TrainPassengers](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[OrderId] [nvarchar](50) NOT NULL,
+	[FirstName] [nvarchar](100) NOT NULL,
+	[LastName] [nvarchar](100) NOT NULL,
+	[MiddleName] [nvarchar](100) NULL,
+	[DateOfBirth] [datetime2](7) NOT NULL,
+	[Gender] [nvarchar](1) NOT NULL,
+	[DocumentType] [nvarchar](50) NOT NULL,
+	[DocumentNumber] [nvarchar](50) NOT NULL,
+	[Citizenship] [nvarchar](50) NULL,
+	[SeatNumber] [nvarchar](20) NULL,
+	[CarNumber] [nvarchar](20) NULL,
+	[Price] [decimal](18, 2) NOT NULL,
+ CONSTRAINT [PK_TrainPassengers] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[TripParticipants]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[TripParticipants](
+	[idTripParticipant] [int] IDENTITY(1,1) NOT NULL,
+	[idTrip] [int] NOT NULL,
+	[idUser] [int] NOT NULL,
+	[idParticipantRole] [int] NOT NULL,
+	[joinedAt] [datetime2](7) NOT NULL,
+ CONSTRAINT [PK_TripParticipants] PRIMARY KEY CLUSTERED 
+(
+	[idTripParticipant] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Trips]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Trips](
+	[idTrip] [int] IDENTITY(1,1) NOT NULL,
+	[title] [nvarchar](200) NOT NULL,
+	[description] [nvarchar](max) NULL,
+	[startDate] [datetime2](7) NOT NULL,
+	[endDate] [datetime2](7) NOT NULL,
+	[totalBudget] [decimal](18, 2) NOT NULL,
+	[createdAt] [datetime2](7) NOT NULL,
+	[createdById] [int] NULL,
+ CONSTRAINT [PK_Trips] PRIMARY KEY CLUSTERED 
+(
+	[idTrip] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[UserDocuments]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[UserDocuments](
+	[IdDocument] [int] IDENTITY(1,1) NOT NULL,
+	[Name] [nvarchar](255) NOT NULL,
+	[Description] [nvarchar](500) NOT NULL,
+	[FileType] [nvarchar](50) NOT NULL,
+	[FileSize] [bigint] NOT NULL,
+	[FilePath] [nvarchar](500) NOT NULL,
+	[DocumentType] [nvarchar](100) NOT NULL,
+	[DocumentNumber] [nvarchar](100) NOT NULL,
+	[DocumentDate] [datetime2](7) NULL,
+	[FolderId] [int] NULL,
+	[UserId] [int] NOT NULL,
+	[CreatedAt] [datetime2](7) NOT NULL,
+ CONSTRAINT [PK_UserDocuments] PRIMARY KEY CLUSTERED 
+(
+	[IdDocument] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[UserVotes]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[UserVotes](
+	[idUserVote] [int] IDENTITY(1,1) NOT NULL,
+	[idVoteOption] [int] NOT NULL,
+	[idUser] [int] NOT NULL,
+	[votedAt] [datetime2](7) NOT NULL,
+ CONSTRAINT [PK_UserVotes] PRIMARY KEY CLUSTERED 
+(
+	[idUserVote] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[VoteOptions]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[VoteOptions](
+	[idVoteOption] [int] IDENTITY(1,1) NOT NULL,
+	[optionText] [nvarchar](200) NOT NULL,
+	[idVote] [int] NOT NULL,
+ CONSTRAINT [PK_VoteOptions] PRIMARY KEY CLUSTERED 
+(
+	[idVoteOption] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[votingSystems]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[votingSystems](
+	[IdVote] [int] IDENTITY(1,1) NOT NULL,
+	[question] [nvarchar](200) NOT NULL,
+	[createdAt] [datetime2](7) NOT NULL,
+	[expiresAt] [datetime2](7) NULL,
+	[idTrip] [int] NOT NULL,
+	[createdById] [int] NOT NULL,
+	[idPoint] [int] NULL,
+ CONSTRAINT [PK_votingSystems] PRIMARY KEY CLUSTERED 
+(
+	[IdVote] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_ChatMembers_ChatId_UserId]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE UNIQUE NONCLUSTERED INDEX [IX_ChatMembers_ChatId_UserId] ON [dbo].[ChatMembers]
+(
+	[idChat] ASC,
+	[idUser] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_ChatMembers_idUser]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_ChatMembers_idUser] ON [dbo].[ChatMembers]
+(
+	[idUser] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_ChatMessageReads_idUser]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_ChatMessageReads_idUser] ON [dbo].[ChatMessageReads]
+(
+	[idUser] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_ChatMessageReads_MessageId_UserId]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE UNIQUE NONCLUSTERED INDEX [IX_ChatMessageReads_MessageId_UserId] ON [dbo].[ChatMessageReads]
+(
+	[idMessage] ASC,
+	[idUser] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_ChatMessages_idChat]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_ChatMessages_idChat] ON [dbo].[ChatMessages]
+(
+	[idChat] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_ChatMessages_replyToId]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_ChatMessages_replyToId] ON [dbo].[ChatMessages]
+(
+	[replyToId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_ChatMessages_sentAt]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_ChatMessages_sentAt] ON [dbo].[ChatMessages]
+(
+	[sentAt] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_Chats_createdById]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_Chats_createdById] ON [dbo].[Chats]
+(
+	[createdById] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_Chats_idTrip]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_Chats_idTrip] ON [dbo].[Chats]
+(
+	[idTrip] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_Chats_lastMessageAt]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_Chats_lastMessageAt] ON [dbo].[Chats]
+(
+	[lastMessageAt] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_DocumentFolders_UserId]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_DocumentFolders_UserId] ON [dbo].[DocumentFolders]
+(
+	[UserId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_Documents_idTrip]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_Documents_idTrip] ON [dbo].[Documents]
+(
+	[idTrip] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_Documents_uploadedById]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_Documents_uploadedById] ON [dbo].[Documents]
+(
+	[uploadedById] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_Expenses_idPoint]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_Expenses_idPoint] ON [dbo].[Expenses]
+(
+	[idPoint] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_Expenses_idTrip]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_Expenses_idTrip] ON [dbo].[Expenses]
+(
+	[idTrip] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_Expenses_paidById]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_Expenses_paidById] ON [dbo].[Expenses]
+(
+	[paidById] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_ExpenseShares_idExpense]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_ExpenseShares_idExpense] ON [dbo].[ExpenseShares]
+(
+	[idExpense] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_ExpenseShares_idUser]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_ExpenseShares_idUser] ON [dbo].[ExpenseShares]
+(
+	[idUser] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_FavoriteFlights_FlightId]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_FavoriteFlights_FlightId] ON [dbo].[FavoriteFlights]
+(
+	[FlightId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_FavoriteFlights_UserId_FlightId]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE UNIQUE NONCLUSTERED INDEX [IX_FavoriteFlights_UserId_FlightId] ON [dbo].[FavoriteFlights]
+(
+	[UserId] ASC,
+	[FlightId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_FavoriteHotels_HotelId]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_FavoriteHotels_HotelId] ON [dbo].[FavoriteHotels]
+(
+	[HotelId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_FavoriteHotels_UserId_HotelId]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE UNIQUE NONCLUSTERED INDEX [IX_FavoriteHotels_UserId_HotelId] ON [dbo].[FavoriteHotels]
+(
+	[UserId] ASC,
+	[HotelId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_FavoriteTrains_TrainGroupId]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_FavoriteTrains_TrainGroupId] ON [dbo].[FavoriteTrains]
+(
+	[TrainGroupId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_FavoriteTrains_UserId_TrainGroupId]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE UNIQUE NONCLUSTERED INDEX [IX_FavoriteTrains_UserId_TrainGroupId] ON [dbo].[FavoriteTrains]
+(
+	[UserId] ASC,
+	[TrainGroupId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_FlightBookings_BookingNumber]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE UNIQUE NONCLUSTERED INDEX [IX_FlightBookings_BookingNumber] ON [dbo].[FlightBookings]
+(
+	[BookingNumber] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_FlightBookings_BookingReference]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_FlightBookings_BookingReference] ON [dbo].[FlightBookings]
+(
+	[BookingReference] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_FlightBookings_DepartureDateTime]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_FlightBookings_DepartureDateTime] ON [dbo].[FlightBookings]
+(
+	[DepartureDateTime] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_FlightBookings_Status]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_FlightBookings_Status] ON [dbo].[FlightBookings]
+(
+	[Status] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_FlightBookings_TicketNumber]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_FlightBookings_TicketNumber] ON [dbo].[FlightBookings]
+(
+	[TicketNumber] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_FlightBookings_UserId]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_FlightBookings_UserId] ON [dbo].[FlightBookings]
+(
+	[UserId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_FriendRequests_ReceiverId]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_FriendRequests_ReceiverId] ON [dbo].[FriendRequests]
+(
+	[ReceiverId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_FriendRequests_SenderId_ReceiverId]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE UNIQUE NONCLUSTERED INDEX [IX_FriendRequests_SenderId_ReceiverId] ON [dbo].[FriendRequests]
+(
+	[SenderId] ASC,
+	[ReceiverId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_Friends_FriendId]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_Friends_FriendId] ON [dbo].[Friends]
+(
+	[FriendId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_Friends_UserId_FriendId]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE UNIQUE NONCLUSTERED INDEX [IX_Friends_UserId_FriendId] ON [dbo].[Friends]
+(
+	[UserId] ASC,
+	[FriendId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_HotelBookings_BookingNumber]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE UNIQUE NONCLUSTERED INDEX [IX_HotelBookings_BookingNumber] ON [dbo].[HotelBookings]
+(
+	[BookingNumber] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_HotelBookings_CheckInDate]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_HotelBookings_CheckInDate] ON [dbo].[HotelBookings]
+(
+	[CheckInDate] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_HotelBookings_Status]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_HotelBookings_Status] ON [dbo].[HotelBookings]
+(
+	[Status] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_HotelBookings_UserId]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_HotelBookings_UserId] ON [dbo].[HotelBookings]
+(
+	[UserId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_NewsletterSubscriptions_Email]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_NewsletterSubscriptions_Email] ON [dbo].[NewsletterSubscriptions]
+(
+	[Email] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_PlannedActivities_Category]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_PlannedActivities_Category] ON [dbo].[PlannedActivities]
+(
+	[Category] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_PlannedActivities_Date]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_PlannedActivities_Date] ON [dbo].[PlannedActivities]
+(
+	[Date] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_PlannedActivities_UserId]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_PlannedActivities_UserId] ON [dbo].[PlannedActivities]
+(
+	[UserId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_PointsOfInterest_addedById]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_PointsOfInterest_addedById] ON [dbo].[PointsOfInterest]
+(
+	[addedById] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_PointsOfInterest_idTrip]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_PointsOfInterest_idTrip] ON [dbo].[PointsOfInterest]
+(
+	[idTrip] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_Reviews_UserId]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_Reviews_UserId] ON [dbo].[Reviews]
+(
+	[UserId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_TrainOrders_CreatedAt]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_TrainOrders_CreatedAt] ON [dbo].[TrainOrders]
+(
+	[CreatedAt] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_TrainOrders_OrderNumber]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE UNIQUE NONCLUSTERED INDEX [IX_TrainOrders_OrderNumber] ON [dbo].[TrainOrders]
+(
+	[OrderNumber] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_TrainOrders_UserId]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_TrainOrders_UserId] ON [dbo].[TrainOrders]
+(
+	[UserId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_TrainPassengers_OrderId]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_TrainPassengers_OrderId] ON [dbo].[TrainPassengers]
+(
+	[OrderId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_TripParticipants_idTrip]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_TripParticipants_idTrip] ON [dbo].[TripParticipants]
+(
+	[idTrip] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_TripParticipants_idUser]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_TripParticipants_idUser] ON [dbo].[TripParticipants]
+(
+	[idUser] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_Trips_createdById]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_Trips_createdById] ON [dbo].[Trips]
+(
+	[createdById] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_UserAuthTokens_ExpiresAt]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_UserAuthTokens_ExpiresAt] ON [dbo].[UserAuthTokens]
+(
+	[ExpiresAt] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_UserAuthTokens_Token]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE UNIQUE NONCLUSTERED INDEX [IX_UserAuthTokens_Token] ON [dbo].[UserAuthTokens]
+(
+	[Token] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_UserAuthTokens_UserId]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_UserAuthTokens_UserId] ON [dbo].[UserAuthTokens]
+(
+	[UserId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_UserDocuments_FolderId]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_UserDocuments_FolderId] ON [dbo].[UserDocuments]
+(
+	[FolderId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_UserDocuments_UserId]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_UserDocuments_UserId] ON [dbo].[UserDocuments]
+(
+	[UserId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_Users_idRole]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_Users_idRole] ON [dbo].[Users]
+(
+	[idRole] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_UserVotes_idUser]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_UserVotes_idUser] ON [dbo].[UserVotes]
+(
+	[idUser] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_UserVotes_idVoteOption]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_UserVotes_idVoteOption] ON [dbo].[UserVotes]
+(
+	[idVoteOption] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_VoteOptions_idVote]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_VoteOptions_idVote] ON [dbo].[VoteOptions]
+(
+	[idVote] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_votingSystems_createdById]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_votingSystems_createdById] ON [dbo].[votingSystems]
+(
+	[createdById] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_votingSystems_idPoint]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_votingSystems_idPoint] ON [dbo].[votingSystems]
+(
+	[idPoint] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_votingSystems_idTrip]    Script Date: 16.03.2026 17:29:51 ******/
+CREATE NONCLUSTERED INDEX [IX_votingSystems_idTrip] ON [dbo].[votingSystems]
+(
+	[idTrip] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[ChatMembers] ADD  DEFAULT (getutcdate()) FOR [joinedAt]
+GO
+ALTER TABLE [dbo].[ChatMembers] ADD  DEFAULT (N'member') FOR [role]
+GO
+ALTER TABLE [dbo].[ChatMessageReads] ADD  DEFAULT (getutcdate()) FOR [readAt]
+GO
+ALTER TABLE [dbo].[ChatMessages] ADD  DEFAULT (getutcdate()) FOR [sentAt]
+GO
+ALTER TABLE [dbo].[Chats] ADD  DEFAULT (N'private') FOR [type]
+GO
+ALTER TABLE [dbo].[Chats] ADD  DEFAULT (getutcdate()) FOR [createdAt]
+GO
+ALTER TABLE [dbo].[DocumentFolders] ADD  DEFAULT (getutcdate()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[FavoriteFlights] ADD  DEFAULT (getdate()) FOR [AddedDate]
+GO
+ALTER TABLE [dbo].[FavoriteHotels] ADD  DEFAULT (N'RUB') FOR [Currency]
+GO
+ALTER TABLE [dbo].[FavoriteHotels] ADD  DEFAULT (getdate()) FOR [AddedDate]
+GO
+ALTER TABLE [dbo].[FavoriteTrains] ADD  DEFAULT (N'RUB') FOR [Currency]
+GO
+ALTER TABLE [dbo].[FavoriteTrains] ADD  DEFAULT (getdate()) FOR [AddedDate]
+GO
+ALTER TABLE [dbo].[FlightBookings] ADD  DEFAULT (N'RUB') FOR [Currency]
+GO
+ALTER TABLE [dbo].[FlightBookings] ADD  DEFAULT (N'economy') FOR [FlightClass]
+GO
+ALTER TABLE [dbo].[HotelBookings] ADD  DEFAULT (N'RUB') FOR [Currency]
+GO
+ALTER TABLE [dbo].[PlannedActivities] ADD  DEFAULT (getutcdate()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[TrainOrders] ADD  DEFAULT (N'RUB') FOR [Currency]
+GO
+ALTER TABLE [dbo].[UserAuthTokens] ADD  DEFAULT (getutcdate()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[UserDocuments] ADD  DEFAULT (getutcdate()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[ChatMembers]  WITH CHECK ADD  CONSTRAINT [FK_ChatMembers_Chats_idChat] FOREIGN KEY([idChat])
+REFERENCES [dbo].[Chats] ([idChat])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[ChatMembers] CHECK CONSTRAINT [FK_ChatMembers_Chats_idChat]
+GO
+ALTER TABLE [dbo].[ChatMembers]  WITH CHECK ADD  CONSTRAINT [FK_ChatMembers_Users_idUser] FOREIGN KEY([idUser])
+REFERENCES [dbo].[Users] ([idUser])
+GO
+ALTER TABLE [dbo].[ChatMembers] CHECK CONSTRAINT [FK_ChatMembers_Users_idUser]
+GO
+ALTER TABLE [dbo].[ChatMessageReads]  WITH CHECK ADD  CONSTRAINT [FK_ChatMessageReads_Messages] FOREIGN KEY([idMessage])
+REFERENCES [dbo].[ChatMessages] ([idMessage])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[ChatMessageReads] CHECK CONSTRAINT [FK_ChatMessageReads_Messages]
+GO
+ALTER TABLE [dbo].[ChatMessageReads]  WITH CHECK ADD  CONSTRAINT [FK_ChatMessageReads_Users_idUser] FOREIGN KEY([idUser])
+REFERENCES [dbo].[Users] ([idUser])
+GO
+ALTER TABLE [dbo].[ChatMessageReads] CHECK CONSTRAINT [FK_ChatMessageReads_Users_idUser]
+GO
+ALTER TABLE [dbo].[ChatMessages]  WITH CHECK ADD  CONSTRAINT [FK_ChatMessages_Chats] FOREIGN KEY([idChat])
+REFERENCES [dbo].[Chats] ([idChat])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[ChatMessages] CHECK CONSTRAINT [FK_ChatMessages_Chats]
+GO
+ALTER TABLE [dbo].[ChatMessages]  WITH CHECK ADD  CONSTRAINT [FK_ChatMessages_ReplyTo] FOREIGN KEY([replyToId])
+REFERENCES [dbo].[ChatMessages] ([idMessage])
+GO
+ALTER TABLE [dbo].[ChatMessages] CHECK CONSTRAINT [FK_ChatMessages_ReplyTo]
+GO
+ALTER TABLE [dbo].[ChatMessages]  WITH CHECK ADD  CONSTRAINT [FK_ChatMessages_Trips] FOREIGN KEY([idTrip])
+REFERENCES [dbo].[Trips] ([idTrip])
+ON DELETE SET NULL
+GO
+ALTER TABLE [dbo].[ChatMessages] CHECK CONSTRAINT [FK_ChatMessages_Trips]
+GO
+ALTER TABLE [dbo].[ChatMessages]  WITH CHECK ADD  CONSTRAINT [FK_ChatMessages_Users] FOREIGN KEY([idUser])
+REFERENCES [dbo].[Users] ([idUser])
+GO
+ALTER TABLE [dbo].[ChatMessages] CHECK CONSTRAINT [FK_ChatMessages_Users]
+GO
+ALTER TABLE [dbo].[Chats]  WITH CHECK ADD  CONSTRAINT [FK_Chats_Trips_idTrip] FOREIGN KEY([idTrip])
+REFERENCES [dbo].[Trips] ([idTrip])
+ON DELETE SET NULL
+GO
+ALTER TABLE [dbo].[Chats] CHECK CONSTRAINT [FK_Chats_Trips_idTrip]
+GO
+ALTER TABLE [dbo].[Chats]  WITH CHECK ADD  CONSTRAINT [FK_Chats_Users_createdById] FOREIGN KEY([createdById])
+REFERENCES [dbo].[Users] ([idUser])
+GO
+ALTER TABLE [dbo].[Chats] CHECK CONSTRAINT [FK_Chats_Users_createdById]
+GO
+ALTER TABLE [dbo].[DocumentFolders]  WITH CHECK ADD  CONSTRAINT [FK_DocumentFolders_Users_UserId] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([idUser])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[DocumentFolders] CHECK CONSTRAINT [FK_DocumentFolders_Users_UserId]
+GO
+ALTER TABLE [dbo].[Documents]  WITH CHECK ADD  CONSTRAINT [FK_Documents_Trips_idTrip] FOREIGN KEY([idTrip])
+REFERENCES [dbo].[Trips] ([idTrip])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[Documents] CHECK CONSTRAINT [FK_Documents_Trips_idTrip]
+GO
+ALTER TABLE [dbo].[Documents]  WITH CHECK ADD  CONSTRAINT [FK_Documents_Users_uploadedById] FOREIGN KEY([uploadedById])
+REFERENCES [dbo].[Users] ([idUser])
+GO
+ALTER TABLE [dbo].[Documents] CHECK CONSTRAINT [FK_Documents_Users_uploadedById]
+GO
+ALTER TABLE [dbo].[Expenses]  WITH CHECK ADD  CONSTRAINT [FK_Expenses_PointsOfInterest_idPoint] FOREIGN KEY([idPoint])
+REFERENCES [dbo].[PointsOfInterest] ([idPoint])
+GO
+ALTER TABLE [dbo].[Expenses] CHECK CONSTRAINT [FK_Expenses_PointsOfInterest_idPoint]
+GO
+ALTER TABLE [dbo].[Expenses]  WITH CHECK ADD  CONSTRAINT [FK_Expenses_Trips_idTrip] FOREIGN KEY([idTrip])
+REFERENCES [dbo].[Trips] ([idTrip])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[Expenses] CHECK CONSTRAINT [FK_Expenses_Trips_idTrip]
+GO
+ALTER TABLE [dbo].[Expenses]  WITH CHECK ADD  CONSTRAINT [FK_Expenses_Users_paidById] FOREIGN KEY([paidById])
+REFERENCES [dbo].[Users] ([idUser])
+GO
+ALTER TABLE [dbo].[Expenses] CHECK CONSTRAINT [FK_Expenses_Users_paidById]
+GO
+ALTER TABLE [dbo].[ExpenseShares]  WITH CHECK ADD  CONSTRAINT [FK_ExpenseShares_Expenses_idExpense] FOREIGN KEY([idExpense])
+REFERENCES [dbo].[Expenses] ([idExpense])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[ExpenseShares] CHECK CONSTRAINT [FK_ExpenseShares_Expenses_idExpense]
+GO
+ALTER TABLE [dbo].[ExpenseShares]  WITH CHECK ADD  CONSTRAINT [FK_ExpenseShares_Users_idUser] FOREIGN KEY([idUser])
+REFERENCES [dbo].[Users] ([idUser])
+GO
+ALTER TABLE [dbo].[ExpenseShares] CHECK CONSTRAINT [FK_ExpenseShares_Users_idUser]
+GO
+ALTER TABLE [dbo].[FavoriteFlights]  WITH CHECK ADD  CONSTRAINT [FK_FavoriteFlights_Users_UserId] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([idUser])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[FavoriteFlights] CHECK CONSTRAINT [FK_FavoriteFlights_Users_UserId]
+GO
+ALTER TABLE [dbo].[FavoriteHotels]  WITH CHECK ADD  CONSTRAINT [FK_FavoriteHotels_Users_UserId] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([idUser])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[FavoriteHotels] CHECK CONSTRAINT [FK_FavoriteHotels_Users_UserId]
+GO
+ALTER TABLE [dbo].[FavoriteTrains]  WITH CHECK ADD  CONSTRAINT [FK_FavoriteTrains_Users_UserId] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([idUser])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[FavoriteTrains] CHECK CONSTRAINT [FK_FavoriteTrains_Users_UserId]
+GO
+ALTER TABLE [dbo].[FlightBookings]  WITH CHECK ADD  CONSTRAINT [FK_FlightBookings_Users_UserId] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([idUser])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[FlightBookings] CHECK CONSTRAINT [FK_FlightBookings_Users_UserId]
+GO
+ALTER TABLE [dbo].[FriendRequests]  WITH CHECK ADD  CONSTRAINT [FK_FriendRequests_Users_ReceiverId] FOREIGN KEY([ReceiverId])
+REFERENCES [dbo].[Users] ([idUser])
+GO
+ALTER TABLE [dbo].[FriendRequests] CHECK CONSTRAINT [FK_FriendRequests_Users_ReceiverId]
+GO
+ALTER TABLE [dbo].[FriendRequests]  WITH CHECK ADD  CONSTRAINT [FK_FriendRequests_Users_SenderId] FOREIGN KEY([SenderId])
+REFERENCES [dbo].[Users] ([idUser])
+GO
+ALTER TABLE [dbo].[FriendRequests] CHECK CONSTRAINT [FK_FriendRequests_Users_SenderId]
+GO
+ALTER TABLE [dbo].[Friends]  WITH CHECK ADD  CONSTRAINT [FK_Friends_Users_FriendId] FOREIGN KEY([FriendId])
+REFERENCES [dbo].[Users] ([idUser])
+GO
+ALTER TABLE [dbo].[Friends] CHECK CONSTRAINT [FK_Friends_Users_FriendId]
+GO
+ALTER TABLE [dbo].[Friends]  WITH CHECK ADD  CONSTRAINT [FK_Friends_Users_UserId] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([idUser])
+GO
+ALTER TABLE [dbo].[Friends] CHECK CONSTRAINT [FK_Friends_Users_UserId]
+GO
+ALTER TABLE [dbo].[HotelBookings]  WITH CHECK ADD  CONSTRAINT [FK_HotelBookings_Users_UserId] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([idUser])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[HotelBookings] CHECK CONSTRAINT [FK_HotelBookings_Users_UserId]
+GO
+ALTER TABLE [dbo].[PlannedActivities]  WITH CHECK ADD  CONSTRAINT [FK_PlannedActivities_Users_UserId] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([idUser])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[PlannedActivities] CHECK CONSTRAINT [FK_PlannedActivities_Users_UserId]
+GO
+ALTER TABLE [dbo].[PointsOfInterest]  WITH CHECK ADD  CONSTRAINT [FK_PointsOfInterest_InterestCategories] FOREIGN KEY([idInterestCategory])
+REFERENCES [dbo].[InterestCategories] ([idInterestCategory])
+GO
+ALTER TABLE [dbo].[PointsOfInterest] CHECK CONSTRAINT [FK_PointsOfInterest_InterestCategories]
+GO
+ALTER TABLE [dbo].[PointsOfInterest]  WITH CHECK ADD  CONSTRAINT [FK_PointsOfInterest_Trips_idTrip] FOREIGN KEY([idTrip])
+REFERENCES [dbo].[Trips] ([idTrip])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[PointsOfInterest] CHECK CONSTRAINT [FK_PointsOfInterest_Trips_idTrip]
+GO
+ALTER TABLE [dbo].[PointsOfInterest]  WITH CHECK ADD  CONSTRAINT [FK_PointsOfInterest_Users_addedById] FOREIGN KEY([addedById])
+REFERENCES [dbo].[Users] ([idUser])
+GO
+ALTER TABLE [dbo].[PointsOfInterest] CHECK CONSTRAINT [FK_PointsOfInterest_Users_addedById]
+GO
+ALTER TABLE [dbo].[Reviews]  WITH CHECK ADD  CONSTRAINT [FK_Reviews_Users_UserId] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([idUser])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[Reviews] CHECK CONSTRAINT [FK_Reviews_Users_UserId]
+GO
+ALTER TABLE [dbo].[TrainOrders]  WITH CHECK ADD  CONSTRAINT [FK_TrainOrders_Users_UserId] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([idUser])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[TrainOrders] CHECK CONSTRAINT [FK_TrainOrders_Users_UserId]
+GO
+ALTER TABLE [dbo].[TrainPassengers]  WITH CHECK ADD  CONSTRAINT [FK_TrainPassengers_TrainOrders_OrderId] FOREIGN KEY([OrderId])
+REFERENCES [dbo].[TrainOrders] ([Id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[TrainPassengers] CHECK CONSTRAINT [FK_TrainPassengers_TrainOrders_OrderId]
+GO
+ALTER TABLE [dbo].[TripParticipants]  WITH CHECK ADD  CONSTRAINT [FK_TripParticipants_ParticipantRoles] FOREIGN KEY([idParticipantRole])
+REFERENCES [dbo].[ParticipantRoles] ([idParticipantRole])
+GO
+ALTER TABLE [dbo].[TripParticipants] CHECK CONSTRAINT [FK_TripParticipants_ParticipantRoles]
+GO
+ALTER TABLE [dbo].[TripParticipants]  WITH CHECK ADD  CONSTRAINT [FK_TripParticipants_Trips_idTrip] FOREIGN KEY([idTrip])
+REFERENCES [dbo].[Trips] ([idTrip])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[TripParticipants] CHECK CONSTRAINT [FK_TripParticipants_Trips_idTrip]
+GO
+ALTER TABLE [dbo].[TripParticipants]  WITH CHECK ADD  CONSTRAINT [FK_TripParticipants_Users_idUser] FOREIGN KEY([idUser])
+REFERENCES [dbo].[Users] ([idUser])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[TripParticipants] CHECK CONSTRAINT [FK_TripParticipants_Users_idUser]
+GO
+ALTER TABLE [dbo].[Trips]  WITH CHECK ADD  CONSTRAINT [FK_Trips_Users_createdById] FOREIGN KEY([createdById])
+REFERENCES [dbo].[Users] ([idUser])
+GO
+ALTER TABLE [dbo].[Trips] CHECK CONSTRAINT [FK_Trips_Users_createdById]
+GO
+ALTER TABLE [dbo].[UserAuthTokens]  WITH CHECK ADD  CONSTRAINT [FK_UserAuthTokens_Users_UserId] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([idUser])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[UserAuthTokens] CHECK CONSTRAINT [FK_UserAuthTokens_Users_UserId]
+GO
+ALTER TABLE [dbo].[UserDocuments]  WITH CHECK ADD  CONSTRAINT [FK_UserDocuments_DocumentFolders_FolderId] FOREIGN KEY([FolderId])
+REFERENCES [dbo].[DocumentFolders] ([IdFolder])
+ON DELETE SET NULL
+GO
+ALTER TABLE [dbo].[UserDocuments] CHECK CONSTRAINT [FK_UserDocuments_DocumentFolders_FolderId]
+GO
+ALTER TABLE [dbo].[UserDocuments]  WITH CHECK ADD  CONSTRAINT [FK_UserDocuments_Users_UserId] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([idUser])
+GO
+ALTER TABLE [dbo].[UserDocuments] CHECK CONSTRAINT [FK_UserDocuments_Users_UserId]
+GO
+ALTER TABLE [dbo].[Users]  WITH CHECK ADD  CONSTRAINT [FK_Users_Roles_idRole] FOREIGN KEY([idRole])
+REFERENCES [dbo].[Roles] ([idRole])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[Users] CHECK CONSTRAINT [FK_Users_Roles_idRole]
+GO
+ALTER TABLE [dbo].[UserVotes]  WITH CHECK ADD  CONSTRAINT [FK_UserVotes_Users_idUser] FOREIGN KEY([idUser])
+REFERENCES [dbo].[Users] ([idUser])
+GO
+ALTER TABLE [dbo].[UserVotes] CHECK CONSTRAINT [FK_UserVotes_Users_idUser]
+GO
+ALTER TABLE [dbo].[UserVotes]  WITH CHECK ADD  CONSTRAINT [FK_UserVotes_VoteOptions_idVoteOption] FOREIGN KEY([idVoteOption])
+REFERENCES [dbo].[VoteOptions] ([idVoteOption])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[UserVotes] CHECK CONSTRAINT [FK_UserVotes_VoteOptions_idVoteOption]
+GO
+ALTER TABLE [dbo].[VoteOptions]  WITH CHECK ADD  CONSTRAINT [FK_VoteOptions_votingSystems_idVote] FOREIGN KEY([idVote])
+REFERENCES [dbo].[votingSystems] ([IdVote])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[VoteOptions] CHECK CONSTRAINT [FK_VoteOptions_votingSystems_idVote]
+GO
+ALTER TABLE [dbo].[votingSystems]  WITH CHECK ADD  CONSTRAINT [FK_votingSystems_PointsOfInterest_idPoint] FOREIGN KEY([idPoint])
+REFERENCES [dbo].[PointsOfInterest] ([idPoint])
+GO
+ALTER TABLE [dbo].[votingSystems] CHECK CONSTRAINT [FK_votingSystems_PointsOfInterest_idPoint]
+GO
+ALTER TABLE [dbo].[votingSystems]  WITH CHECK ADD  CONSTRAINT [FK_votingSystems_Trips_idTrip] FOREIGN KEY([idTrip])
+REFERENCES [dbo].[Trips] ([idTrip])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[votingSystems] CHECK CONSTRAINT [FK_votingSystems_Trips_idTrip]
+GO
+ALTER TABLE [dbo].[votingSystems]  WITH CHECK ADD  CONSTRAINT [FK_votingSystems_Users_createdById] FOREIGN KEY([createdById])
+REFERENCES [dbo].[Users] ([idUser])
+GO
+ALTER TABLE [dbo].[votingSystems] CHECK CONSTRAINT [FK_votingSystems_Users_createdById]
+GO
+/****** Object:  StoredProcedure [dbo].[CleanupExpiredAuthTokens]    Script Date: 16.03.2026 17:29:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+/****** Создаем процедуру для очистки устаревших токенов ******/
+CREATE PROCEDURE [dbo].[CleanupExpiredAuthTokens]
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @DeletedCount INT;
+    
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        
+        DELETE FROM [dbo].[UserAuthTokens]
+        WHERE [ExpiresAt] < GETUTCDATE();
+        
+        SET @DeletedCount = @@ROWCOUNT;
+        
+        COMMIT TRANSACTION;
+        
+        PRINT 'Удалено ' + CAST(@DeletedCount AS NVARCHAR(10)) + ' устаревших токенов';
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        PRINT 'Ошибка при очистке токенов: ' + ERROR_MESSAGE();
+        THROW;
+    END CATCH
+END
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Процедура для очистки устаревших токенов аутентификации' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'PROCEDURE',@level1name=N'CleanupExpiredAuthTokens'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Представление для просмотра активных токенов аутентификации с информацией о пользователях' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'vActiveAuthTokens'
+GO
+USE [master]
+GO
+ALTER DATABASE [TripWise] SET  READ_WRITE 
+GO

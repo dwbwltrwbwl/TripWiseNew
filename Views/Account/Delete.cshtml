@@ -1,0 +1,979 @@
+﻿@model TripWise.Models.ViewModels.DeleteAccountViewModel
+@{
+    ViewData["Title"] = "Удаление аккаунта";
+}
+<div class="mobile-header-spacer d-block d-lg-none" style="height: 70px;"></div>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Заголовок страницы -->
+            <div class="page-header-section mb-5">
+                <div class="page-header-icon">
+                    <i class="fas fa-exclamation-triangle text-white"></i>
+                </div>
+                <div class="page-header-content">
+                    <h1 class="page-title">
+                        Удаление аккаунта
+                    </h1>
+                    <p class="page-subtitle">Это действие невозможно отменить. Все ваши данные будут безвозвратно удалены.</p>
+                </div>
+            </div>
+
+            <!-- Шаг 1: Предупреждение -->
+            <div id="stepWarning" class="@(Model.CodeSent ? "d-none" : "")">
+                <!-- ... содержимое без изменений ... -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h3 class="section-subtitle mb-0">
+                            <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                            Шаг 1: Подтверждение действия
+                        </h3>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="alert alert-danger border-0 rounded-lg mb-4">
+                            <div class="d-flex align-items-start">
+                                <i class="fas fa-exclamation-circle fa-2x text-danger me-3 flex-shrink-0"></i>
+                                <div>
+                                    <h6 class="alert-heading mb-2">Внимание! Вы собираетесь полностью удалить свой аккаунт</h6>
+                                    <p class="mb-0 small">
+                                        Это действие <strong>необратимо</strong>. Все ваши данные будут безвозвратно удалены.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning border-0 rounded-lg mb-4">
+                            <div class="d-flex align-items-start">
+                                <i class="fas fa-trash-alt fa-2x text-warning me-3 flex-shrink-0"></i>
+                                <div>
+                                    <h6 class="alert-heading mb-2">Будут удалены все ваши данные:</h6>
+                                    <ul class="mb-0 small ps-3">
+                                        <li>Профиль и настройки</li>
+                                        <li>История поездок</li>
+                                        <li>Финансовые данные и расходы</li>
+                                        <li>Участие в группах и чатах</li>
+                                        <li>Документы и файлы</li>
+                                        <li>Сохраненные авиабилеты</li>
+                                        <li>История голосований</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info border-0 rounded-lg mb-4">
+                            <div class="d-flex align-items-start">
+                                <i class="fas fa-lightbulb fa-2x text-info me-3 flex-shrink-0"></i>
+                                <div>
+                                    <h6 class="alert-heading mb-2">Что нужно сделать перед удалением?</h6>
+                                    <ul class="mb-0 small ps-3">
+                                        <li>Сохраните важные данные и документы</li>
+                                        <li>Завершите активные поездки и расчеты</li>
+                                        <li>Убедитесь, что у вас нет задолженностей</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="confirmCheckbox">
+                            <label class="form-check-label fw-semibold text-danger" for="confirmCheckbox">
+                                Я понимаю последствия и хочу продолжить удаление аккаунта
+                            </label>
+                        </div>
+
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                            <a asp-action="Profile" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Отмена
+                            </a>
+                            <button type="button" id="sendCodeBtn" class="btn btn-danger" disabled>
+                                <i class="fas fa-envelope me-2"></i>Получить код подтверждения
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Шаг 2: Ввод кода подтверждения -->
+            <div id="stepCode" class="@(Model.CodeSent ? "" : "d-none")">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h3 class="section-subtitle mb-0">
+                            <i class="fas fa-envelope text-primary me-2"></i>
+                            Шаг 2: Подтверждение по email
+                        </h3>
+                    </div>
+                    <div class="card-body p-4">
+                        <form id="deleteForm" method="post">
+                            @Html.AntiForgeryToken()
+
+                            <div class="alert alert-success border-0 rounded-lg mb-4">
+                                <div class="d-flex align-items-start">
+                                    <div>
+                                        <h6 class="alert-heading mb-2">Код отправлен на ваш email</h6>
+                                        <p class="mb-0 small">
+                                            Мы отправили 6-значный код подтверждения на адрес: <strong>@Model.Email</strong><br>
+                                            Проверьте папку "Входящие" или "Спам".
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="code" class="form-label fw-semibold">
+                                    <i class="fas fa-key me-2"></i>Код подтверждения
+                                </label>
+                                <input type="text"
+                                       class="form-control form-control-lg text-center code-input"
+                                       id="code"
+                                       name="code"
+                                       maxlength="6"
+                                       required
+                                       placeholder="Введите 6-значный код"
+                                       autocomplete="off">
+                                <div class="mt-2 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                                    <small id="codeError" class="text-danger d-none">
+                                        <i class="fas fa-exclamation-circle me-1"></i>
+                                        <span id="codeErrorMessage"></span>
+                                    </small>
+                                    <small id="codeTimer" class="text-muted">
+                                        <i class="far fa-clock me-1"></i>Код действителен: <span id="timer">15:00</span>
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                                    <small class="text-muted">Не получили код?</small>
+                                    <button type="button" class="btn btn-link p-0" id="resendCodeBtn" disabled>
+                                        Отправить код повторно (<span id="resendTimer">60</span> сек)
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-danger border-0 rounded-lg mb-4">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-exclamation-triangle fa-2x text-danger me-3 flex-shrink-0"></i>
+                                    <div>
+                                        <h6 class="alert-heading mb-2">Это действие необратимо!</h6>
+                                        <p class="mb-0 small">
+                                            После подтверждения удаления восстановить аккаунт или данные будет невозможно.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                                <button type="button" id="backToWarningBtn" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Назад
+                                </button>
+                                <button type="button" id="confirmDeleteBtn" class="btn btn-danger">
+                                    <i class="fas fa-trash-alt me-2"></i>Удалить аккаунт
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Шаг 3: Успешное удаление (ДОБАВИТЬ ЭТОТ БЛОК) -->
+            <div id="stepSuccess" class="d-none">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4 text-center">
+                        <div class="mb-4">
+                            <i class="fas fa-check-circle text-success" style="font-size: 80px;"></i>
+                        </div>
+                        <h3 class="mb-3">Аккаунт успешно удален</h3>
+                        <p class="text-muted mb-4">
+                            Ваш аккаунт и все связанные данные были безвозвратно удалены.<br>
+                            Спасибо, что были с нами!
+                        </p>
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Перенаправление...</span>
+                        </div>
+                        <p class="text-muted mt-3 small">Перенаправление на главную страницу...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Контейнер для сообщений -->
+            <div id="messageContainer" class="mt-3"></div>
+
+            <!-- Информация о поддержке -->
+            <div class="text-center mt-4">
+                <p class="text-muted small">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Если у вас возникли проблемы, свяжитесь с поддержкой:
+                    <a href="mailto:tripwise@yandex.ru">tripwise@yandex.ru</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .page-header-section {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 25px 30px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .page-header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(to bottom, #dc3545, #ff6b6b);
+        }
+
+    .page-header-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #dc3545, #ff6b6b);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.2);
+        flex-shrink: 0;
+    }
+
+    .page-header-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .page-title {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 800;
+        font-size: 2.5rem;
+        color: #dc3545;
+        margin: 0 0 8px 0;
+        line-height: 1.2;
+        word-break: break-word;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        font-size: 1.1rem;
+        margin: 0;
+        line-height: 1.4;
+        word-break: break-word;
+        max-width: 600px;
+    }
+
+    .section-subtitle {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        font-size: 1.3rem;
+        color: #334155;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+        .card:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+    .card-header {
+        border-bottom: 1px solid #e2e8f0;
+        background-color: white;
+    }
+
+    .form-control-lg {
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        padding: 14px 18px;
+        font-family: 'Nunito', sans-serif;
+        transition: all 0.3s ease;
+    }
+
+        .form-control-lg:focus {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+            outline: none;
+        }
+
+    .code-input {
+        font-size: 28px;
+        font-weight: bold;
+        letter-spacing: 10px;
+        font-family: monospace;
+        text-align: center;
+    }
+
+    .btn {
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        font-family: 'Nunito', sans-serif;
+        padding: 12px 24px;
+    }
+
+    .btn-danger {
+        background: #dc3545;
+        border: none;
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2);
+    }
+
+        .btn-danger:hover {
+            background: #bb2d3b;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-danger:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+    .btn-outline-secondary {
+        border: 2px solid #e2e8f0;
+        color: #64748b;
+        background: white;
+    }
+
+        .btn-outline-secondary:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+            color: #334155;
+            transform: translateY(-2px);
+        }
+
+    .form-check-input {
+        width: 1.2em;
+        height: 1.2em;
+        margin-right: 0.5rem;
+        cursor: pointer;
+    }
+
+        .form-check-input:checked {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .form-check-input:focus {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+
+    .form-check-label {
+        cursor: pointer;
+    }
+
+    .alert {
+        border-radius: 12px;
+    }
+
+        .alert ul {
+            padding-left: 20px;
+            margin-bottom: 0;
+        }
+
+    #timer {
+        color: #d32f2f;
+        font-weight: bold;
+    }
+
+    #resendTimer {
+        color: #dc3545;
+        font-weight: bold;
+    }
+
+    /* ========== МОБИЛЬНАЯ АДАПТАЦИЯ ========== */
+    @@media (max-width: 768px) {
+        .page-header-section
+
+    {
+        flex-direction: row;
+        text-align: left;
+        padding: 20px;
+        gap: 15px;
+    }
+
+    .page-header-section::before {
+        width: 6px;
+        height: 100%;
+        top: 0;
+        left: 0;
+        background: linear-gradient(to bottom, #dc3545, #ff6b6b);
+    }
+
+    .page-header-icon {
+        width: 55px;
+        height: 55px;
+        font-size: 1.5rem;
+    }
+
+    .page-title {
+        font-size: 1.6rem;
+        margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.2rem;
+    }
+
+    .btn {
+        width: 100%;
+    }
+
+    .d-flex.flex-wrap {
+        flex-direction: column;
+    }
+
+        .d-flex.flex-wrap .btn {
+            width: 100%;
+        }
+
+    .card-body {
+        padding: 20px !important;
+    }
+
+    .code-input {
+        font-size: 20px;
+        letter-spacing: 6px;
+    }
+
+    .alert .d-flex {
+        flex-direction: column;
+        text-align: center;
+    }
+
+        .alert .d-flex i {
+            margin-bottom: 10px;
+        }
+
+    }
+
+    @@media (max-width: 576px) {
+        .page-header-section
+
+    {
+        padding: 15px;
+        gap: 12px;
+    }
+
+    .page-header-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.3rem;
+    }
+
+    .page-title {
+        font-size: 1.4rem;
+    }
+
+    .page-subtitle {
+        font-size: 0.85rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.1rem;
+    }
+
+    .code-input {
+        font-size: 16px;
+        letter-spacing: 4px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        font-size: 0.95rem;
+    }
+
+    .form-control-lg {
+        padding: 10px 14px;
+        font-size: 0.95rem;
+    }
+
+    .alert ul {
+        padding-left: 15px;
+    }
+
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Delete page loaded');
+
+        // Элементы шагов
+        const stepWarning = document.getElementById('stepWarning');
+        const stepCode = document.getElementById('stepCode');
+        const stepSuccess = document.getElementById('stepSuccess');
+
+        // Элементы формы
+        const confirmCheckbox = document.getElementById('confirmCheckbox');
+        const codeInput = document.getElementById('code');
+        const sendCodeBtn = document.getElementById('sendCodeBtn');
+        const resendCodeBtn = document.getElementById('resendCodeBtn');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        const backToWarningBtn = document.getElementById('backToWarningBtn');
+
+        // Таймеры
+        const timerElement = document.getElementById('timer');
+        const resendTimerElement = document.getElementById('resendTimer');
+
+        let codeTimerInterval = null;
+        let resendInterval = null;
+        let isSending = false;
+
+        // Вспомогательная функция для получения UserId
+        async function getCurrentUserId() {
+            try {
+                const response = await fetch('/Account/GetAuthStatus');
+                const data = await response.json();
+                console.log('Auth status:', data);
+                return data.userId;
+            } catch (error) {
+                console.error('Ошибка получения userId:', error);
+                return null;
+            }
+        }
+
+        // Включение кнопки отправки кода при отметке чекбокса
+        if (confirmCheckbox && sendCodeBtn) {
+            confirmCheckbox.addEventListener('change', function() {
+                sendCodeBtn.disabled = !this.checked;
+                console.log('Checkbox changed, sendCodeBtn disabled:', !this.checked);
+            });
+        }
+
+        // Ограничение ввода кода - только цифры
+        if (codeInput) {
+            codeInput.addEventListener('input', function() {
+                const oldValue = this.value;
+                this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
+                if (oldValue !== this.value) {
+                    console.log('Code input filtered:', oldValue, '->', this.value);
+                }
+                if (this.value.length === 6) {
+                    const codeError = document.getElementById('codeError');
+                    if (codeError) codeError.classList.add('d-none');
+                    if (confirmDeleteBtn) confirmDeleteBtn.disabled = false;
+                    console.log('Full 6-digit code entered, confirm button enabled');
+                } else {
+                    if (confirmDeleteBtn) confirmDeleteBtn.disabled = true;
+                    console.log('Code length:', this.value.length, 'confirm button disabled');
+                }
+            });
+        }
+
+           function stopTimers() {
+        if (codeTimerInterval) {
+            clearInterval(codeTimerInterval);
+            codeTimerInterval = null;
+            console.log('Code timer stopped');
+        }
+        if (resendInterval) {
+            clearInterval(resendInterval);
+            resendInterval = null;
+            console.log('Resend timer stopped');
+        }
+        // ДОБАВЬТЕ СБРОС ТАЙМЕРА НА КНОПКЕ
+        if (resendCodeBtn) {
+            resendCodeBtn.disabled = true;
+            resendCodeBtn.innerHTML = 'Отправить код повторно (<span id="resendTimer">60</span> сек)';
+        }
+    }
+
+        function showMessage(type, text) {
+            const container = document.getElementById('messageContainer');
+            if (!container) return;
+
+            const alertClass = 'alert-' + type;
+            const icon = type === 'success' ? 'fa-check-circle' :
+                         type === 'warning' ? 'fa-exclamation-triangle' : 'fa-exclamation-circle';
+
+            container.innerHTML = `
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="fas ${icon} me-2"></i>
+                        <div class="flex-grow-1">${text}</div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                </div>
+            `;
+
+            console.log(`Message shown: ${type} - ${text}`);
+
+            setTimeout(() => {
+                const alertDiv = container.querySelector('.alert');
+                if (alertDiv) alertDiv.remove();
+            }, 5000);
+        }
+
+            function goToStep(step) {
+        console.log('Going to step:', step);
+        stopTimers();
+
+        if (stepWarning) stepWarning.classList.add('d-none');
+        if (stepCode) stepCode.classList.add('d-none');
+        if (stepSuccess) stepSuccess.classList.add('d-none');
+
+        if (step === 'warning') {
+            if (stepWarning) stepWarning.classList.remove('d-none');
+            if (codeInput) codeInput.value = '';
+            if (confirmCheckbox) {
+                confirmCheckbox.checked = false;
+                if (sendCodeBtn) sendCodeBtn.disabled = true;
+            }
+            if (timerElement) timerElement.textContent = '15:00';
+            if (resendTimerElement) resendTimerElement.textContent = '60';
+            const messageContainer = document.getElementById('messageContainer');
+            if (messageContainer) messageContainer.innerHTML = '';
+
+            // ДОБАВЬТЕ ЭТОТ БЛОК - СБРОС СОСТОЯНИЯ КНОПКИ
+            if (sendCodeBtn) {
+                sendCodeBtn.disabled = true; // Кнопка отправки отключена (чекбокс не отмечен)
+                sendCodeBtn.innerHTML = '<i class="fas fa-envelope me-2"></i>Получить код подтверждения';
+            }
+            if (resendCodeBtn) {
+                resendCodeBtn.disabled = true;
+                resendCodeBtn.innerHTML = 'Отправить код повторно (<span id="resendTimer">60</span> сек)';
+            }
+            if (confirmDeleteBtn) {
+                confirmDeleteBtn.disabled = true;
+                confirmDeleteBtn.innerHTML = '<i class="fas fa-trash-alt me-2"></i>Удалить аккаунт';
+            }
+
+            // Сброс флага отправки
+            isSending = false;
+
+            // Очистка сообщений об ошибках
+            const codeError = document.getElementById('codeError');
+            if (codeError) codeError.classList.add('d-none');
+
+            console.log('Step 1 (warning) shown, state reset');
+        } else if (step === 'code') {
+            if (stepCode) stepCode.classList.remove('d-none');
+            startTimers();
+            if (codeInput) {
+                codeInput.value = '';
+                codeInput.focus();
+            }
+            if (confirmDeleteBtn) confirmDeleteBtn.disabled = true;
+            console.log('Step 2 (code) shown');
+        } else if (step === 'success') {
+            if (stepSuccess) stepSuccess.classList.remove('d-none');
+            console.log('Step 3 (success) shown');
+        }
+    }
+
+        function startTimers() {
+            stopTimers();
+            console.log('Starting timers');
+
+            let remainingSeconds = 900; // 15 минут
+
+            function updateTimerDisplay() {
+                const minutes = Math.floor(remainingSeconds / 60);
+                const seconds = remainingSeconds % 60;
+                if (timerElement) {
+                    timerElement.textContent = minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
+                }
+            }
+
+            updateTimerDisplay();
+
+            codeTimerInterval = setInterval(function() {
+                if (remainingSeconds <= 0) {
+                    clearInterval(codeTimerInterval);
+                    if (timerElement) timerElement.textContent = '00:00';
+                    showMessage('warning', 'Время действия кода истекло. Пожалуйста, запросите новый код.');
+                    goToStep('warning');
+                    return;
+                }
+                remainingSeconds--;
+                updateTimerDisplay();
+            }, 1000);
+
+            let resendSeconds = 60;
+            if (resendCodeBtn) {
+                resendCodeBtn.disabled = true;
+            }
+            if (resendTimerElement) {
+                resendTimerElement.textContent = resendSeconds;
+            }
+
+            resendInterval = setInterval(function() {
+                resendSeconds--;
+                if (resendTimerElement) {
+                    resendTimerElement.textContent = resendSeconds;
+                }
+
+                if (resendSeconds <= 0) {
+                    clearInterval(resendInterval);
+                    if (resendCodeBtn) {
+                        resendCodeBtn.disabled = false;
+                        resendCodeBtn.innerHTML = 'Отправить код повторно';
+                        console.log('Resend button enabled');
+                    }
+                } else if (resendCodeBtn) {
+                    resendCodeBtn.innerHTML = 'Отправить код повторно (<span id="resendTimer">' + resendSeconds + '</span> сек)';
+                }
+            }, 1000);
+        }
+
+        function getToken() {
+            const tokenElement = document.querySelector('input[name="__RequestVerificationToken"]');
+            const token = tokenElement ? tokenElement.value : '';
+            console.log('CSRF token found:', !!token);
+            return token;
+        }
+
+        // Отправка кода (шаг 1)
+        if (sendCodeBtn) {
+            sendCodeBtn.addEventListener('click', async function() {
+                if (isSending) {
+                    console.log('Already sending, ignoring click');
+                    return;
+                }
+
+                console.log('=== SEND CODE BUTTON CLICKED ===');
+                const userId = await getCurrentUserId();
+                console.log('Current UserId:', userId);
+
+                const $btn = this;
+                isSending = true;
+                $btn.disabled = true;
+                $btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Отправка...';
+
+                try {
+                    const token = getToken();
+                    if (!token) {
+                        throw new Error('CSRF token not found');
+                    }
+
+                    console.log('Sending request to /Account/SendDeleteCode');
+                    const response = await fetch('/Account/SendDeleteCode', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': token
+                        },
+                        body: JSON.stringify({})
+                    });
+
+                    const data = await response.json();
+                    console.log('Server response:', data);
+
+                    if (data.success) {
+                        console.log('Code sent successfully');
+                        showMessage('success', data.message);
+                        goToStep('code');
+                    } else {
+                        console.log('Server error:', data.message);
+                        showMessage('danger', data.message);
+                        $btn.disabled = false;
+                        $btn.innerHTML = '<i class="fas fa-envelope me-2"></i>Получить код подтверждения';
+                        if (confirmCheckbox && !confirmCheckbox.checked) {
+                            $btn.disabled = true;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error sending code:', error);
+                    showMessage('danger', 'Ошибка: ' + error.message);
+                    $btn.disabled = false;
+                    $btn.innerHTML = '<i class="fas fa-envelope me-2"></i>Получить код подтверждения';
+                    if (confirmCheckbox && !confirmCheckbox.checked) {
+                        $btn.disabled = true;
+                    }
+                } finally {
+                    isSending = false;
+                }
+            });
+        }
+
+        // Повторная отправка кода
+        if (resendCodeBtn) {
+            resendCodeBtn.addEventListener('click', async function() {
+                if (this.disabled || isSending) {
+                    console.log('Resend button disabled or already sending');
+                    return;
+                }
+
+                console.log('=== RESEND CODE BUTTON CLICKED ===');
+
+                const $btn = this;
+                isSending = true;
+                $btn.disabled = true;
+                $btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Отправка...';
+
+                try {
+                    const token = getToken();
+                    if (!token) {
+                        throw new Error('CSRF token not found');
+                    }
+
+                    console.log('Sending resend request to /Account/SendDeleteCode');
+                    const response = await fetch('/Account/SendDeleteCode', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': token
+                        },
+                        body: JSON.stringify({})
+                    });
+
+                    const data = await response.json();
+                    console.log('Resend server response:', data);
+
+                    if (data.success) {
+                        console.log('New code sent successfully');
+                        showMessage('success', 'Новый код отправлен на ваш email');
+                        stopTimers();
+                        startTimers();
+                    } else {
+                        console.log('Resend server error:', data.message);
+                        showMessage('danger', data.message);
+                        $btn.disabled = false;
+                        $btn.innerHTML = 'Отправить код повторно';
+                    }
+                } catch (error) {
+                    console.error('Error resending code:', error);
+                    showMessage('danger', 'Ошибка: ' + error.message);
+                    $btn.disabled = false;
+                    $btn.innerHTML = 'Отправить код повторно';
+                } finally {
+                    isSending = false;
+                }
+            });
+        }
+
+        // Подтверждение удаления (шаг 2)
+        if (confirmDeleteBtn) {
+            confirmDeleteBtn.addEventListener('click', async function() {
+                const codeValue = codeInput ? codeInput.value.trim() : '';
+
+                console.log('=== CONFIRM DELETE BUTTON CLICKED ===');
+                console.log('Entered code:', codeValue);
+                console.log('Code length:', codeValue.length);
+                console.log('Code is digits only:', /^\d+$/.test(codeValue));
+                console.log('Code type:', typeof codeValue);
+
+                if (codeValue.length !== 6 || !/^\d+$/.test(codeValue)) {
+                    console.log('ERROR: Invalid code format');
+                    showMessage('warning', 'Введите 6-значный код подтверждения');
+                    return;
+                }
+
+                if (!confirm('Вы уверены, что хотите окончательно удалить аккаунт? Это действие невозможно отменить.')) {
+                    console.log('Deletion cancelled by user');
+                    return;
+                }
+
+                const $btn = this;
+                $btn.disabled = true;
+                $btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Удаление...';
+
+                try {
+                    const token = getToken();
+                    if (!token) {
+                        throw new Error('CSRF token not found');
+                    }
+
+                    console.log('Sending delete confirmation to /Account/ConfirmDelete');
+                    console.log('Request body:', { code: codeValue });
+
+                    const response = await fetch('/Account/ConfirmDelete', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': token
+                        },
+                        body: JSON.stringify({ code: codeValue })
+                    });
+
+                    console.log('Response status:', response.status);
+
+                    const data = await response.json();
+                    console.log('Server response:', data);
+
+                    if (data.success) {
+                        console.log('SUCCESS: Account deleted');
+                        showMessage('success', data.message);
+                        stopTimers();
+                        goToStep('success');
+                        setTimeout(function() {
+                            console.log('Redirecting to:', data.redirectUrl || '/');
+                            window.location.href = data.redirectUrl || '/';
+                        }, 2000);
+                    } else {
+                        console.log('ERROR: Server returned error:', data.message);
+                        showMessage('danger', data.message);
+
+                        // Показываем ошибку в специальном блоке
+                        const codeError = document.getElementById('codeError');
+                        if (codeError) {
+                            codeError.classList.remove('d-none');
+                            const errorSpan = document.getElementById('codeErrorMessage');
+                            if (errorSpan) errorSpan.textContent = data.message;
+                        }
+
+                        $btn.disabled = false;
+                        $btn.innerHTML = '<i class="fas fa-trash-alt me-2"></i>Удалить аккаунт';
+
+                        // Очищаем поле ввода кода
+                        if (codeInput) {
+                            codeInput.value = '';
+                            codeInput.focus();
+                        }
+                    }
+                } catch (error) {
+                    console.error('EXCEPTION during deletion:', error);
+                    console.error('Error name:', error.name);
+                    console.error('Error message:', error.message);
+                    showMessage('danger', 'Ошибка: ' + error.message);
+                    $btn.disabled = false;
+                    $btn.innerHTML = '<i class="fas fa-trash-alt me-2"></i>Удалить аккаунт';
+                }
+            });
+        }
+
+        // Кнопка "Назад"
+            // Кнопка "Назад" (обновите этот блок)
+    if (backToWarningBtn) {
+        backToWarningBtn.addEventListener('click', function() {
+            console.log('Back button clicked');
+            // Дополнительная очистка перед возвратом
+            isSending = false;
+            if (sendCodeBtn) {
+                sendCodeBtn.disabled = true;
+                sendCodeBtn.innerHTML = '<i class="fas fa-envelope me-2"></i>Получить код подтверждения';
+            }
+            goToStep('warning');
+        });
+    }
+
+        // Инициализация - показываем предупреждение
+        console.log('Initializing - showing warning step');
+        goToStep('warning');
+    });
+</script>

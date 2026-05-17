@@ -1,0 +1,1424 @@
+﻿<div class="mobile-header-spacer d-block d-lg-none" style="height: 70px;"></div>
+
+@using System.Security.Claims
+@model TripWise.Models.ReviewsViewModel
+@{
+    ViewData["Title"] = "Отзывы";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+    // ПРИНУДИТЕЛЬНО получаем значения из Session, Model и Identity
+    var isAuthenticated = false;
+    var userName = "";
+    var userEmail = "";
+
+    // Сначала проверяем Session (самый надёжный способ)
+    if (Context.Session.GetInt32("UserId") != null)
+    {
+        isAuthenticated = true;
+        var sessionEmail = Context.Session.GetString("UserEmail") ?? "";
+        // ИСПРАВЛЕНО: используем '@' вместо '@@'
+        userName = Context.Session.GetString("UserName") ??
+                   (string.IsNullOrEmpty(sessionEmail) ? "Пользователь" : sessionEmail.Split('@')[0]);
+        userEmail = sessionEmail;
+    }
+
+    // Если в Session нет, проверяем Model
+    if (!isAuthenticated && Model != null)
+    {
+        isAuthenticated = Model.IsAuthenticated;
+        userName = Model.UserName ?? "";
+        userEmail = Model.UserEmail ?? "";
+    }
+
+    // ДОПОЛНИТЕЛЬНО проверяем User.Identity
+    if (!isAuthenticated && User.Identity?.IsAuthenticated == true)
+    {
+        isAuthenticated = true;
+        if (string.IsNullOrEmpty(userName))
+        {
+            var claimEmail = User.FindFirst(ClaimTypes.Email)?.Value ?? "";
+            // ИСПРАВЛЕНО: используем '@' вместо '@@'
+            userName = User.FindFirst(ClaimTypes.GivenName)?.Value ??
+                       User.FindFirst(ClaimTypes.Name)?.Value ??
+                       (string.IsNullOrEmpty(claimEmail) ? "Пользователь" : claimEmail.Split('@')[0]);
+        }
+        if (string.IsNullOrEmpty(userEmail))
+        {
+            userEmail = User.FindFirst(ClaimTypes.Email)?.Value ?? "";
+        }
+    }
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Заголовок страницы в стиле сайта -->
+            <div class="page-header-section mb-5">
+                <div class="page-header-icon">
+                    <i class="fas fa-star text-white"></i>
+                </div>
+                <div class="page-header-content">
+                    <h1 class="page-title">
+                        Отзывы наших клиентов
+                    </h1>
+                    <p class="page-subtitle">Поделитесь своим опытом и узнайте мнение других путешественников</p>
+                </div>
+            </div>
+
+            <!-- Рейтинг и статистика -->
+            <div class="card border-0 shadow-sm mb-5">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 text-center">
+                            <div class="rating-summary mb-3">
+                                <div class="display-4 text-warning mb-2" id="average-rating">0.0</div>
+                                <div class="stars mb-2" id="average-stars">
+                                    <i class="far fa-star text-warning"></i>
+                                    <i class="far fa-star text-warning"></i>
+                                    <i class="far fa-star text-warning"></i>
+                                    <i class="far fa-star text-warning"></i>
+                                    <i class="far fa-star text-warning"></i>
+                                </div>
+                                <p class="text-muted" id="reviews-count">Загрузка...</p>
+                                <button id="show-all-reviews-btn" class="btn btn-outline-primary mt-3 px-4">
+                                    <i class="fas fa-list me-2"></i>Все отзывы
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="row">
+                                <div class="col-6 col-md-3 text-center mb-3">
+                                    <div class="stat-card p-3 border rounded filter-stat" data-rating="5">
+                                        <div class="stat-number text-primary fs-4 fw-bold" id="stat-5">0</div>
+                                        <div class="stat-label text-muted">5 звезд</div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3 text-center mb-3">
+                                    <div class="stat-card p-3 border rounded filter-stat" data-rating="4">
+                                        <div class="stat-number text-primary fs-4 fw-bold" id="stat-4">0</div>
+                                        <div class="stat-label text-muted">4 звезды</div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3 text-center mb-3">
+                                    <div class="stat-card p-3 border rounded filter-stat" data-rating="3">
+                                        <div class="stat-number text-primary fs-4 fw-bold" id="stat-3">0</div>
+                                        <div class="stat-label text-muted">3 звезды</div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3 text-center mb-3">
+                                    <div class="stat-card p-3 border rounded filter-stat" data-rating="2">
+                                        <div class="stat-number text-primary fs-4 fw-bold" id="stat-2">0</div>
+                                        <div class="stat-label text-muted">2 звезды</div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3 text-center mb-3">
+                                    <div class="stat-card p-3 border rounded filter-stat" data-rating="1">
+                                        <div class="stat-number text-primary fs-4 fw-bold" id="stat-1">0</div>
+                                        <div class="stat-label text-muted">1 звезда</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Индикатор загрузки -->
+            <div id="loading-spinner" class="text-center mb-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
+            </div>
+
+            <!-- Сообщение об ошибке -->
+            <div id="error-message" class="alert alert-danger border-0 rounded-lg d-none mb-4">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-exclamation-triangle fa-2x text-danger me-3"></i>
+                    <div>
+                        <h5 class="alert-heading mb-2">Ошибка загрузки</h5>
+                        <p class="mb-2" id="error-text">Не удалось загрузить отзывы. Пожалуйста, попробуйте позже.</p>
+                        <button class="btn btn-outline-danger" onclick="loadReviews()">Повторить</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Отзывы -->
+            <div id="reviews-container" class="row mb-5">
+                <!-- Все отзывы будут добавляться сюда динамически -->
+            </div>
+
+            <!-- Форма отзыва -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-comment-dots text-primary me-2"></i>
+                        Оставьте свой отзыв
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    @if (!isAuthenticated)
+                    {
+                        <div class="alert alert-info border-0 rounded-lg">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-info-circle fa-2x text-info me-3"></i>
+                                <div>
+                                    <h5 class="alert-heading mb-2">Войдите в аккаунт</h5>
+                                    <p class="mb-2">Чтобы оставлять отзывы, войдите в свой аккаунт.</p>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <a asp-controller="Account" asp-action="Login" class="btn btn-primary">
+                                            <i class="fas fa-sign-in-alt me-2"></i>Войти
+                                        </a>
+                                        <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary">
+                                            <i class="fas fa-user-plus me-2"></i>Зарегистрироваться
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <form id="review-form" method="post">
+                            @Html.AntiForgeryToken()
+
+                            <!-- Скрытые поля с данными пользователя -->
+                            <input type="hidden" name="Name" id="review-name" value="@userName" />
+                            <input type="hidden" name="Email" id="review-email" value="@userEmail" />
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold">
+                                        <i class="fas fa-user text-primary me-1"></i>Имя
+                                    </label>
+                                    <div class="position-relative">
+                                        <input type="text" class="form-control form-control-lg bg-light"
+                                               id="review-name-display"
+                                               value="@userName"
+                                               disabled="disabled"
+                                               readonly="readonly"
+                                               style="background-color: #f0f7ff !important; border-color: #0379D9; color: #0a4b78; font-weight: 500;">
+                                        <i class="fas fa-check-circle text-success position-absolute"
+                                           style="right: 15px; top: 50%; transform: translateY(-50%); font-size: 1.2rem;"></i>
+                                    </div>
+                                    <small class="text-muted d-block mt-2">
+                                        <i class="fas fa-info-circle text-primary me-1"></i>
+                                        <span class="fw-medium">Имя из вашего профиля:</span> @userName
+                                    </small>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold">
+                                        <i class="fas fa-envelope text-primary me-1"></i>Email
+                                    </label>
+                                    <div class="position-relative">
+                                        <input type="email" class="form-control form-control-lg bg-light"
+                                               id="review-email-display"
+                                               value="@userEmail"
+                                               disabled="disabled"
+                                               readonly="readonly"
+                                               style="background-color: #f0f7ff !important; border-color: #0379D9; color: #0a4b78; font-weight: 500;">
+                                        <i class="fas fa-check-circle text-success position-absolute"
+                                           style="right: 15px; top: 50%; transform: translateY(-50%); font-size: 1.2rem;"></i>
+                                    </div>
+                                    <small class="text-muted d-block mt-2">
+                                        <i class="fas fa-info-circle text-primary me-1"></i>
+                                        <span class="fw-medium">Email из вашего профиля:</span> @userEmail
+                                    </small>
+                                </div>
+                            </div>
+
+                            <!-- Рейтинг (звезды) -->
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-star text-warning me-1"></i>Оценка
+                                </label>
+                                <div class="rating-input" id="rating-container">
+                                    <i class="far fa-star" data-rating="1" title="1 звезда - Ужасно"></i>
+                                    <i class="far fa-star" data-rating="2" title="2 звезды - Плохо"></i>
+                                    <i class="far fa-star" data-rating="3" title="3 звезды - Нормально"></i>
+                                    <i class="far fa-star" data-rating="4" title="4 звезды - Хорошо"></i>
+                                    <i class="far fa-star" data-rating="5" title="5 звезд - Отлично"></i>
+                                </div>
+                                <input type="hidden" name="Rating" id="selected-rating" value="0" required>
+                                <div id="rating-error" class="text-danger small mt-2 d-none">
+                                    <i class="fas fa-exclamation-circle me-1"></i>Пожалуйста, выберите оценку
+                                </div>
+                                <div id="rating-help" class="text-muted small mt-2">
+                                    <i class="fas fa-arrow-up me-1"></i>Нажмите на звезды, чтобы поставить оценку
+                                </div>
+                            </div>
+
+                            <!-- Текст отзыва -->
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-comment text-primary me-1"></i>Отзыв
+                                    <span class="text-muted fw-normal ms-2">(от 10 до 2000 символов)</span>
+                                </label>
+                                <textarea class="form-control" id="review-text" name="Text" rows="5"
+                                          placeholder="Поделитесь вашим опытом... Расскажите, что вам понравилось или что можно улучшить."
+                                          minlength="10" maxlength="2000" required
+                                          style="resize: vertical; min-height: 120px;"></textarea>
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <div class="text-muted small">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Минимум 10 символов
+                                    </div>
+                                    <div class="text-muted small" id="char-counter-container">
+                                        <span id="char-counter" class="fw-bold">0</span>/2000 символов
+                                    </div>
+                                </div>
+                                <div id="text-error" class="text-danger small mt-2 d-none"></div>
+                            </div>
+
+                            <!-- Сообщения об ошибках и успехе -->
+                            <div id="form-error" class="alert alert-danger d-none mb-4" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <span id="form-error-text"></span>
+                            </div>
+
+                            <div id="form-success" class="alert alert-success d-none mb-4" role="alert">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <span id="form-success-text"></span>
+                            </div>
+
+                            <!-- Кнопка отправки -->
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg" id="submit-review-btn">
+                                    Отправить отзыв
+                                </button>
+                            </div>
+
+                            <div class="text-center mt-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-shield-alt me-1"></i>
+                                    Ваш отзыв будет опубликован после проверки модератором
+                                </small>
+                            </div>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Стили для заголовка страницы (унифицированные) */
+    .page-header-section {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 25px 30px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .page-header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(to bottom, #0379D9, #40B624);
+        }
+
+    .page-header-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #0379D9, #40B624);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 4px 15px rgba(3, 121, 217, 0.2);
+        flex-shrink: 0;
+    }
+
+        .page-header-icon i {
+            color: white !important;
+        }
+
+    .page-header-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .page-title {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 800;
+        font-size: 2.5rem;
+        color: #0379D9;
+        margin: 0 0 8px 0;
+        line-height: 1.2;
+        word-break: break-word;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        font-size: 1.1rem;
+        margin: 0;
+        line-height: 1.4;
+        word-break: break-word;
+    }
+
+    .section-subtitle {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        font-size: 1.3rem;
+        color: #334155;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    /* Стили для карточек */
+    .card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+        .card:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+    /* Карточки отзывов */
+    .review-card {
+        transition: all 0.3s ease;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        overflow-x: hidden;
+        height: auto;
+        min-height: 200px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+        .review-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border-color: #0379D9;
+        }
+
+        .review-card .stars {
+            white-space: nowrap;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .review-card .d-flex.justify-content-between {
+            flex-shrink: 0;
+        }
+
+    /* Контейнер для текста отзыва */
+    .review-text-wrapper {
+        flex: 1;
+    }
+
+    /* Стили для кнопки "Читать далее" */
+    .read-more-btn {
+        background: none;
+        border: none;
+        color: #0379D9;
+        font-weight: 600;
+        font-size: 0.85rem;
+        padding: 8px 0 0 0;
+        margin-top: 8px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s ease;
+    }
+
+        .read-more-btn:hover {
+            color: #0356a8;
+            transform: translateX(2px);
+        }
+
+        .read-more-btn i {
+            font-size: 0.75rem;
+            transition: transform 0.2s ease;
+        }
+
+        .read-more-btn.expanded i {
+            transform: rotate(180deg);
+        }
+
+    .stars i {
+        color: #ffc107;
+    }
+
+    /* Для колонок с отзывами */
+    #reviews-container {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+        #reviews-container .col-md-6 {
+            display: flex;
+            flex-direction: column;
+        }
+
+    /* Статистические карточки */
+    .stat-card {
+        transition: all 0.3s ease;
+        background: white;
+        border: 1px solid #e2e8f0;
+        cursor: pointer;
+    }
+
+        .stat-card:hover {
+            border-color: #0379D9;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(3, 121, 217, 0.15);
+            background: #f8fafc;
+        }
+
+        .stat-card.active {
+            border: 2px solid #0379D9;
+            background: #f0f7ff;
+        }
+
+    .stat-number {
+        font-family: 'Nunito', sans-serif;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+    }
+
+    /* Стили для фильтров */
+    .filter-btn {
+        border-radius: 30px;
+        padding: 6px 16px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #0379D9, #0356a8);
+            color: white;
+            border-color: #0379D9;
+        }
+
+        .filter-btn.btn-outline-warning.active {
+            background: #ffc107;
+            color: #000;
+            border-color: #ffc107;
+        }
+
+        .filter-btn.btn-outline-secondary.active {
+            background: #6c757d;
+            color: white;
+            border-color: #6c757d;
+        }
+
+    /* Стили для формы */
+    .form-control, .form-select {
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        padding: 12px 16px;
+        font-family: 'Nunito', sans-serif;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #0379D9;
+            box-shadow: 0 0 0 0.2rem rgba(3, 121, 217, 0.25);
+        }
+
+    .form-control-lg {
+        padding: 14px 18px;
+        font-size: 1rem;
+    }
+
+    /* Стили для disabled полей */
+    .form-control:disabled, .form-control[readonly] {
+        background-color: #f0f7ff;
+        border-color: #0379D9;
+        color: #0a4b78;
+        cursor: default;
+        opacity: 0.9;
+    }
+
+    /* Рейтинг ввод */
+    .rating-input i {
+        font-size: 2rem;
+        cursor: pointer;
+        color: #ddd;
+        margin-right: 8px;
+        transition: all 0.2s ease;
+    }
+
+        .rating-input i:hover,
+        .rating-input i.active,
+        .rating-input i.hover {
+            color: #ffc107;
+            transform: scale(1.1);
+        }
+
+    /* Кнопки */
+    .btn {
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        font-family: 'Nunito', sans-serif;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background: #0379D9;
+        border: none;
+        box-shadow: 0 4px 12px rgba(3, 121, 217, 0.2);
+        padding: 14px 20px;
+        font-size: 1.1rem;
+        color: white;
+    }
+
+        .btn-primary:hover {
+            background: #0356a8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(3, 121, 217, 0.3);
+            color: white;
+        }
+
+        .btn-primary i {
+            color: white !important;
+        }
+
+    .btn-outline-primary {
+        border: 2px solid #0379D9;
+        color: #0379D9;
+        background: white;
+    }
+
+        .btn-outline-primary:hover {
+            background: #f0f7ff;
+            border-color: #0356a8;
+            color: #0356a8;
+        }
+
+    .btn-lg {
+        padding: 16px 24px;
+        font-size: 1.2rem;
+    }
+
+    /* Алерты */
+    .alert-info {
+        background-color: #e8f4fe;
+        border: 1px solid #b6d4fe;
+        border-radius: 12px;
+        color: #084298;
+    }
+
+    .alert-success {
+        background-color: #d1e7dd;
+        border-color: #badbcc;
+        color: #0f5132;
+        border-radius: 12px;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        border-color: #f5c2c7;
+        color: #842029;
+        border-radius: 12px;
+    }
+
+    /* Анимация */
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .review-card {
+        animation: fadeIn 0.5s ease;
+    }
+
+    /* Адаптивность для мобильных устройств */
+    @@media (max-width: 768px) {
+        .page-header-section {
+            padding: 20px;
+            gap: 15px;
+        }
+
+            .page-header-section::before {
+                width: 100%;
+                height: 6px;
+                top: 0;
+                left: 0;
+                background: linear-gradient(to right, #0379D9, #40B624);
+            }
+
+        .page-header-icon {
+            width: 55px;
+            height: 55px;
+            font-size: 1.5rem;
+        }
+
+        .page-title {
+            font-size: 1.6rem;
+            margin-bottom: 4px;
+        }
+
+        .page-subtitle {
+            font-size: 0.95rem;
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+        }
+
+        .review-card {
+            min-height: 150px;
+            padding: 1rem !important;
+        }
+        /* Более компактные фильтры на мобильных */
+        .filter-buttons-container {
+            width: 100%;
+        }
+
+        .filter-label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .filter-buttons {
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 4px 12px;
+            font-size: 0.85rem;
+        }
+        /* Компактные статистические карточки */
+        .stat-card {
+            padding: 0.75rem !important;
+        }
+
+        .stat-number {
+            font-size: 1.2rem !important;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+        }
+
+        .rating-summary .display-4 {
+            font-size: 2rem;
+        }
+        /* Компактные звезды для ввода */
+        .rating-input i {
+            font-size: 1.5rem;
+            margin-right: 4px;
+        }
+
+        .btn {
+            width: 100%;
+        }
+
+        .d-flex.gap-2 {
+            flex-direction: column;
+        }
+
+            .d-flex.gap-2 .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+        .review-card .d-flex.justify-content-between {
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .page-header-section {
+            padding: 15px;
+            gap: 12px;
+        }
+
+        .page-header-icon {
+            width: 48px;
+            height: 48px;
+            font-size: 1.3rem;
+        }
+
+        .page-title {
+            font-size: 1.4rem;
+        }
+
+        .page-subtitle {
+            font-size: 0.85rem;
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+        }
+
+        .review-card {
+            min-height: 130px;
+            padding: 0.75rem !important;
+        }
+
+            .review-card .d-flex.justify-content-between {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .review-card .stars {
+                white-space: normal;
+            }
+        /* Ещё более компактные фильтры */
+        .filter-btn {
+            padding: 3px 10px;
+            font-size: 0.8rem;
+        }
+
+            .filter-btn i {
+                font-size: 0.7rem;
+            }
+
+        .stat-card {
+            padding: 0.5rem !important;
+        }
+
+        .rating-input i {
+            font-size: 1.25rem;
+            margin-right: 3px;
+        }
+
+        .read-more-btn {
+            font-size: 0.75rem;
+        }
+    }
+</style>
+
+<script>
+    // Выводим ВСЕ данные в консоль для отладки
+    console.log('=== ПОЛНАЯ ОТЛАДКА АВТОРИЗАЦИИ ===');
+    console.log('isAuthenticated (итог):', @isAuthenticated.ToString().ToLower());
+    console.log('userName (итог):', '@Html.Raw(userName)');
+    console.log('userEmail (итог):', '@Html.Raw(userEmail)');
+    console.log('====================================');
+
+    window.reviewDebug = {
+        isAuthenticated: @Json.Serialize(isAuthenticated),
+        userName: '@Html.Raw(userName)',
+        userEmail: '@Html.Raw(userEmail)'
+    };
+    console.log('Review Debug Info:', window.reviewDebug);
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Текущий фильтр
+        let currentFilter = 'all';
+        let selectedRating = 0;
+        let isLoading = false;
+
+        // Принудительно проверяем авторизацию и устанавливаем значения
+        const isUserLoggedIn = @Json.Serialize(isAuthenticated);
+        console.log('isUserLoggedIn:', isUserLoggedIn);
+
+        // Загрузка отзывов при загрузке страницы
+            // Загрузка отзывов при загрузке страницы
+    loadReviews();
+    // Небольшая задержка для статистики, чтобы не блокировать
+    setTimeout(() => {
+        loadStatistics();
+    }, 100);
+
+        // Инициализация фильтров
+        initFilters();
+
+        // Инициализация формы только если пользователь авторизован
+        const reviewForm = document.getElementById('review-form');
+        if (reviewForm && isUserLoggedIn) {
+            // Убеждаемся, что скрытые поля имеют правильные значения
+            const nameInput = document.getElementById('review-name');
+            const emailInput = document.getElementById('review-email');
+
+            if (nameInput) nameInput.value = '@Html.Raw(userName)';
+            if (emailInput) emailInput.value = '@Html.Raw(userEmail)';
+
+            // Инициализация рейтинга звёзд
+            const stars = document.querySelectorAll('.rating-input i');
+
+            // Сброс выбранного рейтинга при загрузке
+            selectedRating = 0;
+            document.getElementById('selected-rating').value = '0';
+
+            stars.forEach(s => {
+                s.classList.remove('fas', 'active', 'hover');
+                s.classList.add('far');
+            });
+
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    selectedRating = parseInt(this.getAttribute('data-rating'));
+                    document.getElementById('selected-rating').value = selectedRating;
+                    document.getElementById('rating-error').classList.add('d-none');
+                    document.getElementById('rating-help').innerHTML = '<i class="fas fa-check-circle text-success me-1"></i>Вы выбрали оценку ' + selectedRating + ' ' + getStarWord(selectedRating);
+
+                    stars.forEach(s => {
+                        const rating = parseInt(s.getAttribute('data-rating'));
+                        if (rating <= selectedRating) {
+                            s.classList.remove('far');
+                            s.classList.add('fas', 'active');
+                        } else {
+                            s.classList.remove('fas', 'active');
+                            s.classList.add('far');
+                        }
+                    });
+                });
+
+                star.addEventListener('mouseenter', function() {
+                    const rating = parseInt(this.getAttribute('data-rating'));
+                    stars.forEach(s => {
+                        const sRating = parseInt(s.getAttribute('data-rating'));
+                        if (sRating <= rating) {
+                            s.classList.add('hover');
+                        }
+                    });
+                });
+
+                star.addEventListener('mouseleave', function() {
+                    stars.forEach(s => {
+                        s.classList.remove('hover');
+                    });
+                });
+            });
+
+            // Счетчик символов
+            const reviewText = document.getElementById('review-text');
+            const charCounter = document.getElementById('char-counter');
+
+            if (reviewText && charCounter) {
+                reviewText.addEventListener('input', function() {
+                    let length = this.value.length;
+                    if (length > 2000) {
+                        this.value = this.value.substring(0, 2000);
+                        length = 2000;
+                    }
+                    charCounter.textContent = length;
+
+                    if (length > 1900) {
+                        charCounter.style.color = '#dc3545';
+                    } else if (length > 1500) {
+                        charCounter.style.color = '#ffc107';
+                    } else {
+                        charCounter.style.color = '';
+                    }
+                });
+            }
+
+            // Обработка отправки формы
+            reviewForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+
+                // Получаем токен антифорджери
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+                if (!token) {
+                    showFormError('Ошибка безопасности. Пожалуйста, обновите страницу.');
+                    return;
+                }
+
+                // Получаем значения из скрытых полей
+                const nameInput = document.getElementById('review-name');
+                const emailInput = document.getElementById('review-email');
+                const textInput = document.getElementById('review-text');
+
+                const name = nameInput ? nameInput.value.trim() : '';
+                const email = emailInput ? emailInput.value.trim() : '';
+                const text = textInput ? textInput.value.trim() : '';
+
+                // Валидация
+                if (!name) {
+                    showFormError('Ошибка: имя пользователя не загружено. Пожалуйста, обновите страницу.');
+                    console.error('Name is empty');
+                    return;
+                }
+
+                if (!email) {
+                    showFormError('Ошибка: email не загружен. Пожалуйста, обновите страницу.');
+                    console.error('Email is empty');
+                    return;
+                }
+
+                if (!text) {
+                    showFormError('Пожалуйста, напишите отзыв');
+                    return;
+                }
+
+                if (selectedRating === 0) {
+                    document.getElementById('rating-error').classList.remove('d-none');
+                    document.getElementById('rating-help').innerHTML = '<i class="fas fa-exclamation-circle text-danger me-1"></i>Пожалуйста, выберите оценку';
+                    return;
+                }
+
+                if (text.length < 10) {
+                    showFormError('Текст отзыва должен содержать не менее 10 символов');
+                    return;
+                }
+
+                // Блокируем кнопку
+                const submitBtn = document.getElementById('submit-review-btn');
+                const originalBtnText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Отправка...';
+
+                try {
+                    const requestBody = {
+                        name: name,
+                        email: email,
+                        rating: selectedRating,
+                        text: text
+                    };
+
+                    console.log('Sending request:', requestBody);
+
+                    const response = await fetch('/api/Review/Create', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': token
+                        },
+                        body: JSON.stringify(requestBody)
+                    });
+
+                    const data = await response.json();
+                    console.log('Response:', data);
+
+                    if (response.ok && data.success) {
+                        showFormSuccess('Отзыв отправлен на модерацию! После проверки он появится на сайте.');
+
+                        // Сбрасываем форму
+                        if (reviewText) reviewText.value = '';
+                        stars.forEach(s => {
+                            s.classList.remove('fas', 'active', 'hover');
+                            s.classList.add('far');
+                        });
+                        selectedRating = 0;
+                        document.getElementById('selected-rating').value = '0';
+                        if (charCounter) charCounter.textContent = '0';
+                        document.getElementById('rating-help').innerHTML = '<i class="fas fa-arrow-up me-1"></i>Нажмите на звезды, чтобы поставить оценку';
+
+                        // Обновляем отзывы и статистику
+                        await loadStatistics();
+                        await loadReviews(currentFilter);
+                    } else {
+                        showFormError(data.error || 'Ошибка при отправке отзыва');
+                    }
+                } catch (error) {
+                    showFormError('Ошибка соединения с сервером');
+                    console.error('Error:', error);
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                }
+            });
+        }
+
+            // Инициализация фильтров
+    function initFilters() {
+        // Фильтры по кнопкам (если они есть)
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                filterBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                const rating = this.getAttribute('data-rating');
+                currentFilter = rating;
+
+                loadReviews(rating);
+                updateFilterInfo(rating);
+
+                // Снимаем активный класс со статистических карточек
+                document.querySelectorAll('.filter-stat').forEach(card => {
+                    card.classList.remove('active');
+                });
+
+                // Активируем соответствующую статистическую карточку
+                const activeStatCard = document.querySelector(`.filter-stat[data-rating="${rating}"]`);
+                if (activeStatCard) {
+                    activeStatCard.classList.add('active');
+                }
+            });
+        });
+
+        // Фильтры по статистическим карточкам
+        const statCards = document.querySelectorAll('.filter-stat');
+        statCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const rating = this.getAttribute('data-rating');
+
+                // Обновляем активный класс на карточках
+                statCards.forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+
+                // Обновляем активный класс на кнопках (если есть)
+                const targetBtn = document.querySelector(`.filter-btn[data-rating="${rating}"]`);
+                if (targetBtn) {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    targetBtn.classList.add('active');
+                }
+
+                // Применяем фильтр
+                currentFilter = rating;
+                loadReviews(rating);
+                updateFilterInfo(rating);
+            });
+        });
+
+        // Кнопка "Все отзывы"
+        const showAllBtn = document.getElementById('show-all-reviews-btn');
+        if (showAllBtn) {
+            showAllBtn.addEventListener('click', function() {
+                // Снимаем активный класс со всех фильтров
+                document.querySelectorAll('.filter-stat').forEach(c => c.classList.remove('active'));
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+
+                // Применяем фильтр "все"
+                currentFilter = 'all';
+                loadReviews('all');
+                updateFilterInfo('all');
+
+                // Прокручиваем к началу списка отзывов
+                const reviewsContainer = document.getElementById('reviews-container');
+                if (reviewsContainer) {
+                    reviewsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        }
+
+        // Сброс фильтра при клике на общий рейтинг
+        const ratingSummary = document.querySelector('.rating-summary');
+        if (ratingSummary) {
+            ratingSummary.addEventListener('click', function() {
+                // Снимаем активный класс со всех фильтров
+                document.querySelectorAll('.filter-stat').forEach(c => c.classList.remove('active'));
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+
+                // Применяем фильтр "все"
+                currentFilter = 'all';
+                loadReviews('all');
+                updateFilterInfo('all');
+            });
+            ratingSummary.style.cursor = 'pointer';
+            ratingSummary.title = 'Показать все отзывы';
+        }
+    }
+
+        // Обновление информации о фильтре
+        function updateFilterInfo(rating) {
+            const filterInfo = document.getElementById('filter-result-info');
+            if (filterInfo) {
+                if (rating === 'all') {
+                    filterInfo.textContent = 'Показаны все отзывы';
+                } else {
+                    filterInfo.textContent = `Показаны отзывы с оценкой ${rating} ${getStarWord(rating)}`;
+                }
+            }
+        }
+
+        // Функция загрузки отзывов с фильтром
+            // Функция загрузки отзывов с фильтром
+    async function loadReviews(rating = 'all') {
+        // Предотвращаем повторные вызовы
+        if (isLoading) {
+            console.log('Already loading, skipping...');
+            return;
+        }
+
+        const reviewsContainer = document.getElementById('reviews-container');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const errorMessage = document.getElementById('error-message');
+
+        if (!reviewsContainer) return;
+
+        isLoading = true;
+        reviewsContainer.innerHTML = '';
+        if (loadingSpinner) loadingSpinner.classList.remove('d-none');
+        if (errorMessage) errorMessage.classList.add('d-none');
+
+        try {
+            let url = '/api/Review/GetAll';
+            if (rating !== 'all') {
+                url += `?rating=${rating}`;
+            }
+
+            console.log('Loading reviews from:', url);
+
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error('Ошибка загрузки');
+            }
+
+            const reviews = await response.json();
+            console.log('Reviews loaded:', reviews.length);
+
+            if (loadingSpinner) loadingSpinner.classList.add('d-none');
+
+            if (!reviews || reviews.length === 0) {
+                let emptyMessage = 'Пока нет отзывов';
+                if (rating !== 'all') {
+                    emptyMessage = `Пока нет отзывов с оценкой ${rating} ${getStarWord(rating)}`;
+                }
+
+                reviewsContainer.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+                        <h4 class="text-muted">${emptyMessage}</h4>
+                        <p class="text-muted">Будьте первым, кто оставит отзыв!</p>
+                    </div>
+                `;
+                isLoading = false;
+                return;
+            }
+
+            const sortedReviews = reviews.sort((a, b) =>
+                new Date(b.createdAt) - new Date(a.createdAt)
+            );
+
+            // Используем DocumentFragment для более эффективного добавления элементов
+            const fragment = document.createDocumentFragment();
+            const tempDiv = document.createElement('div');
+
+            sortedReviews.forEach((review, index) => {
+                const starsHTML = getStarsHTML(review.rating);
+                const reviewDate = formatDate(review.createdAt);
+                const reviewText = review.text || '';
+                const textLength = reviewText.length;
+                const charLimit = 300;
+
+                let reviewHtml = '';
+                if (textLength <= charLimit) {
+                    reviewHtml = `
+                        <div class="col-md-6 mb-4">
+                            <div class="review-card p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <h6 class="fw-semibold mb-1">${escapeHtml(review.name)}</h6>
+                                        <div class="stars mb-2">${starsHTML}</div>
+                                    </div>
+                                    <small class="text-muted">${reviewDate}</small>
+                                </div>
+                                <p class="mb-0">${escapeHtml(reviewText)}</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const shortText = escapeHtml(reviewText.substring(0, charLimit)) + '...';
+                    const fullText = escapeHtml(reviewText);
+                    const uniqueId = `review-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 6)}`;
+
+                    reviewHtml = `
+                        <div class="col-md-6 mb-4">
+                            <div class="review-card p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <h6 class="fw-semibold mb-1">${escapeHtml(review.name)}</h6>
+                                        <div class="stars mb-2">${starsHTML}</div>
+                                    </div>
+                                    <small class="text-muted">${reviewDate}</small>
+                                </div>
+                                <div class="review-text-wrapper">
+                                    <div class="review-text-short" id="${uniqueId}-short">
+                                        ${shortText}
+                                    </div>
+                                    <div class="review-text-full" id="${uniqueId}-full" style="display: none;">
+                                        ${fullText}
+                                    </div>
+                                    <button class="read-more-btn" onclick="toggleReviewText('${uniqueId}', this)">
+                                        <i class="fas fa-chevron-down"></i> Читать далее
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                tempDiv.innerHTML = reviewHtml;
+                while (tempDiv.firstChild) {
+                    fragment.appendChild(tempDiv.firstChild);
+                }
+            });
+
+            reviewsContainer.appendChild(fragment);
+        } catch (error) {
+            console.error('Error loading reviews:', error);
+            if (loadingSpinner) loadingSpinner.classList.add('d-none');
+            if (errorMessage) {
+                errorMessage.classList.remove('d-none');
+                const errorText = document.getElementById('error-text');
+                if (errorText) errorText.textContent = error.message;
+            }
+        } finally {
+            isLoading = false;
+        }
+    }
+
+        // Функция загрузки статистики
+        async function loadStatistics() {
+            try {
+                const response = await fetch('/api/Review/GetStatistics');
+                console.log('Statistics response status:', response.status);
+
+                if (!response.ok) {
+                    throw new Error('Ошибка загрузки статистики');
+                }
+
+                const stats = await response.json();
+                console.log('Statistics loaded:', stats);
+
+                const avgRatingEl = document.getElementById('average-rating');
+                const reviewsCountEl = document.getElementById('reviews-count');
+
+                if (avgRatingEl) avgRatingEl.textContent = stats.averageRating ? stats.averageRating.toFixed(1) : '0.0';
+                if (reviewsCountEl) reviewsCountEl.textContent = `На основе ${stats.totalReviews || 0} ${getReviewWord(stats.totalReviews || 0)}`;
+
+                updateStarsDisplay(stats.averageRating || 0);
+
+                const stat5 = document.getElementById('stat-5');
+                const stat4 = document.getElementById('stat-4');
+                const stat3 = document.getElementById('stat-3');
+                const stat2 = document.getElementById('stat-2');
+                const stat1 = document.getElementById('stat-1');
+
+                if (stat5) stat5.textContent = stats.ratingCounts ? (stats.ratingCounts[5] || 0) : 0;
+                if (stat4) stat4.textContent = stats.ratingCounts ? (stats.ratingCounts[4] || 0) : 0;
+                if (stat3) stat3.textContent = stats.ratingCounts ? (stats.ratingCounts[3] || 0) : 0;
+                if (stat2) stat2.textContent = stats.ratingCounts ? (stats.ratingCounts[2] || 0) : 0;
+                if (stat1) stat1.textContent = stats.ratingCounts ? (stats.ratingCounts[1] || 0) : 0;
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+            }
+        }
+
+        // Вспомогательные функции
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ru-RU', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+        }
+
+        function getStarsHTML(rating) {
+            let starsHTML = '';
+            for (let i = 1; i <= 5; i++) {
+                starsHTML += i <= rating
+                    ? '<i class="fas fa-star text-warning"></i>'
+                    : '<i class="far fa-star text-warning"></i>';
+            }
+            return starsHTML;
+        }
+
+        function updateStarsDisplay(rating) {
+            const averageStars = document.getElementById('average-stars');
+            if (averageStars) {
+                averageStars.innerHTML = getStarsHTML(Math.round(rating));
+            }
+        }
+
+        function showFormError(message) {
+            const errorDiv = document.getElementById('form-error');
+            const errorText = document.getElementById('form-error-text');
+            if (errorDiv && errorText) {
+                errorText.textContent = message;
+                errorDiv.classList.remove('d-none');
+
+                setTimeout(() => {
+                    errorDiv.classList.add('d-none');
+                }, 5000);
+            }
+        }
+
+        function showFormSuccess(message) {
+            const successDiv = document.getElementById('form-success');
+            const successText = document.getElementById('form-success-text');
+            if (successDiv && successText) {
+                successText.textContent = message;
+                successDiv.classList.remove('d-none');
+
+                setTimeout(() => {
+                    successDiv.classList.add('d-none');
+                }, 5000);
+            }
+        }
+
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return String(unsafe)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function getStarWord(count) {
+            count = parseInt(count);
+            if (count === 1) return 'звезда';
+            if (count >= 2 && count <= 4) return 'звезды';
+            return 'звезд';
+        }
+
+        function getReviewWord(count) {
+            count = parseInt(count);
+            if (count === 1) return 'отзыва';
+            if (count >= 2 && count <= 4) return 'отзыва';
+            return 'отзывов';
+        }
+    });
+
+    // Функция для сворачивания/разворачивания отзыва (глобальная)
+    window.toggleReviewText = function(uniqueId, btn) {
+        const shortDiv = document.getElementById(`${uniqueId}-short`);
+        const fullDiv = document.getElementById(`${uniqueId}-full`);
+
+        if (shortDiv && fullDiv) {
+            if (shortDiv.style.display === 'none') {
+                shortDiv.style.display = 'block';
+                fullDiv.style.display = 'none';
+                btn.innerHTML = '<i class="fas fa-chevron-down"></i> Читать далее';
+                btn.classList.remove('expanded');
+            } else {
+                shortDiv.style.display = 'none';
+                fullDiv.style.display = 'block';
+                btn.innerHTML = '<i class="fas fa-chevron-up"></i> Свернуть';
+                btn.classList.add('expanded');
+            }
+        }
+    };
+</script>

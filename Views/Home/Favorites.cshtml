@@ -1,0 +1,1830 @@
+﻿@using TripWise.Models
+@model Tuple<List<FavoriteFlight>, List<FavoriteTrain>, List<FavoriteHotel>>
+@{
+    ViewData["Title"] = "Избранное";
+    var flights = Model?.Item1 ?? new List<FavoriteFlight>();
+    var trains = Model?.Item2 ?? new List<FavoriteTrain>();
+    var hotels = Model?.Item3 ?? new List<FavoriteHotel>();
+    var userId = Context.Session.GetInt32("UserId");
+}
+<div class="mobile-header-spacer d-block d-lg-none" style="height: 70px;"></div>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Заголовок страницы с выделением -->
+            <div class="page-header-section mb-5">
+    <div class="page-header-icon">
+        <i class="fas fa-heart text-white"></i>
+    </div>
+    <div class="page-header-content">
+        <h1 class="page-title">Избранное</h1>
+        <p class="page-subtitle">Сохраненные авиабилеты, ЖД билеты и отели</p>
+    </div>
+</div>
+
+            @if (!userId.HasValue)
+            {
+                <div class="card shadow-lg border-0">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-lock text-muted mb-3" style="font-size: 3rem;"></i>
+                        <h4 class="mb-3">Доступ ограничен</h4>
+                        <p class="text-muted mb-4">
+                            Для просмотра избранного необходимо войти в систему.
+                        </p>
+                        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                            <a asp-controller="Account" asp-action="Login" class="btn btn-primary btn-lg px-4">
+                                <i class="fas fa-sign-in-alt me-2"></i>Войти
+                            </a>
+                            <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary btn-lg px-4">
+                                <i class="fas fa-user-plus me-2"></i>Зарегистрироваться
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (flights.Count == 0 && trains.Count == 0 && hotels.Count == 0)
+            {
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-heart text-muted mb-3" style="font-size: 3rem;"></i>
+                        <h5>Пока ничего нет в избранном</h5>
+                        <p class="text-muted mb-4">
+                            Сохраняйте понравившиеся направления, нажимая на сердечко<br>
+                            при поиске билетов и отелей.
+                        </p>
+                        <div class="d-flex gap-3 justify-content-center flex-wrap">
+                            <a asp-controller="Flights" asp-action="Index" class="btn btn-primary btn-lg">
+                                <i class="fas fa-plane me-2"></i>Найти авиабилеты
+                            </a>
+                            <a asp-controller="Home" asp-action="Railway" class="btn btn-outline-primary btn-lg">
+                                <i class="fas fa-train me-2"></i>Найти ЖД билеты
+                            </a>
+                            <a asp-controller="Home" asp-action="Hotels" class="btn btn-outline-primary btn-lg">
+                                <i class="fas fa-hotel me-2"></i>Найти отели
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- Вкладки для переключения -->
+                <ul class="nav nav-tabs mb-4" id="favoritesTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link @(flights.Count > 0 ? "active" : "")"
+                                id="flights-tab"
+                                data-bs-toggle="tab"
+                                data-bs-target="#flights"
+                                type="button"
+                                role="tab"
+                        @(flights.Count == 0 ? "disabled" : "")>
+                            <i class="fas fa-plane me-2"></i>
+                            Авиабилеты
+                            <span class="badge bg-primary ms-2">@flights.Count</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link @(flights.Count == 0 && trains.Count > 0 ? "active" : "")"
+                                id="trains-tab"
+                                data-bs-toggle="tab"
+                                data-bs-target="#trains"
+                                type="button"
+                                role="tab"
+                        @(trains.Count == 0 ? "disabled" : "")>
+                            <i class="fas fa-train me-2"></i>
+                            ЖД билеты
+                            <span class="badge bg-primary ms-2">@trains.Count</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link @(flights.Count == 0 && trains.Count == 0 && hotels.Count > 0 ? "active" : "")"
+                                id="hotels-tab"
+                                data-bs-toggle="tab"
+                                data-bs-target="#hotels"
+                                type="button"
+                                role="tab"
+                        @(hotels.Count == 0 ? "disabled" : "")>
+                            <i class="fas fa-hotel me-2"></i>
+                            Отели
+                            <span class="badge bg-primary ms-2">@hotels.Count</span>
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="favoritesTabContent">
+                    <!-- Вкладка с авиабилетами -->
+                    <div class="tab-pane fade @(flights.Count > 0 ? "show active" : "")"
+                         id="flights"
+                         role="tabpanel"
+                         aria-labelledby="flights-tab">
+
+                        @if (flights.Count > 0)
+                        {
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <p class="lead mb-0">Сохраненные рейсы</p>
+                            </div>
+
+                            <div class="row">
+                                <!-- Фильтры для авиабилетов -->
+                                <div class="col-md-3 mb-4">
+                                    <div class="card shadow-sm border-0 sticky-top" style="top: 20px;">
+                                        <div class="card-body">
+                                            <h6 class="card-title mb-3">
+                                                <i class="fas fa-filter me-2"></i>Фильтры
+                                            </h6>
+
+                                            <div class="mb-3">
+                                                <label class="form-label small text-muted mb-2">Направления</label>
+                                                <select class="form-select" id="flightDirectionFilter">
+                                                    <option value="">Все направления</option>
+                                                    @foreach (var direction in flights.Select(f => $"{f.DepartureCity} → {f.ArrivalCity}").Distinct())
+                                                    {
+                                                        <option value="@direction">@direction</option>
+                                                    }
+                                                </select>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label small text-muted mb-2">Авиакомпании</label>
+                                                <select class="form-select" id="flightAirlineFilter">
+                                                    <option value="">Все авиакомпании</option>
+                                                    @foreach (var airline in flights.Select(f => f.Airline).Distinct())
+                                                    {
+                                                        <option value="@airline">@airline</option>
+                                                    }
+                                                </select>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label small text-muted mb-2">Сортировка</label>
+                                                <select class="form-select" id="flightSortFilter">
+                                                    <option value="date">По дате добавления</option>
+                                                    <option value="price_asc">По цене (дешевые)</option>
+                                                    <option value="price_desc">По цене (дорогие)</option>
+                                                    <option value="date_asc">По дате вылета</option>
+                                                </select>
+                                            </div>
+
+                                            <button class="btn btn-outline-secondary w-100" onclick="resetFlightFilters()">
+                                                <i class="fas fa-undo-alt me-2"></i>Сбросить
+                                            </button>
+
+                                            <hr class="my-3">
+
+                                            <div class="small text-muted">
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <span>Всего рейсов:</span>
+                                                    <strong id="flightTotalCount">@flights.Count</strong>
+                                                </div>
+                                                <div class="d-flex justify-content-between">
+                                                    <span>Показано:</span>
+                                                    <strong id="flightVisibleCount">@flights.Count</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Список избранных рейсов -->
+                                <div class="col-md-9">
+                                    <div id="flightFavoritesList">
+                                        @foreach (var flight in flights)
+                                        {
+                                            <div class="card shadow-sm border-0 mb-3 flight-item"
+                                                 data-direction="@($"{flight.DepartureCity} → {flight.ArrivalCity}")"
+                                                 data-airline="@flight.Airline"
+                                                 data-price="@flight.Price"
+                                                 data-date="@flight.AddedDate.Ticks"
+                                                 data-departure="@flight.DepartureTime.Ticks"
+                                                 data-flight-id="@flight.FlightId">
+                                                <div class="card-body">
+                                                    <div class="row align-items-center">
+                                                        <div class="col-md-8">
+                                                            <div class="d-flex align-items-start">
+                                                                <div class="me-3">
+                                                                    @if (flight.IsReturn)
+                                                                    {
+                                                                        <span class="badge bg-success">Обратно</span>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <span class="badge bg-primary">Туда</span>
+                                                                    }
+                                                                </div>
+                                                                <div>
+                                                                    <h5 class="mb-1">
+                                                                        @flight.DepartureCity → @flight.ArrivalCity
+                                                                    </h5>
+                                                                    <div class="d-flex align-items-center mb-2">
+                                                                        <span class="me-3">
+                                                                            <i class="fas fa-plane text-muted me-1"></i>
+                                                                            @flight.Airline (@flight.FlightNumber)
+                                                                        </span>
+                                                                        <span class="me-3">
+                                                                            <i class="fas fa-chair text-muted me-1"></i>
+                                                                            @flight.Aircraft
+                                                                        </span>
+                                                                        <span>
+                                                                            <i class="fas fa-exchange-alt text-muted me-1"></i>
+                                                                            @(flight.Transfers == 0 ? "Прямой" : $"{flight.Transfers} пересадки")
+                                                                        </span>
+                                                                    </div>
+                                                                    <div class="d-flex align-items-center text-muted small">
+                                                                        <span class="me-3">
+                                                                            <i class="far fa-calendar me-1"></i>
+                                                                            @flight.DepartureTime.ToString("dd.MM.yyyy")
+                                                                        </span>
+                                                                        <span class="me-3">
+                                                                            <i class="far fa-clock me-1"></i>
+                                                                            @flight.DepartureTime.ToString("HH:mm") → @flight.ArrivalTime.ToString("HH:mm")
+                                                                        </span>
+                                                                        <span>
+                                                                            <i class="fas fa-hourglass-half me-1"></i>
+                                                                            @(flight.Duration / 60)ч @(flight.Duration % 60)м
+                                                                        </span>
+                                                                    </div>
+                                                                    <div class="mt-2">
+                                                                        <small class="text-muted">
+                                                                            <i class="far fa-calendar-plus me-1"></i>
+                                                                            Добавлен: @flight.AddedDate.ToString("dd.MM.yyyy")
+                                                                        </small>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="col-md-4">
+                                                            <div class="d-flex flex-column align-items-end">
+                                                                <div class="mb-3 text-end">
+                                                                    <h4 class="text-primary mb-0">@flight.Price.ToString("N0") @flight.Currency</h4>
+                                                                    <small class="text-muted">за пассажира</small>
+                                                                </div>
+                                                                <div class="d-flex gap-2">
+                                                                    <a href="@Url.Action("Book", "FlightBooking", new {
+    flightId = flight.FlightId,
+    airline = flight.Airline,
+    airlineCode = flight.AirlineCode ?? "",
+    airlineLogo = "",
+    flightNumber = flight.FlightNumber,
+    departureCity = flight.DepartureCity,
+    arrivalCity = flight.ArrivalCity,
+    departureAirport = flight.DepartureAirport ?? "MOW",
+    arrivalAirport = flight.ArrivalAirport ?? "LED",
+    departureDateTime = flight.DepartureTime.ToString("yyyy-MM-ddTHH:mm:ss"),
+    arrivalDateTime = flight.ArrivalTime.ToString("yyyy-MM-ddTHH:mm:ss"),
+    price = flight.Price,
+    duration = flight.Duration,
+    transfers = flight.Transfers,
+    aircraft = flight.Aircraft ?? "Boeing 737",
+    baggage = "1x23кг",
+    handLuggage = "1x10кг",
+    meal = "Включено",
+    flightClass = "Economy",
+    isRoundTrip = flight.IsReturn,
+    passengers = 1,
+    returnFlightId = "",
+    returnAirline = "",
+    returnFlightNumber = "",
+    returnDepartureDateTime = "",
+    returnArrivalDateTime = "",
+    returnDuration = 0,
+    returnTransfers = 0
+})" class="btn btn-primary">
+                                                                        <i class="fas fa-shopping-cart me-2"></i>Купить
+                                                                    </a>
+                                                                    <button class="btn btn-outline-danger remove-flight-favorite"
+                                                                            data-flight-id="@flight.FlightId">
+                                                                        <i class="fas fa-trash"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+
+                                    @if (flights.Count > 10)
+                                    {
+                                        <div class="text-center mt-4">
+                                            <button class="btn btn-outline-primary" id="loadMoreFlightsBtn">
+                                                <i class="fas fa-chevron-down me-2"></i>Показать еще
+                                            </button>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Вкладка с ЖД билетами -->
+                    <div class="tab-pane fade @(flights.Count == 0 && trains.Count > 0 ? "show active" : "")"
+                         id="trains"
+                         role="tabpanel"
+                         aria-labelledby="trains-tab">
+
+                        @if (trains.Count > 0)
+                        {
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <p class="lead mb-0">Сохраненные поезда</p>
+                            </div>
+
+                            <div class="row">
+                                <!-- Фильтры для ЖД билетов -->
+                                <div class="col-md-3 mb-4">
+                                    <div class="card shadow-sm border-0 sticky-top" style="top: 20px;">
+                                        <div class="card-body">
+                                            <h6 class="card-title mb-3">
+                                                <i class="fas fa-filter me-2"></i>Фильтры
+                                            </h6>
+
+                                            <div class="mb-3">
+                                                <label class="form-label small text-muted mb-2">Направления</label>
+                                                <select class="form-select" id="trainDirectionFilter">
+                                                    <option value="">Все направления</option>
+                                                    @foreach (var direction in trains.Select(t => $"{t.DepartureStation} → {t.ArrivalStation}").Distinct())
+                                                    {
+                                                        <option value="@direction">@direction</option>
+                                                    }
+                                                </select>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label small text-muted mb-2">Сортировка</label>
+                                                <select class="form-select" id="trainSortFilter">
+                                                    <option value="date">По дате добавления</option>
+                                                    <option value="price_asc">По цене (дешевые)</option>
+                                                    <option value="price_desc">По цене (дорогие)</option>
+                                                    <option value="date_asc">По дате отправления</option>
+                                                </select>
+                                            </div>
+
+                                            <button class="btn btn-outline-secondary w-100" onclick="resetTrainFilters()">
+                                                <i class="fas fa-undo-alt me-2"></i>Сбросить
+                                            </button>
+
+                                            <hr class="my-3">
+
+                                            <div class="small text-muted">
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <span>Всего поездов:</span>
+                                                    <strong id="trainTotalCount">@trains.Count</strong>
+                                                </div>
+                                                <div class="d-flex justify-content-between">
+                                                    <span>Показано:</span>
+                                                    <strong id="trainVisibleCount">@trains.Count</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Список избранных поездов -->
+                                <div class="col-md-9">
+                                    <div id="trainFavoritesList">
+                                        @foreach (var train in trains)
+                                        {
+                                            // ПРИНУДИТЕЛЬНАЯ КОНВЕРТАЦИЯ ДАТ ИЗ UTC В ЛОКАЛЬНОЕ ВРЕМЯ
+                                            DateTime departureLocal;
+                                            DateTime arrivalLocal;
+                                            DateTime addedLocal;
+
+                                            try
+                                            {
+                                                departureLocal = TimeZoneInfo.ConvertTimeFromUtc(train.DepartureDateTime, TimeZoneInfo.Local);
+                                            }
+                                            catch
+                                            {
+                                                departureLocal = train.DepartureDateTime;
+                                            }
+
+                                            try
+                                            {
+                                                arrivalLocal = TimeZoneInfo.ConvertTimeFromUtc(train.ArrivalDateTime, TimeZoneInfo.Local);
+                                            }
+                                            catch
+                                            {
+                                                arrivalLocal = train.ArrivalDateTime;
+                                            }
+
+                                            try
+                                            {
+                                                addedLocal = TimeZoneInfo.ConvertTimeFromUtc(train.AddedDate, TimeZoneInfo.Local);
+                                            }
+                                            catch
+                                            {
+                                                addedLocal = train.AddedDate;
+                                            }
+
+                                            DateTime? returnDepartureLocal = null;
+                                            DateTime? returnArrivalLocal = null;
+
+                                            if (train.ReturnDepartureDateTime.HasValue)
+                                            {
+                                                try
+                                                {
+                                                    returnDepartureLocal = TimeZoneInfo.ConvertTimeFromUtc(train.ReturnDepartureDateTime.Value, TimeZoneInfo.Local);
+                                                }
+                                                catch
+                                                {
+                                                    returnDepartureLocal = train.ReturnDepartureDateTime.Value;
+                                                }
+                                            }
+
+                                            if (train.ReturnArrivalDateTime.HasValue)
+                                            {
+                                                try
+                                                {
+                                                    returnArrivalLocal = TimeZoneInfo.ConvertTimeFromUtc(train.ReturnArrivalDateTime.Value, TimeZoneInfo.Local);
+                                                }
+                                                catch
+                                                {
+                                                    returnArrivalLocal = train.ReturnArrivalDateTime.Value;
+                                                }
+                                            }
+
+                                            <div class="card shadow-sm border-0 mb-3 train-item"
+                                                 data-direction="@($"{train.DepartureStation} → {train.ArrivalStation}")"
+                                                 data-price="@train.Price"
+                                                 data-date="@train.AddedDate.Ticks"
+                                                 data-departure="@train.DepartureDateTime.Ticks"
+                                                 data-train-group-id="@train.TrainGroupId">
+                                                <div class="card-body">
+                                                    <div class="row align-items-center">
+                                                        <div class="col-md-8">
+                                                            <div class="d-flex align-items-start">
+                                                                <div class="me-3">
+                                                                    @if (train.IsRoundTrip)
+                                                                    {
+                                                                        <span class="badge bg-success">Туда и обратно</span>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <span class="badge bg-primary">В одну сторону</span>
+                                                                    }
+                                                                </div>
+                                                                <div>
+                                                                    <h5 class="mb-1">
+                                                                        @train.DepartureStation → @train.ArrivalStation
+                                                                    </h5>
+                                                                    <div class="d-flex align-items-center mb-2">
+                                                                        <span class="me-3">
+                                                                            <i class="fas fa-train text-muted me-1"></i>
+                                                                            Поезд № @train.ForwardTrainNumber
+                                                                            @if (!string.IsNullOrEmpty(train.ReturnTrainNumber))
+                                                                            {
+                                                                                <span>и № @train.ReturnTrainNumber</span>
+                                                                            }
+                                                                        </span>
+                                                                        @if (train.IsFirm)
+                                                                        {
+                                                                            <span class="badge bg-warning">Фирменный</span>
+                                                                        }
+                                                                    </div>
+                                                                    <div class="d-flex align-items-center text-muted small">
+                                                                        <span class="me-3">
+                                                                            <i class="far fa-calendar me-1"></i>
+                                                                            @departureLocal.ToString("dd.MM.yyyy HH:mm")
+                                                                        </span>
+                                                                        <span class="me-3">
+                                                                            <i class="fas fa-arrow-right me-1"></i>
+                                                                            @arrivalLocal.ToString("dd.MM.yyyy HH:mm")
+                                                                        </span>
+                                                                        <span>
+                                                                            <i class="fas fa-hourglass-half me-1"></i>
+                                                                            @(train.Duration / 60)ч @(train.Duration % 60)м
+                                                                        </span>
+                                                                    </div>
+                                                                    @if (train.IsRoundTrip && returnDepartureLocal.HasValue)
+                                                                    {
+                                                                        <div class="d-flex align-items-center text-muted small mt-1">
+                                                                            <span class="me-3">
+                                                                                <i class="fas fa-undo me-1"></i>
+                                                                                Обратно: @returnDepartureLocal.Value.ToString("dd.MM.yyyy HH:mm")
+                                                                            </span>
+                                                                        </div>
+                                                                    }
+                                                                    <div class="mt-2">
+                                                                        <small class="text-muted">
+                                                                            <i class="far fa-calendar-plus me-1"></i>
+                                                                            Добавлен: @addedLocal.ToString("dd.MM.yyyy")
+                                                                        </small>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="col-md-4">
+                                                            <div class="d-flex flex-column align-items-end">
+                                                                <div class="mb-3 text-end">
+                                                                    <h4 class="text-primary mb-0">@train.Price.ToString("N0") @train.Currency</h4>
+                                                                    <small class="text-muted">за пассажира</small>
+                                                                </div>
+                                                                <div class="d-flex gap-2">
+                                                                    <a href="@Url.Action("Book", "TrainBooking", new {
+    trainNumber = train.ForwardTrainNumber,
+    returnTrainNumber = train.ReturnTrainNumber,
+    departureStationId = train.DepartureStationId,
+    departureStationName = train.DepartureStation,
+    arrivalStationId = train.ArrivalStationId,
+    arrivalStationName = train.ArrivalStation,
+    departureDateTime = departureLocal.ToString("yyyy-MM-ddTHH:mm:ss"),
+    arrivalDateTime = arrivalLocal.ToString("yyyy-MM-ddTHH:mm:ss"),
+    returnDepartureDateTime = (train.IsRoundTrip && returnDepartureLocal.HasValue) ? returnDepartureLocal.Value.ToString("yyyy-MM-ddTHH:mm:ss") : null,
+    returnArrivalDateTime = (train.IsRoundTrip && returnArrivalLocal.HasValue) ? returnArrivalLocal.Value.ToString("yyyy-MM-ddTHH:mm:ss") : null,
+    price = train.Price.ToString(System.Globalization.CultureInfo.InvariantCulture),
+    passengers = train.Passengers,
+    carType = "coupe",
+    carClass = "2К",
+    duration = train.Duration,
+    returnDuration = train.ReturnDuration,
+    isRoundTrip = train.IsRoundTrip,
+    trainBrand = train.TrainBrand ?? "",
+    carrier = train.Carrier ?? ""
+})" class="btn btn-primary">
+                                                                        <i class="fas fa-shopping-cart me-2"></i>Купить
+                                                                    </a>
+                                                                    <button class="btn btn-outline-danger remove-train-favorite"
+                                                                            data-train-group-id="@train.TrainGroupId">
+                                                                        <i class="fas fa-trash"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+
+                                    @if (trains.Count > 10)
+                                    {
+                                        <div class="text-center mt-4">
+                                            <button class="btn btn-outline-primary" id="loadMoreTrainsBtn">
+                                                <i class="fas fa-chevron-down me-2"></i>Показать еще
+                                            </button>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Вкладка с отелями -->
+                    <div class="tab-pane fade @(flights.Count == 0 && trains.Count == 0 && hotels.Count > 0 ? "show active" : "")"
+                         id="hotels"
+                         role="tabpanel"
+                         aria-labelledby="hotels-tab">
+
+                        @if (hotels.Count > 0)
+                        {
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <p class="lead mb-0">Сохраненные отели</p>
+                            </div>
+
+                            <div class="row">
+                                <!-- Фильтры для отелей -->
+                                <div class="col-md-3 mb-4">
+                                    <div class="card shadow-sm border-0 sticky-top" style="top: 20px;">
+                                        <div class="card-body">
+                                            <h6 class="card-title mb-3">
+                                                <i class="fas fa-filter me-2"></i>Фильтры
+                                            </h6>
+
+                                            <div class="mb-3">
+                                                <label class="form-label small text-muted mb-2">Тип жилья</label>
+                                                <select class="form-select" id="hotelTypeFilter">
+                                                    <option value="">Все типы</option>
+                                                    @foreach (var type in hotels.Select(h => h.AccommodationType).Where(t => !string.IsNullOrEmpty(t)).Distinct())
+                                                    {
+                                                        <option value="@type">@type</option>
+                                                    }
+                                                </select>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label small text-muted mb-2">Сортировка</label>
+                                                <select class="form-select" id="hotelSortFilter">
+                                                    <option value="date">По дате добавления</option>
+                                                    <option value="price_asc">По цене (дешевые)</option>
+                                                    <option value="price_desc">По цене (дорогие)</option>
+                                                    <option value="name">По названию</option>
+                                                </select>
+                                            </div>
+
+                                            <button class="btn btn-outline-secondary w-100" onclick="resetHotelFilters()">
+                                                <i class="fas fa-undo-alt me-2"></i>Сбросить
+                                            </button>
+
+                                            <hr class="my-3">
+
+                                            <div class="small text-muted">
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <span>Всего отелей:</span>
+                                                    <strong id="hotelTotalCount">@hotels.Count</strong>
+                                                </div>
+                                                <div class="d-flex justify-content-between">
+                                                    <span>Показано:</span>
+                                                    <strong id="hotelVisibleCount">@hotels.Count</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Список избранных отелей -->
+                                <div class="col-md-9">
+                                    <div id="hotelFavoritesList">
+                                        @foreach (var hotel in hotels)
+                                        {
+                                            <div class="card shadow-sm border-0 mb-3 hotel-item"
+                                                 data-hotel-id="@hotel.HotelId"
+                                                 data-type="@hotel.AccommodationType"
+                                                 data-price="@hotel.PricePerNight"
+                                                 data-name="@hotel.HotelName"
+                                                 data-date="@hotel.AddedDate.Ticks">
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-md-8">
+                                                            <div class="d-flex align-items-start">
+                                                                <div class="me-3">
+                                                                    @if (!string.IsNullOrEmpty(hotel.AccommodationType))
+                                                                    {
+                                                                        <span class="badge bg-info">@hotel.AccommodationType</span>
+                                                                    }
+                                                                    @if (hotel.Stars.HasValue && hotel.Stars > 0)
+                                                                    {
+                                                                        <div class="mt-1">
+                                                                            @for (int i = 0; i < hotel.Stars.Value; i++)
+                                                                            {
+                                                                                <i class="fas fa-star text-warning small"></i>
+                                                                            }
+                                                                        </div>
+                                                                    }
+                                                                </div>
+                                                                <div>
+                                                                    <h5 class="mb-1">@hotel.HotelName</h5>
+                                                                    @if (!string.IsNullOrEmpty(hotel.HotelAddress))
+                                                                    {
+                                                                        <p class="small text-muted mb-1">
+                                                                            <i class="fas fa-map-marker-alt me-1"></i>@hotel.HotelAddress
+                                                                        </p>
+                                                                    }
+                                                                    @if (!string.IsNullOrEmpty(hotel.Phone) && hotel.Phone != "Не указан")
+                                                                    {
+                                                                        <p class="small text-muted mb-1">
+                                                                            <i class="fas fa-phone me-1"></i>@hotel.Phone
+                                                                        </p>
+                                                                    }
+                                                                    @if (hotel.PricePerNight.HasValue)
+                                                                    {
+                                                                        <p class="fw-bold text-primary mt-2 mb-0">
+                                                                            от @hotel.PricePerNight.Value.ToString("N0") @hotel.Currency / ночь
+                                                                        </p>
+                                                                    }
+                                                                    <div class="mt-2">
+                                                                        <small class="text-muted">
+                                                                            <i class="far fa-calendar-plus me-1"></i>
+                                                                            Добавлен: @hotel.AddedDate.ToString("dd.MM.yyyy")
+                                                                        </small>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <div class="d-flex flex-column align-items-end">
+                                                                <div class="d-flex gap-2 mt-2 mt-md-0">
+                                                                    @if (!string.IsNullOrEmpty(hotel.Website))
+                                                                    {
+                                                                        <a href="@hotel.Website" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                                            <i class="fas fa-external-link-alt"></i>
+                                                                        </a>
+                                                                    }
+                                                                    <!-- КНОПКА ЗАБРОНИРОВАТЬ - ведет на страницу бронирования отеля -->
+                                                                    <a href="@Url.Action("Book", "HotelBooking", new {
+    hotelId = hotel.HotelId,
+    hotelName = hotel.HotelName,
+    hotelAddress = hotel.HotelAddress,
+    accommodationType = hotel.AccommodationType,
+    stars = hotel.Stars,
+    phone = hotel.Phone,
+    website = hotel.Website,
+    pricePerNight = hotel.PricePerNight,
+    currency = hotel.Currency ?? "RUB",
+    checkInDate = DateTime.Now.AddDays(1).ToString("yyyy-MM-dd"),
+    checkOutDate = DateTime.Now.AddDays(3).ToString("yyyy-MM-dd"),
+    guests = 2,
+    rooms = 1,
+    latitude = hotel.Latitude,
+    longitude = hotel.Longitude
+})" class="btn btn-primary">
+                                                                        <i class="fas fa-calendar-check me-2"></i>Забронировать
+                                                                    </a>
+                                                                    <button class="btn btn-outline-danger remove-hotel-favorite"
+                                                                            data-hotel-id="@hotel.HotelId">
+                                                                        <i class="fas fa-trash"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+
+                                    @if (hotels.Count > 10)
+                                    {
+                                        <div class="text-center mt-4">
+                                            <button class="btn btn-outline-primary" id="loadMoreHotelsBtn">
+                                                <i class="fas fa-chevron-down me-2"></i>Показать еще
+                                            </button>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Стили для страницы избранного */
+    .page-header-section {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 25px 30px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 6px;
+        height: 100%;
+        background: linear-gradient(to bottom, #0379D9, #40B624);
+    }
+
+    .page-header-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #0379D9, #40B624);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 4px 15px rgba(3, 121, 217, 0.2);
+        flex-shrink: 0;
+    }
+
+    .page-header-icon i {
+        color: white !important;
+    }
+
+    .page-header-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .page-title {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 800;
+        font-size: 2.5rem;
+        color: #0379D9;
+        margin: 0 0 8px 0;
+        line-height: 1.2;
+        word-break: break-word;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        font-size: 1.1rem;
+        margin: 0;
+        line-height: 1.4;
+        word-break: break-word;
+        max-width: 600px;
+    }
+
+    /* Стили для вкладок */
+    .nav-tabs {
+        border-bottom: 2px solid #e2e8f0;
+        gap: 8px;
+    }
+
+    .nav-tabs .nav-link {
+        border: none;
+        color: #64748b;
+        font-weight: 600;
+        padding: 12px 24px;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        font-family: 'Nunito', sans-serif;
+        background: transparent;
+    }
+
+    .nav-tabs .nav-link:hover {
+        background-color: #f8fafc;
+        color: #0379D9;
+    }
+
+    .nav-tabs .nav-link.active {
+        background: linear-gradient(135deg, #0379D9, #40B624);
+        color: white;
+        box-shadow: 0 4px 12px rgba(3, 121, 217, 0.2);
+    }
+
+    .nav-tabs .nav-link.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .nav-tabs .nav-link .badge {
+        margin-left: 8px;
+        background: #e9ecef;
+        color: #495057;
+        border-radius: 20px;
+        padding: 2px 8px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .nav-tabs .nav-link.active .badge {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+
+    /* Стили для карточек */
+    .card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .card:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-bottom: 1px solid #e2e8f0;
+        border-radius: 16px 16px 0 0;
+        padding: 1rem 1.5rem;
+    }
+
+    .card-title {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 1rem;
+    }
+
+    /* Стили для элементов списка */
+    .flight-item, .train-item, .hotel-item {
+        transition: all 0.3s ease;
+        border-left: 3px solid transparent;
+        margin-bottom: 1rem;
+    }
+
+    .flight-item:hover, .train-item:hover, .hotel-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        border-left-color: #0379D9;
+    }
+
+    .flight-item h5, .train-item h5, .hotel-item h5 {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Бейджи */
+    .badge.bg-primary {
+        background: #0379D9 !important;
+    }
+
+    .badge.bg-success {
+        background: #40B624 !important;
+    }
+
+    .badge.bg-warning {
+        background: #ffc107 !important;
+        color: #1e293b;
+    }
+
+    .badge.bg-info {
+        background: #17a2b8 !important;
+    }
+
+    .badge.bg-light {
+        background: #f1f5f9 !important;
+        color: #334155;
+    }
+
+    /* Кнопки */
+    .btn {
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        font-family: 'Nunito', sans-serif;
+        padding: 0.5rem 1rem;
+    }
+
+    .btn-primary {
+        background: #0379D9;
+        border: none;
+        box-shadow: 0 2px 8px rgba(3, 121, 217, 0.2);
+    }
+
+    .btn-primary:hover {
+        background: #0356a8;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(3, 121, 217, 0.3);
+    }
+
+    .btn-outline-primary {
+        border: 1px solid #0379D9;
+        color: #0379D9;
+        background: transparent;
+    }
+
+    .btn-outline-primary:hover {
+        background: #0379D9;
+        color: white;
+    }
+
+    .btn-outline-danger {
+        border: 1px solid #dc3545;
+        color: #dc3545;
+        background: transparent;
+    }
+
+    .btn-outline-danger:hover {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn-outline-secondary {
+        border: 1px solid #6c757d;
+        color: #6c757d;
+        background: transparent;
+    }
+
+    .btn-outline-secondary:hover {
+        background: #6c757d;
+        color: white;
+    }
+
+    /* Фильтры */
+    .sticky-top {
+        position: sticky;
+        top: 20px;
+        z-index: 100;
+    }
+
+    .form-select, .form-control {
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        font-family: 'Nunito', sans-serif;
+        padding: 0.5rem 1rem;
+    }
+
+    .form-select:focus, .form-control:focus {
+        border-color: #0379D9;
+        box-shadow: 0 0 0 0.2rem rgba(3, 121, 217, 0.25);
+        outline: none;
+    }
+
+    .form-label {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 500;
+        color: #334155;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Иконки */
+    .fa-star.text-warning {
+        color: #ffc107 !important;
+    }
+
+    .text-primary {
+        color: #0379D9 !important;
+    }
+
+    .text-muted {
+        color: #64748b !important;
+    }
+
+    /* Анимации */
+    .notification-alert {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @@keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    /* Пустое состояние */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: linear-gradient(135deg, #ffffff, #f8fafc);
+        border-radius: 20px;
+        border: 2px dashed #e2e8f0;
+        transition: all 0.3s ease;
+    }
+
+    .empty-state:hover {
+        border-color: #0379D9;
+        background: linear-gradient(135deg, #f8fafc, #ffffff);
+    }
+
+    .empty-state i {
+        font-size: 3.5rem;
+        color: #94a3b8;
+        margin-bottom: 1.5rem;
+        opacity: 0.7;
+    }
+
+    .empty-state h5 {
+        color: #1e293b;
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+    }
+
+    .empty-state p {
+        color: #64748b;
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* ========== МОБИЛЬНАЯ АДАПТАЦИЯ (ШАПКА НЕ МЕНЯЕТСЯ) ========== */
+
+    @@media (max-width: 768px) {
+        /* ШАПКА ОСТАЕТСЯ КАК НА ДЕСКТОПЕ - НИЧЕГО НЕ МЕНЯЕМ */
+        
+        /* Вкладки - горизонтальный скролл */
+        .nav-tabs {
+            flex-wrap: nowrap !important;
+            overflow-x: auto;
+            gap: 5px;
+            padding-bottom: 5px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .nav-tabs .nav-link {
+            white-space: nowrap;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        /* Фильтры и список - колонки друг под другом */
+        .row {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .row .col-md-3,
+        .row .col-md-9 {
+            width: 100%;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .col-md-3 {
+            margin-bottom: 20px;
+        }
+
+        /* Карточки */
+        .card-body {
+            padding: 1rem;
+        }
+
+        /* Элементы списка */
+        .flight-item .row,
+        .train-item .row,
+        .hotel-item .row {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .flight-item .col-md-8,
+        .train-item .col-md-8,
+        .hotel-item .col-md-8,
+        .flight-item .col-md-4,
+        .train-item .col-md-4,
+        .hotel-item .col-md-4 {
+            width: 100%;
+            padding: 0;
+        }
+
+        .flight-item .d-flex.align-items-start {
+            flex-wrap: wrap;
+        }
+
+        .flight-item .d-flex.justify-content-between {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Кнопки в карточках */
+        .d-flex.gap-2 {
+            justify-content: center;
+            width: 100%;
+        }
+
+        .d-flex.gap-2 .btn {
+            flex: 1;
+            text-align: center;
+        }
+
+        /* Цена */
+        .text-end {
+            text-align: center !important;
+        }
+
+        .d-flex.flex-column.align-items-end {
+            align-items: center !important;
+        }
+
+        /* Фильтры */
+        .sticky-top {
+            position: relative;
+            top: 0;
+        }
+
+        /* Сортировка и заголовки */
+        .d-flex.justify-content-between.align-items-center.mb-4 {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 10px;
+        }
+
+        /* Badge счетчика */
+        .badge.fs-6 {
+            font-size: 0.85rem !important;
+        }
+
+        /* Выпадающие списки */
+        .dropdown-menu {
+            position: fixed !important;
+            top: auto !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            width: calc(100% - 32px) !important;
+            max-width: 300px;
+            margin-top: 8px;
+            z-index: 1050;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .page-title {
+            font-size: 1.6rem;
+        }
+
+        .nav-tabs .nav-link {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+
+        .btn {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
+
+        .badge {
+            font-size: 0.7rem;
+        }
+
+        .flight-item h5,
+        .train-item h5,
+        .hotel-item h5 {
+            font-size: 1rem;
+        }
+
+        .flight-item .small,
+        .train-item .small {
+            font-size: 0.7rem;
+        }
+
+        .text-primary.mb-0 {
+            font-size: 1.2rem;
+        }
+
+        /* Модальные окна */
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+
+        .modal-body {
+            padding: 1rem;
+        }
+    }
+
+    /* Темная тема (опционально) */
+    @@media (prefers-color-scheme: dark) {
+        .card {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        .card-header {
+            background: #0f172a;
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+
+        .flight-item h5, .train-item h5, .hotel-item h5 {
+            color: #e2e8f0;
+        }
+
+        .text-muted {
+            color: #94a3b8 !important;
+        }
+
+        .form-select, .form-control {
+            background-color: #0f172a;
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+
+        .badge.bg-light {
+            background: #334155 !important;
+            color: #e2e8f0;
+        }
+
+        .empty-state {
+            background: #0f172a;
+            border-color: #334155;
+        }
+
+        .empty-state h5 {
+            color: #e2e8f0;
+        }
+
+        .empty-state p {
+            color: #94a3b8;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // ==================== ФУНКЦИИ ДЛЯ АВИАБИЛЕТОВ ====================
+        function applyFlightFilters() {
+            const direction = document.getElementById('flightDirectionFilter')?.value;
+            const airline = document.getElementById('flightAirlineFilter')?.value;
+            const sort = document.getElementById('flightSortFilter')?.value;
+
+            const items = document.querySelectorAll('.flight-item');
+            let visibleCount = 0;
+
+            items.forEach(item => {
+                const itemDirection = item.getAttribute('data-direction');
+                const itemAirline = item.getAttribute('data-airline');
+
+                const directionMatch = !direction || itemDirection === direction;
+                const airlineMatch = !airline || itemAirline === airline;
+
+                if (directionMatch && airlineMatch) {
+                    item.style.display = '';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            // Сортировка
+            const container = document.getElementById('flightFavoritesList');
+            if (container && sort) {
+                const visibleItems = Array.from(items)
+                    .filter(item => item.style.display !== 'none')
+                    .sort((a, b) => {
+                        switch(sort) {
+                            case 'price_asc':
+                                return parseFloat(a.getAttribute('data-price')) - parseFloat(b.getAttribute('data-price'));
+                            case 'price_desc':
+                                return parseFloat(b.getAttribute('data-price')) - parseFloat(a.getAttribute('data-price'));
+                            case 'date_asc':
+                                return parseInt(a.getAttribute('data-departure')) - parseInt(b.getAttribute('data-departure'));
+                            default: // date
+                                return parseInt(b.getAttribute('data-date')) - parseInt(a.getAttribute('data-date'));
+                        }
+                    });
+                visibleItems.forEach(item => container.appendChild(item));
+            }
+
+            // Обновляем счетчики
+            const totalSpan = document.getElementById('flightTotalCount');
+            const visibleSpan = document.getElementById('flightVisibleCount');
+            const totalItems = items.length;
+
+            if (visibleSpan) visibleSpan.textContent = visibleCount;
+            if (totalSpan) {
+                totalSpan.textContent = totalItems;
+                // Меняем цвет бейджа если показаны не все
+                if (visibleCount === totalItems) {
+                    totalSpan.className = 'badge bg-primary';
+                } else {
+                    totalSpan.className = 'badge bg-info';
+                }
+            }
+        }
+        function resetFlightFilters() {
+            if (document.getElementById('flightDirectionFilter')) document.getElementById('flightDirectionFilter').value = '';
+            if (document.getElementById('flightAirlineFilter')) document.getElementById('flightAirlineFilter').value = '';
+            if (document.getElementById('flightSortFilter')) document.getElementById('flightSortFilter').value = 'date';
+            applyFlightFilters();
+        }
+        // Удаление авиабилета из избранного
+        document.addEventListener('click', async function(e) {
+            if (e.target.closest('.remove-flight-favorite')) {
+                e.preventDefault();
+
+                const button = e.target.closest('.remove-flight-favorite');
+                const flightId = button.getAttribute('data-flight-id');
+
+                if (!flightId) {
+                    alert('Ошибка: идентификатор рейса не найден');
+                    return;
+                }
+
+                if (confirm('Удалить рейс из избранного?')) {
+                    button.disabled = true;
+                    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+                    try {
+                        const response = await fetch('/api/favorites/remove', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            credentials: 'include',
+                            body: JSON.stringify({ flightId: flightId })
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            const card = button.closest('.flight-item');
+                            card.style.transition = 'opacity 0.3s';
+                            card.style.opacity = '0';
+
+                            setTimeout(() => {
+                                card.remove();
+                                updateCounters();
+                                if (document.querySelectorAll('.flight-item').length === 0 &&
+                                    document.querySelectorAll('.train-item').length === 0 &&
+                                    document.querySelectorAll('.hotel-item').length === 0) {
+                                    location.reload();
+                                }
+                            }, 300);
+                        } else {
+                            alert(result.message || 'Ошибка при удалении рейса');
+                            button.disabled = false;
+                            button.innerHTML = '<i class="fas fa-trash"></i>';
+                        }
+                    } catch (error) {
+                        console.error('Ошибка удаления:', error);
+                        alert('Ошибка при удалении рейса');
+                        button.disabled = false;
+                        button.innerHTML = '<i class="fas fa-trash"></i>';
+                    }
+                }
+            }
+        });
+
+        // ==================== ФУНКЦИИ ДЛЯ ЖД БИЛЕТОВ ====================
+        function applyTrainFilters() {
+            const direction = document.getElementById('trainDirectionFilter')?.value;
+            const sort = document.getElementById('trainSortFilter')?.value;
+
+            const items = document.querySelectorAll('.train-item');
+            let visibleCount = 0;
+
+            items.forEach(item => {
+                const itemDirection = item.getAttribute('data-direction');
+                const directionMatch = !direction || itemDirection === direction;
+                if (directionMatch) {
+                    item.style.display = '';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            // Сортировка
+            const container = document.getElementById('trainFavoritesList');
+            if (container && sort) {
+                const visibleItems = Array.from(items)
+                    .filter(item => item.style.display !== 'none')
+                    .sort((a, b) => {
+                        switch(sort) {
+                            case 'price_asc':
+                                return parseFloat(a.getAttribute('data-price')) - parseFloat(b.getAttribute('data-price'));
+                            case 'price_desc':
+                                return parseFloat(b.getAttribute('data-price')) - parseFloat(a.getAttribute('data-price'));
+                            case 'date_asc':
+                                return parseInt(a.getAttribute('data-departure')) - parseInt(b.getAttribute('data-departure'));
+                            default:
+                                return parseInt(b.getAttribute('data-date')) - parseInt(a.getAttribute('data-date'));
+                        }
+                    });
+                visibleItems.forEach(item => container.appendChild(item));
+            }
+
+            // Обновляем счетчики
+            const totalSpan = document.getElementById('trainTotalCount');
+            const visibleSpan = document.getElementById('trainVisibleCount');
+            const totalItems = items.length;
+
+            if (visibleSpan) visibleSpan.textContent = visibleCount;
+            if (totalSpan) {
+                totalSpan.textContent = totalItems;
+                if (visibleCount === totalItems) {
+                    totalSpan.className = 'badge bg-primary';
+                } else {
+                    totalSpan.className = 'badge bg-info';
+                }
+            }
+        }
+        function resetTrainFilters() {
+            if (document.getElementById('trainDirectionFilter')) document.getElementById('trainDirectionFilter').value = '';
+            if (document.getElementById('trainSortFilter')) document.getElementById('trainSortFilter').value = 'date';
+            applyTrainFilters();
+        }
+        // Удаление ЖД билета из избранного
+        document.addEventListener('click', async function(e) {
+            if (e.target.closest('.remove-train-favorite')) {
+                e.preventDefault();
+
+                const button = e.target.closest('.remove-train-favorite');
+                const trainGroupId = button.getAttribute('data-train-group-id');
+
+                if (!trainGroupId) {
+                    alert('Ошибка: идентификатор поезда не найден');
+                    return;
+                }
+
+                if (confirm('Удалить поезд из избранного?')) {
+                    button.disabled = true;
+                    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+                    try {
+                        const response = await fetch('/api/favorites/train/remove', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            credentials: 'include',
+                            body: JSON.stringify({ trainGroupId: trainGroupId })
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            const card = button.closest('.train-item');
+                            card.style.transition = 'opacity 0.3s';
+                            card.style.opacity = '0';
+
+                            setTimeout(() => {
+                                card.remove();
+                                updateCounters();
+                                if (document.querySelectorAll('.flight-item').length === 0 &&
+                                    document.querySelectorAll('.train-item').length === 0 &&
+                                    document.querySelectorAll('.hotel-item').length === 0) {
+                                    location.reload();
+                                }
+                            }, 300);
+                        } else {
+                            alert(result.message || 'Ошибка при удалении поезда');
+                            button.disabled = false;
+                            button.innerHTML = '<i class="fas fa-trash"></i>';
+                        }
+                    } catch (error) {
+                        console.error('Ошибка удаления:', error);
+                        alert('Ошибка при удалении поезда');
+                        button.disabled = false;
+                        button.innerHTML = '<i class="fas fa-trash"></i>';
+                    }
+                }
+            }
+        });
+
+        // ==================== ФУНКЦИИ ДЛЯ ОТЕЛЕЙ ====================
+        function applyHotelFilters() {
+            const type = document.getElementById('hotelTypeFilter')?.value;
+            const sort = document.getElementById('hotelSortFilter')?.value;
+
+            const items = document.querySelectorAll('.hotel-item');
+            let visibleCount = 0;
+
+            items.forEach(item => {
+                const itemType = item.getAttribute('data-type');
+                const typeMatch = !type || itemType === type;
+                if (typeMatch) {
+                    item.style.display = '';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            // Сортировка
+            const container = document.getElementById('hotelFavoritesList');
+            if (container && sort) {
+                const visibleItems = Array.from(items)
+                    .filter(item => item.style.display !== 'none')
+                    .sort((a, b) => {
+                        switch(sort) {
+                            case 'price_asc':
+                                return parseFloat(a.getAttribute('data-price') || 0) - parseFloat(b.getAttribute('data-price') || 0);
+                            case 'price_desc':
+                                return parseFloat(b.getAttribute('data-price') || 0) - parseFloat(a.getAttribute('data-price') || 0);
+                            case 'name':
+                                return (a.getAttribute('data-name') || '').localeCompare(b.getAttribute('data-name') || '');
+                            default:
+                                return parseInt(b.getAttribute('data-date')) - parseInt(a.getAttribute('data-date'));
+                        }
+                    });
+                visibleItems.forEach(item => container.appendChild(item));
+            }
+
+            // Обновляем счетчики
+            const totalSpan = document.getElementById('hotelTotalCount');
+            const visibleSpan = document.getElementById('hotelVisibleCount');
+            const totalItems = items.length;
+
+            if (visibleSpan) visibleSpan.textContent = visibleCount;
+            if (totalSpan) {
+                totalSpan.textContent = totalItems;
+                if (visibleCount === totalItems) {
+                    totalSpan.className = 'badge bg-primary';
+                } else {
+                    totalSpan.className = 'badge bg-info';
+                }
+            }
+        }
+        function resetHotelFilters() {
+            if (document.getElementById('hotelTypeFilter')) document.getElementById('hotelTypeFilter').value = '';
+            if (document.getElementById('hotelSortFilter')) document.getElementById('hotelSortFilter').value = 'date';
+            applyHotelFilters();
+        }
+        // Удаление отеля из избранного
+        document.addEventListener('click', async function(e) {
+            if (e.target.closest('.remove-hotel-favorite')) {
+                e.preventDefault();
+
+                const button = e.target.closest('.remove-hotel-favorite');
+                const hotelId = button.getAttribute('data-hotel-id');
+
+                if (!hotelId) {
+                    alert('Ошибка: идентификатор отеля не найден');
+                    return;
+                }
+
+                if (confirm('Удалить отель из избранного?')) {
+                    button.disabled = true;
+                    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+                    try {
+                        const response = await fetch('/api/favorites/hotel/remove', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            credentials: 'include',
+                            body: JSON.stringify({ hotelId: hotelId })
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            const card = button.closest('.hotel-item');
+                            card.style.transition = 'opacity 0.3s';
+                            card.style.opacity = '0';
+
+                            setTimeout(() => {
+                                card.remove();
+                                updateCounters();
+                                if (document.querySelectorAll('.flight-item').length === 0 &&
+                                    document.querySelectorAll('.train-item').length === 0 &&
+                                    document.querySelectorAll('.hotel-item').length === 0) {
+                                    location.reload();
+                                }
+                            }, 300);
+                        } else {
+                            alert(result.message || 'Ошибка при удалении отеля');
+                            button.disabled = false;
+                            button.innerHTML = '<i class="fas fa-trash"></i>';
+                        }
+                    } catch (error) {
+                        console.error('Ошибка удаления:', error);
+                        alert('Ошибка при удалении отеля');
+                        button.disabled = false;
+                        button.innerHTML = '<i class="fas fa-trash"></i>';
+                    }
+                }
+            }
+        });
+
+        // ==================== ОБЩИЕ ФУНКЦИИ ====================
+        function updateCounters() {
+            const flightCount = document.querySelectorAll('.flight-item').length;
+            const trainCount = document.querySelectorAll('.train-item').length;
+            const hotelCount = document.querySelectorAll('.hotel-item').length;
+
+            const flightTab = document.getElementById('flights-tab');
+            const trainTab = document.getElementById('trains-tab');
+            const hotelTab = document.getElementById('hotels-tab');
+
+            if (flightTab) {
+                const badge = flightTab.querySelector('.badge');
+                if (badge) badge.textContent = flightCount;
+                if (flightCount === 0) flightTab.disabled = true;
+            }
+
+            if (trainTab) {
+                const badge = trainTab.querySelector('.badge');
+                if (badge) badge.textContent = trainCount;
+                if (trainCount === 0) trainTab.disabled = true;
+            }
+
+            if (hotelTab) {
+                const badge = hotelTab.querySelector('.badge');
+                if (badge) badge.textContent = hotelCount;
+                if (hotelCount === 0) hotelTab.disabled = true;
+            }
+        }
+
+        // Кнопка "Показать еще" для авиабилетов
+                // Кнопка "Показать еще" и инициализация фильтров
+        document.addEventListener('DOMContentLoaded', function() {
+            // ========== АВИАБИЛЕТЫ ==========
+            const flightItems = document.querySelectorAll('.flight-item');
+            const loadMoreFlightsBtn = document.getElementById('loadMoreFlightsBtn');
+
+            if (loadMoreFlightsBtn && flightItems.length > 10) {
+                flightItems.forEach((item, index) => {
+                    if (index >= 10) item.style.display = 'none';
+                });
+
+                loadMoreFlightsBtn.addEventListener('click', function() {
+                    const hiddenItems = document.querySelectorAll('.flight-item[style*="display: none"]');
+                    const toShow = Math.min(10, hiddenItems.length);
+
+                    for (let i = 0; i < toShow; i++) {
+                        hiddenItems[i].style.display = '';
+                    }
+
+                    if (document.querySelectorAll('.flight-item[style*="display: none"]').length === 0) {
+                        loadMoreFlightsBtn.style.display = 'none';
+                    }
+                });
+            }
+
+            // ========== ЖД БИЛЕТЫ ==========
+            const trainItems = document.querySelectorAll('.train-item');
+            const loadMoreTrainsBtn = document.getElementById('loadMoreTrainsBtn');
+
+            if (loadMoreTrainsBtn && trainItems.length > 10) {
+                trainItems.forEach((item, index) => {
+                    if (index >= 10) item.style.display = 'none';
+                });
+
+                loadMoreTrainsBtn.addEventListener('click', function() {
+                    const hiddenItems = document.querySelectorAll('.train-item[style*="display: none"]');
+                    const toShow = Math.min(10, hiddenItems.length);
+
+                    for (let i = 0; i < toShow; i++) {
+                        hiddenItems[i].style.display = '';
+                    }
+
+                    if (document.querySelectorAll('.train-item[style*="display: none"]').length === 0) {
+                        loadMoreTrainsBtn.style.display = 'none';
+                    }
+                });
+            }
+
+            // ========== ОТЕЛИ ==========
+            const hotelItems = document.querySelectorAll('.hotel-item');
+            const loadMoreHotelsBtn = document.getElementById('loadMoreHotelsBtn');
+
+            if (loadMoreHotelsBtn && hotelItems.length > 10) {
+                hotelItems.forEach((item, index) => {
+                    if (index >= 10) item.style.display = 'none';
+                });
+
+                loadMoreHotelsBtn.addEventListener('click', function() {
+                    const hiddenItems = document.querySelectorAll('.hotel-item[style*="display: none"]');
+                    const toShow = Math.min(10, hiddenItems.length);
+
+                    for (let i = 0; i < toShow; i++) {
+                        hiddenItems[i].style.display = '';
+                    }
+
+                    if (document.querySelectorAll('.hotel-item[style*="display: none"]').length === 0) {
+                        loadMoreHotelsBtn.style.display = 'none';
+                    }
+                });
+            }
+
+            // ========== АВТОМАТИЧЕСКИЕ ФИЛЬТРЫ ==========
+            // Фильтры для авиабилетов
+            const flightDirectionFilter = document.getElementById('flightDirectionFilter');
+            const flightAirlineFilter = document.getElementById('flightAirlineFilter');
+            const flightSortFilter = document.getElementById('flightSortFilter');
+
+            if (flightDirectionFilter) flightDirectionFilter.addEventListener('change', applyFlightFilters);
+            if (flightAirlineFilter) flightAirlineFilter.addEventListener('change', applyFlightFilters);
+            if (flightSortFilter) flightSortFilter.addEventListener('change', applyFlightFilters);
+
+            // Фильтры для ЖД билетов
+            const trainDirectionFilter = document.getElementById('trainDirectionFilter');
+            const trainSortFilter = document.getElementById('trainSortFilter');
+
+            if (trainDirectionFilter) trainDirectionFilter.addEventListener('change', applyTrainFilters);
+            if (trainSortFilter) trainSortFilter.addEventListener('change', applyTrainFilters);
+
+            // Фильтры для отелей
+            const hotelTypeFilter = document.getElementById('hotelTypeFilter');
+            const hotelSortFilter = document.getElementById('hotelSortFilter');
+
+            if (hotelTypeFilter) hotelTypeFilter.addEventListener('change', applyHotelFilters);
+            if (hotelSortFilter) hotelSortFilter.addEventListener('change', applyHotelFilters);
+
+            // Применяем фильтры при загрузке страницы
+            if (typeof applyFlightFilters === 'function') applyFlightFilters();
+            if (typeof applyTrainFilters === 'function') applyTrainFilters();
+            if (typeof applyHotelFilters === 'function') applyHotelFilters();
+        });
+
+        // Функция показа уведомлений
+        function showNotification(message, type = 'info') {
+            const oldNotifications = document.querySelectorAll('.notification-alert');
+            oldNotifications.forEach(notification => notification.remove());
+
+            const notification = document.createElement('div');
+            notification.className = `notification-alert alert alert-${type} alert-dismissible fade show position-fixed`;
+            notification.style.cssText = `
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+            `;
+
+            notification.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'} me-2"></i>
+                    <div>${message}</div>
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                if (notification.parentElement) notification.remove();
+            }, 5000);
+        }
+    </script>
+}

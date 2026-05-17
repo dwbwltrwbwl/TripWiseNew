@@ -1,0 +1,69 @@
+﻿@model TripWise.Models.Expense
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>Expense</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="IdExpense" />
+            <div class="form-group">
+                <label asp-for="Title" class="control-label"></label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Amount" class="control-label"></label>
+                <input asp-for="Amount" class="form-control" />
+                <span asp-validation-for="Amount" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="IdExpenseCategory" class="control-label"></label>
+                <select asp-for="IdExpenseCategory" class="form-control" asp-items="ViewBag.IdExpenseCategory"></select>
+                <span asp-validation-for="IdExpenseCategory" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ExpenseDate" class="control-label"></label>
+                <input asp-for="ExpenseDate" class="form-control" />
+                <span asp-validation-for="ExpenseDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CreatedAt" class="control-label"></label>
+                <input asp-for="CreatedAt" class="form-control" />
+                <span asp-validation-for="CreatedAt" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="IdTrip" class="control-label"></label>
+                <select asp-for="IdTrip" class="form-control" asp-items="ViewBag.IdTrip"></select>
+                <span asp-validation-for="IdTrip" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PaidById" class="control-label"></label>
+                <select asp-for="PaidById" class="form-control" asp-items="ViewBag.PaidById"></select>
+                <span asp-validation-for="PaidById" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="IdPoint" class="control-label"></label>
+                <select asp-for="IdPoint" class="form-control" asp-items="ViewBag.IdPoint"></select>
+                <span asp-validation-for="IdPoint" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

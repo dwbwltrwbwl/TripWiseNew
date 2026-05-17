@@ -1,0 +1,1573 @@
+html {
+    position: relative;
+    min-height: 100%;
+    font-size: 14px;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    flex: 1 0 auto;
+    width: 100%;
+    max-width: var(--container-max-width);
+    padding-left: 40px;
+    padding-right: 40px;
+}
+
+main {
+    flex: 1 0 auto;
+    width: 100%;
+}
+
+footer {
+    background: linear-gradient(135deg, #2c3e50, #34495e) !important;
+    flex-shrink: 0;
+    width: 100%;
+    margin-top: auto;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus,
+.form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #0379D9;
+}
+
+:root {
+    --primary-color: #0379D9;
+    --primary-hover: #0369c1;
+    --secondary-color: #6c757d;
+    --success-color: #40B624;
+    --warning-color: #ffc107;
+    --light-bg: #f8f9fa;
+    --gradient-blue: #0379D9;
+    --gradient-green: #40B624;
+    --active-color: #e6f0ff;
+    --border-color: #e0e0e0;
+    --text-color: #333;
+    --container-max-width: 1280px;
+    --container-min-width: 1024px;
+}
+
+.navbar {
+    padding-left: 40px;
+    padding-right: 40px;
+}
+
+    .navbar .container-fluid {
+        margin-left: auto;
+        margin-right: auto;
+        max-width: var(--container-max-width);
+        min-width: var(--container-min-width);
+        width: 100%;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+.navbar-brand {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 1.5rem;
+    background: linear-gradient(90deg, var(--gradient-blue), var(--gradient-green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-right: 2rem;
+}
+
+.navbar-integrated-tabs {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.nav-tabs-wrapper {
+    display: flex;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+    .nav-tabs-wrapper::-webkit-scrollbar {
+        display: none;
+    }
+
+.nav-tabs {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    min-width: max-content;
+    border-bottom: none !important;
+}
+
+.nav-tab {
+    position: relative;
+    margin: 0;
+}
+
+    .nav-tab a {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 12px 16px;
+        text-decoration: none;
+        color: var(--text-color);
+        transition: all 0.3s ease;
+        position: relative;
+        border-bottom: 2px solid transparent;
+        animation: fadeIn 0.3s ease forwards;
+    }
+
+        .nav-tab a:hover {
+            color: var(--primary-color);
+            background-color: var(--light-bg);
+        }
+
+    .nav-tab.active a {
+        color: var(--primary-color);
+        border-bottom-color: var(--primary-color);
+    }
+
+        .nav-tab.active a::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--primary-color);
+        }
+
+.tab-icon {
+    margin-bottom: 4px;
+    transition: transform 0.3s ease;
+}
+
+.nav-tab a:hover .tab-icon {
+    transform: translateY(-2px);
+}
+
+.nav-tab.active .tab-icon {
+    transform: scale(1.1);
+}
+
+.tab-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    font-family: 'Nunito', sans-serif;
+}
+
+.nav-tab:nth-child(1) a {
+    animation-delay: 0.05s;
+}
+
+.nav-tab:nth-child(2) a {
+    animation-delay: 0.1s;
+}
+
+.nav-tab:nth-child(3) a {
+    animation-delay: 0.15s;
+}
+
+.nav-tab:nth-child(4) a {
+    animation-delay: 0.2s;
+}
+
+.nav-tab:nth-child(5) a {
+    animation-delay: 0.25s;
+}
+
+.nav-tab:nth-child(6) a {
+    animation-delay: 0.3s;
+}
+
+#navbarContent {
+    margin-left: auto;
+}
+
+    #navbarContent .btn {
+        padding: 8px 16px;
+        font-weight: 500;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        white-space: nowrap;
+        font-size: 0.875rem;
+    }
+
+    #navbarContent .btn-outline-secondary {
+        border: 1px solid #dee2e6;
+        color: #6c757d;
+        background: white;
+    }
+
+        #navbarContent .btn-outline-secondary:hover {
+            background: #f8f9fa;
+            border-color: #adb5bd;
+        }
+
+    #navbarContent .btn-primary {
+        background: var(--primary-color);
+        border: none;
+    }
+
+        #navbarContent .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+.hero-section {
+    position: relative;
+    padding: 80px 0;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--success-color) 100%);
+    overflow: hidden;
+}
+
+    .hero-section .container {
+        position: relative;
+        z-index: 2;
+        max-width: var(--container-max-width);
+    }
+
+.hero-image-container {
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+}
+
+    .hero-image-container:hover {
+        transform: scale(1.02);
+    }
+
+.hero-image {
+    width: 100%;
+    height: auto;
+    border-radius: 20px;
+    opacity: 0.9;
+    filter: brightness(1.1) contrast(1.1);
+}
+
+.hero-section .display-4 {
+    font-family: 'Baloo 2', cursive;
+    font-weight: 800;
+    line-height: 1.2;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    margin-bottom: 1rem;
+}
+
+.hero-section .lead {
+    font-size: 1.25rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    margin-bottom: 2rem;
+}
+
+.hero-section .btn {
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    padding: 12px 24px;
+}
+
+.hero-section .btn-light {
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+    .hero-section .btn-light:hover {
+        background: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
+    }
+
+.hero-section .btn-outline-light {
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+    .hero-section .btn-outline-light:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 255, 255, 0.2);
+    }
+
+.search-card {
+    margin-top: -60px;
+    position: relative;
+    z-index: 10;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.feature-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    background: white;
+}
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+
+.feature-icon {
+    width: 80px;
+    height: 80px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin-bottom: 1rem;
+}
+
+.destination-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+    .destination-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+    .destination-card img {
+        transition: transform 0.3s ease;
+    }
+
+    .destination-card:hover img {
+        transform: scale(1.05);
+    }
+
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    font-family: 'Nunito', sans-serif;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    border: none;
+    font-weight: 600;
+}
+
+    .btn-primary:hover {
+        background: var(--primary-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(3, 121, 217, 0.3);
+    }
+
+.btn-outline-primary {
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+    .btn-outline-primary:hover {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+    }
+
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    transition: all 0.3s ease;
+}
+
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(3, 121, 217, 0.25);
+    }
+
+.input-group-text {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+}
+
+footer {
+    background: linear-gradient(135deg, #2c3e50, #34495e) !important;
+    flex-shrink: 0;
+}
+
+.social-links a {
+    transition: all 0.3s ease;
+}
+
+    .social-links a:hover {
+        transform: translateY(-2px);
+        color: var(--success-color) !important;
+    }
+
+.display-4 {
+    font-family: 'Baloo 2', cursive;
+    font-weight: 800;
+}
+
+.fw-bold {
+    font-family: 'Nunito', sans-serif;
+}
+
+.text-gradient {
+    background: linear-gradient(90deg, var(--gradient-blue), var(--gradient-green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.border-gradient {
+    border: 2px solid;
+    border-image: linear-gradient(90deg, var(--gradient-blue), var(--gradient-green)) 1;
+}
+
+.card {
+    transition: all 0.3s ease;
+}
+
+    .card:hover {
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--primary-hover);
+    }
+
+.navbar-toggler {
+    border: none;
+}
+
+    .navbar-toggler:focus {
+        box-shadow: none;
+    }
+
+@media (max-width: 1200px) {
+    .navbar {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    :root {
+        --container-max-width: 1140px;
+        --container-min-width: 992px;
+    }
+}
+
+.accommodation-section {
+    background-color: white;
+}
+
+.accommodation-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    background: white;
+}
+
+    .accommodation-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+
+.accommodation-icon {
+    width: 70px;
+    height: 70px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin-bottom: 1rem;
+}
+
+/* Стили для секции стран */
+.countries-section {
+    background-color: white;
+}
+
+.country-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+    .country-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+    .country-card img {
+        transition: transform 0.3s ease;
+    }
+
+    .country-card:hover img {
+        transform: scale(1.05);
+    }
+
+    /* Стили для карточек вариантов размещения и стран */
+    .accommodation-card .card-body,
+    .country-card .card-body {
+        padding: 1.25rem;
+    }
+
+.testimonial-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #e9ecef;
+}
+
+    .testimonial-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+
+.user-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+    display: inline-block;
+    vertical-align: middle;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 500;
+}
+
+/* Все элементы в навигационных вкладках синие */
+.nav-tab a,
+.nav-tab .tab-text,
+.nav-tab .tab-icon,
+.navbar-integrated-tabs svg {
+    color: #0379D9 !important;
+    fill: #0379D9 !important;
+}
+
+    /* Темнее при наведении */
+    .nav-tab a:hover,
+    .nav-tab a:hover .tab-text,
+    .nav-tab a:hover .tab-icon,
+    .nav-tab a:hover svg {
+        color: #0369c1 !important;
+        fill: #0369c1 !important;
+    }
+
+.transition-all {
+    transition: all 0.3s ease;
+}
+
+/* Стили для карточек направлений */
+.destination-card img {
+    transition: transform 0.3s ease;
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    object-position: center;
+}
+
+.destination-card:hover img {
+    transform: scale(1.05);
+}
+
+.destination-card .card-body {
+    padding: 1.25rem;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.destination-card .card-title {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.destination-card .card-text {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: #0379D9;
+    margin-bottom: 0.25rem;
+}
+
+.destination-card .text-muted {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.9rem;
+}
+
+/* ===== ИСПРАВЛЕННАЯ МОБИЛЬНАЯ АДАПТАЦИЯ ===== */
+
+@media (max-width: 991.98px) {
+    /* Общие стили для тела */
+    body {
+        padding-top: 70px; /* Отступ для фиксированной шапки */
+    }
+
+    /* 1. Исправляем шапку - не обрезается название */
+    .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1030;
+        background: white;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 8px 15px !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        margin: 0 !important;
+    }
+
+        /* Контейнер для шапки */
+        .navbar .container-fluid {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+        }
+
+    /* 1. Логотип - не обрезается */
+    .navbar-brand {
+        flex: 0 0 auto;
+        max-width: 200px !important;
+        margin-right: 10px;
+        font-size: 1.1rem;
+        white-space: nowrap;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        padding: 0;
+        margin-left: 0 !important;
+    }
+
+        .navbar-brand img {
+            width: 28px !important;
+            height: 28px !important;
+            margin-right: 8px;
+            margin-left: 0 !important;
+        }
+
+    /* Бургер-меню */
+    .navbar-toggler {
+        order: 2;
+        flex: 0 0 auto;
+        margin-left: auto;
+        margin-right: 5px;
+        padding: 6px 8px;
+        border: none;
+        background: none;
+    }
+
+    /* Основной контейнер контента */
+    .container {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 100% !important;
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+    }
+
+    /* Основной контент */
+    main {
+        padding-top: 10px;
+    }
+
+    /* Вкладки навигации - горизонтальный скролл */
+    .navbar-integrated-tabs {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        width: 100vw !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+        border-bottom: 1px solid #dee2e6;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .nav-tabs-wrapper {
+        width: max-content;
+        min-width: 100%;
+        padding: 8px 15px;
+        display: flex;
+    }
+
+    .nav-tabs {
+        display: flex;
+        gap: 8px;
+        padding: 0;
+        margin: 0;
+        min-width: max-content;
+    }
+
+    .nav-tab {
+        flex: 0 0 auto;
+    }
+
+        .nav-tab a {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px !important;
+            min-width: auto;
+            white-space: nowrap;
+            font-size: 0.85rem;
+            background: transparent !important;
+            border: none !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+            flex-direction: row;
+            color: #0379D9 !important;
+            position: relative;
+            border-bottom: 2px solid transparent !important;
+        }
+
+    .tab-icon {
+        margin-right: 6px !important;
+        margin-bottom: 0 !important;
+        width: 18px;
+        height: 18px;
+    }
+
+        .tab-icon i {
+            font-size: 0.9rem !important;
+            color: #0379D9 !important;
+        }
+
+    .tab-text {
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: #0379D9 !important;
+    }
+
+    /* 2. Активная вкладка - как в десктопной версии (синее подчеркивание) */
+    .nav-tab.active a {
+        background: transparent !important;
+        color: #0379D9 !important;
+        border-color: transparent !important;
+        border-bottom: 2px solid #0379D9 !important;
+    }
+
+    .nav-tab.active .tab-icon i,
+    .nav-tab.active .tab-text {
+        color: #0379D9 !important;
+    }
+
+    /* 2. Убираем синий фон для активной вкладки */
+    .nav-tab.active a:hover {
+        background: transparent !important;
+    }
+
+    /* Скрываем вкладку "Ещё" в навигации */
+    .nav-tab[data-tab="more"] {
+        display: none !important;
+    }
+
+    /* 4. Контейнер для аккаунта - фиксируется при открытии */
+    #navbarContent {
+        position: fixed !important;
+        top: 70px !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100vw !important;
+        margin: 0 !important;
+        padding: 15px !important;
+        background: white !important;
+        border-radius: 0 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+        border-bottom: 1px solid #dee2e6 !important;
+        z-index: 1020 !important;
+        max-height: calc(100vh - 70px) !important;
+        overflow-y: auto !important;
+    }
+
+        /* 4. Исправляем классы Bootstrap для корректного отображения */
+        #navbarContent.collapse:not(.show) {
+            display: none !important;
+        }
+
+        #navbarContent.collapsing {
+            height: auto !important;
+            transition: height 0.35s ease !important;
+        }
+
+        #navbarContent.show {
+            display: block !important;
+        }
+
+        #navbarContent .d-flex {
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        #navbarContent .btn {
+            width: 100%;
+            justify-content: center;
+            padding: 10px 15px;
+            font-size: 0.9rem;
+        }
+
+            #navbarContent .btn i {
+                margin-right: 8px;
+                font-size: 0.9rem;
+            }
+
+    /* 3. Кнопка "Ещё" для мобильных - только для авторизованных пользователей */
+    /* Добавим этот стиль через JavaScript или условие в HTML */
+    .mobile-more-button {
+        display: none !important; /* По умолчанию скрыта */
+    }
+
+        .mobile-more-button.logged-in {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: #0379D9;
+            color: white !important;
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(3, 121, 217, 0.3);
+            z-index: 1000;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+            .mobile-more-button.logged-in i {
+                font-size: 1.5rem;
+                color: white !important;
+            }
+
+            .mobile-more-button.logged-in:hover {
+                transform: scale(1.1);
+                background: #0369c1;
+                box-shadow: 0 6px 20px rgba(3, 121, 217, 0.4);
+            }
+
+            .mobile-more-button.logged-in:active {
+                transform: scale(0.95);
+            }
+
+    /* Геро-секция */
+    .hero-section {
+        padding: 50px 0 40px 0;
+    }
+
+        .hero-section .display-4 {
+            font-size: 2rem;
+            line-height: 1.2;
+        }
+
+        .hero-section .lead {
+            font-size: 1.1rem;
+        }
+
+    .hero-image-container {
+        margin-top: 20px;
+    }
+
+    .search-card {
+        margin-top: -30px;
+        margin-left: 15px;
+        margin-right: 15px;
+    }
+
+    /* Карточки */
+    .feature-card,
+    .destination-card,
+    .country-card,
+    .accommodation-card {
+        margin-bottom: 20px;
+    }
+
+    /* Иконки в карточках */
+    .feature-icon,
+    .accommodation-icon {
+        width: 60px;
+        height: 60px;
+    }
+
+        .feature-icon i,
+        .accommodation-icon i {
+            font-size: 1.5rem !important;
+        }
+
+    /* Изображения в карточках направлений */
+    .destination-card img,
+    .country-card img {
+        height: 180px !important;
+    }
+
+    /* Кнопки в геро-секции */
+    .hero-section .btn {
+        margin-bottom: 10px;
+    }
+
+    .hero-section .d-flex {
+        flex-direction: column;
+    }
+
+    /* Футер */
+    footer {
+        padding: 30px 0 80px 0 !important; /* Увеличиваем отступ снизу для кнопки "Ещё" */
+    }
+
+        footer .row > div {
+            margin-bottom: 25px;
+        }
+
+        footer .social-links {
+            justify-content: flex-start;
+        }
+
+    .payment-methods {
+        justify-content: flex-start;
+    }
+
+    /* 5. Выдвижное меню - исправляем крестик */
+    .sidebar {
+        width: 85%;
+        max-width: 300px;
+    }
+
+    .sidebar-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.5rem;
+    }
+
+    .sidebar-close {
+        background: none;
+        border: none;
+        font-size: 1.25rem;
+        color: #6c757d;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .sidebar-close:hover {
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        .sidebar-close i {
+            font-size: 1.25rem;
+        }
+
+    .sidebar-item {
+        padding: 12px;
+    }
+
+    .sidebar-icon {
+        width: 35px;
+        height: 35px;
+        margin-right: 12px;
+    }
+
+    /* Заголовки */
+    .display-4 {
+        font-size: 2.2rem;
+    }
+
+    .lead {
+        font-size: 1.1rem;
+    }
+
+    /* Отключаем горизонтальный скролл */
+    html, body {
+        max-width: 100vw;
+        overflow-x: hidden;
+    }
+
+    /* Улучшаем тач-таргеты */
+    .nav-tab a,
+    .btn,
+    .sidebar-item,
+    .social-icon {
+        min-height: 44px;
+    }
+
+    /* Увеличиваем базовый шрифт */
+    body {
+        font-size: 15px;
+    }
+
+    .card-title {
+        font-size: 1.1rem !important;
+        line-height: 1.3;
+    }
+
+    .card-text {
+        font-size: 0.95rem !important;
+    }
+
+    /* Оптимизация анимаций */
+    .fade-in-up {
+        animation-duration: 0.4s;
+    }
+}
+
+/* ===== МАЛЕНЬКИЕ МОБИЛЬНЫЕ (до 767px) ===== */
+@media (max-width: 767.98px) {
+    .navbar {
+        padding: 8px 10px !important;
+    }
+
+    .navbar-brand {
+        max-width: 170px !important;
+        font-size: 1rem;
+    }
+
+        .navbar-brand img {
+            width: 24px !important;
+            height: 24px !important;
+        }
+
+    .nav-tabs-wrapper {
+        padding: 8px 10px;
+    }
+
+    .nav-tab a {
+        padding: 8px 10px !important;
+        font-size: 0.8rem;
+    }
+
+    .tab-icon {
+        width: 16px;
+        height: 16px;
+    }
+
+        .tab-icon i {
+            font-size: 0.8rem !important;
+        }
+
+    .tab-text {
+        font-size: 0.75rem;
+    }
+
+    /* Геро-секция */
+    .hero-section {
+        padding: 40px 0 30px 0;
+    }
+
+        .hero-section .display-4 {
+            font-size: 1.8rem;
+        }
+
+        .hero-section .lead {
+            font-size: 1rem;
+        }
+
+    /* Карточки */
+    .feature-card .card-body,
+    .destination-card .card-body,
+    .country-card .card-body,
+    .accommodation-card .card-body {
+        padding: 1rem;
+    }
+
+    /* Изображения в карточках */
+    .destination-card img,
+    .country-card img {
+        height: 160px !important;
+    }
+
+    /* Кнопки */
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+
+    /* Футер */
+    footer .row {
+        margin-left: -10px;
+        margin-right: -10px;
+    }
+
+    footer .col-md-4,
+    footer .col-md-2 {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    footer h5,
+    footer h6 {
+        font-size: 1rem;
+    }
+
+    .social-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+
+    .payment-icon {
+        min-width: 60px;
+        min-height: 35px;
+        padding: 0 8px;
+    }
+
+    /* Выдвижное меню */
+    .sidebar {
+        width: 90%;
+        max-width: 280px;
+    }
+
+    .sidebar-header {
+        padding: 1rem;
+    }
+
+    .sidebar-item {
+        padding: 10px;
+    }
+
+    .sidebar-item-title {
+        font-size: 0.95rem;
+    }
+
+    .sidebar-item-desc {
+        font-size: 0.8rem;
+    }
+
+    /* Подписка на рассылку */
+    .input-group {
+        flex-direction: column;
+    }
+
+        .input-group input {
+            width: 100%;
+            margin-bottom: 10px;
+            border-radius: 8px !important;
+        }
+
+        .input-group .btn {
+            width: 100%;
+            border-radius: 8px;
+        }
+
+    /* Текст в футере */
+    .text-center.text-md-start,
+    .text-center.text-md-end {
+        text-align: center !important;
+    }
+}
+
+/* ===== ОЧЕНЬ МАЛЕНЬКИЕ МОБИЛЬНЫЕ (до 575px) ===== */
+@media (max-width: 575.98px) {
+    .navbar-brand {
+        max-width: 150px !important;
+        font-size: 0.95rem;
+    }
+
+    .nav-tab a {
+        padding: 7px 8px !important;
+    }
+
+    .tab-text {
+        font-size: 0.7rem;
+    }
+
+    .hero-section .display-4 {
+        font-size: 1.6rem;
+    }
+
+    .destination-card img,
+    .country-card img {
+        height: 140px !important;
+    }
+
+    /* Уменьшаем отступы в карточках */
+    .card-body {
+        padding: 0.75rem !important;
+    }
+
+    /* Футер */
+    footer .row > div {
+        margin-bottom: 20px;
+    }
+
+    .social-links {
+        gap: 8px;
+    }
+
+    .social-icon {
+        width: 36px;
+        height: 36px;
+    }
+
+    /* Элементы навигации */
+    #navbarContent {
+        padding: 12px !important;
+    }
+
+        #navbarContent .btn {
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+
+    /* Кнопка "Ещё" */
+    .mobile-more-button.logged-in {
+        width: 52px;
+        height: 52px;
+        bottom: 15px;
+        right: 15px;
+    }
+
+        .mobile-more-button.logged-in i {
+            font-size: 1.3rem;
+        }
+}
+
+/* ===== ГОРИЗОНТАЛЬНАЯ ОРИЕНТАЦИЯ ===== */
+@media (max-width: 991.98px) and (orientation: landscape) {
+    body {
+        padding-top: 60px;
+    }
+
+    .navbar {
+        padding: 6px 10px !important;
+    }
+
+    .navbar-integrated-tabs {
+        padding: 6px 10px !important;
+    }
+
+    .nav-tab a {
+        padding: 6px 10px !important;
+    }
+
+    .mobile-more-button.logged-in {
+        bottom: 15px;
+        right: 15px;
+        width: 50px;
+        height: 50px;
+    }
+}
+
+/* ===== ДЕСКТОПНАЯ ВЕРСИЯ (992px и выше) ===== */
+@media (min-width: 992px) {
+    /* 3. Скрываем мобильную кнопку "Ещё" на десктопе */
+    .mobile-more-button {
+        display: none !important;
+    }
+
+    /* Сбрасываем фиксацию шапки */
+    body {
+        padding-top: 0 !important;
+    }
+
+    .navbar {
+        position: static !important;
+        box-shadow: none !important;
+        padding-left: 40px !important;
+        padding-right: 40px !important;
+    }
+
+        /* Восстанавливаем оригинальные стили */
+        .navbar .container-fluid {
+            max-width: var(--container-max-width) !important;
+            min-width: var(--container-min-width) !important;
+            width: 100% !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+
+    .navbar-integrated-tabs {
+        position: static !important;
+        background: transparent !important;
+        border: none !important;
+        overflow: visible !important;
+    }
+
+    .nav-tabs-wrapper {
+        overflow: visible !important;
+        padding: 0 !important;
+    }
+
+    .nav-tab[data-tab="more"] {
+        display: block !important;
+    }
+
+    #navbarContent {
+        position: static !important;
+        width: auto !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        max-height: none !important;
+        overflow-y: visible !important;
+    }
+
+        #navbarContent .d-flex {
+            flex-direction: row !important;
+            gap: 1rem !important;
+            width: auto !important;
+        }
+
+        #navbarContent .btn {
+            width: auto !important;
+        }
+
+    /* Контейнер */
+    .container {
+        max-width: var(--container-max-width) !important;
+        min-width: var(--container-min-width) !important;
+        padding-left: 40px !important;
+        padding-right: 40px !important;
+    }
+}
+
+/* ===== ДОПОЛНИТЕЛЬНЫЕ ИСПРАВЛЕНИЯ ===== */
+
+/* Исправление для iOS Safari */
+@supports (-webkit-touch-callout: none) {
+    @media (max-width: 991.98px) {
+        .navbar {
+            position: -webkit-sticky;
+        }
+
+        .mobile-more-button.logged-in {
+            bottom: 25px; /* Учитываем нижнюю панель iOS */
+        }
+    }
+}
+
+/* Предотвращаем масштабирование форм на iOS */
+@media (max-width: 767.98px) {
+    input,
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+}
+
+/* Анимация для кнопки "Ещё" */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Упрощенные тени для производительности на мобильных */
+@media (max-width: 767.98px) {
+    .card,
+    .feature-card,
+    .destination-card,
+    .search-card {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+    }
+
+        .card:hover,
+        .feature-card:hover,
+        .destination-card:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+        }
+}
+
+/* Адаптивность для карточек направлений */
+@media (max-width: 768px) {
+    .destination-card img {
+        height: 180px;
+    }
+
+    .destination-card .card-body {
+        min-height: 110px;
+        padding: 1rem;
+    }
+
+    .accommodation-icon {
+        width: 60px;
+        height: 60px;
+    }
+
+        .accommodation-icon i {
+            font-size: 1.5rem !important;
+        }
+
+    .country-card img {
+        height: 150px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .destination-card img {
+        height: 160px;
+    }
+
+    .destination-card .card-body {
+        min-height: 100px;
+        padding: 0.75rem;
+    }
+
+    .destination-card .card-title {
+        font-size: 1rem;
+    }
+
+    .destination-card .card-text {
+        font-size: 1.1rem;
+    }
+
+    .accommodation-card .card-body,
+    .country-card .card-body {
+        padding: 1rem;
+    }
+
+    .country-card img {
+        height: 120px !important;
+    }
+
+    .navbar {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .hero-section {
+        padding: 40px 0;
+    }
+
+    .display-4 {
+        font-size: 2rem;
+    }
+
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+
+    .nav-tab a {
+        padding: 8px 10px;
+    }
+
+    .tab-icon svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .hero-section .btn {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    .hero-section .d-flex {
+        flex-direction: column;
+    }
+}
+
+/* Адаптивность для имени пользователя */
+@media (max-width: 991px) {
+    .user-name {
+        max-width: 150px;
+    }
+}
+
+@media (max-width: 768px) {
+    .user-name {
+        max-width: 120px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .user-name {
+        max-width: 100px;
+        font-size: 0.85rem;
+    }
+}

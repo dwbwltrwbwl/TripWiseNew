@@ -1,0 +1,87 @@
+﻿@model TripWise.Models.User
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>User</h4>
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <!-- Фамилия -->
+            <div class="form-group mb-3">
+                <label asp-for="LastName" class="control-label"></label>
+                <input asp-for="LastName" class="form-control" placeholder="Введите фамилию" />
+                <span asp-validation-for="LastName" class="text-danger small"></span>
+            </div>
+
+            <!-- Имя -->
+            <div class="form-group mb-3">
+                <label asp-for="FirstName" class="control-label"></label>
+                <input asp-for="FirstName" class="form-control" placeholder="Введите имя" />
+                <span asp-validation-for="FirstName" class="text-danger small"></span>
+            </div>
+
+            <!-- Отчество -->
+            <div class="form-group mb-3">
+                <label asp-for="MiddleName" class="control-label"></label>
+                <input asp-for="MiddleName" class="form-control" placeholder="Введите отчество (необязательно)" />
+                <span asp-validation-for="MiddleName" class="text-danger small"></span>
+            </div>
+
+            <!-- Email -->
+            <div class="form-group mb-3">
+                <label asp-for="Email" class="control-label"></label>
+                <input asp-for="Email" class="form-control" type="email" placeholder="example@email.com" />
+                <span asp-validation-for="Email" class="text-danger small"></span>
+            </div>
+
+            <!-- Пароль -->
+            <div class="form-group mb-3">
+                <label asp-for="PasswordHash" class="control-label">Пароль</label>
+                <input asp-for="PasswordHash" class="form-control" type="password" placeholder="Введите пароль" />
+                <span asp-validation-for="PasswordHash" class="text-danger small"></span>
+                <small class="form-text text-muted">Пароль будет захеширован автоматически</small>
+            </div>
+
+            <!-- Возраст -->
+            <div class="form-group mb-3">
+                <label asp-for="Age" class="control-label"></label>
+                <input asp-for="Age" class="form-control" type="number" min="1" max="120" />
+                <span asp-validation-for="Age" class="text-danger small"></span>
+            </div>
+
+            <!-- Дата создания (обычно скрытое поле) -->
+            <input asp-for="CreatedAt" type="hidden" />
+
+            <!-- Роль -->
+            <div class="form-group mb-3">
+                <label asp-for="IdRole" class="control-label">Роль</label>
+                <select asp-for="IdRole" class="form-control" asp-items="ViewBag.IdRole">
+                    <option value="">-- Выберите роль --</option>
+                </select>
+                <span asp-validation-for="IdRole" class="text-danger small"></span>
+            </div>
+
+            <div class="form-group mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Создать
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary ms-2">Назад к списку</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

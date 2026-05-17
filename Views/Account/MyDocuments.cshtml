@@ -1,0 +1,1402 @@
+﻿@{
+    ViewData["Title"] = "Мои документы";
+}
+<div class="mobile-header-spacer d-block d-lg-none" style="height: 70px;"></div>
+
+<div class="container mt-4">
+    <!-- Заголовок страницы -->
+    <div class="page-header-section mb-5">
+        <div class="page-header-icon">
+            <i class="fas fa-folder text-white"></i>
+        </div>
+        <div class="page-header-content">
+            <h1 class="page-title">
+                Мои документы
+            </h1>
+            <p class="page-subtitle">Управление документами для ваших поездок</p>
+        </div>
+    </div>
+
+    <!-- Основное содержимое -->
+    <div class="row">
+        <!-- Левая колонка - папки -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="section-subtitle mb-0">
+                        <i class="fas fa-folder-tree text-primary me-2"></i>
+                        Папки
+                    </h5>
+                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createFolderModal">
+                        <i class="fas fa-plus me-1"></i>Новая
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="foldersList">
+                        <!-- Список папок будет загружен через AJAX -->
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Загрузка...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Правая колонка - документы -->
+        <div class="col-lg-8">
+            <!-- Панель управления -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h5 class="section-subtitle mb-0" id="currentFolderTitle">
+                                <i class="fas fa-files text-primary me-2"></i>
+                                Все документы
+                            </h5>
+                            <small class="text-muted" id="documentsCount">Загрузка...</small>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadDocumentModal">
+                                <i class="fas fa-upload me-2"></i>Загрузить документ
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Фильтры и поиск -->
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-2">
+                            <input type="text" class="form-control" id="searchDocuments" placeholder="Поиск по названию...">
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <select class="form-select" id="filterType">
+                                <option value="">Все типы</option>
+                                <option value="pdf">PDF</option>
+                                <option value="doc">Word</option>
+                                <option value="image">Изображения</option>
+                                <option value="other">Другие</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <select class="form-select" id="sortDocuments">
+                                <option value="newest">Сначала новые</option>
+                                <option value="oldest">Сначала старые</option>
+                                <option value="name_asc">По имени (А-Я)</option>
+                                <option value="name_desc">По имени (Я-А)</option>
+                                <option value="size_asc">По размеру (возр.)</option>
+                                <option value="size_desc">По размеру (убыв.)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Список документов -->
+                    <div id="documentsList">
+                        <!-- Список документов будет загружен через AJAX -->
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Загрузка...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно создания папки -->
+<!-- Модальное окно создания папки -->
+<div class="modal fade" id="createFolderModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Создать новую папку</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createFolderForm">
+                    <div class="mb-3">
+                        <label for="folderName" class="form-label">Название папки *</label>
+                        <input type="text" class="form-control" id="folderName" name="Name" required>
+                        <small class="text-muted" id="folderNameCounter">0/100 символов</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="folderDescription" class="form-label">Описание</label>
+                        <textarea class="form-control" id="folderDescription" name="Description" rows="2"></textarea>
+                        <small class="text-muted" id="folderDescCounter">0/500 символов</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="folderColor" class="form-label">Цвет</label>
+                        <select class="form-select" id="folderColor" name="Color">
+                            <option value="#0379D9">Синий</option>
+                            <option value="#40B624">Зеленый</option>
+                            <option value="#DC3545">Красный</option>
+                            <option value="#FFC107">Желтый</option>
+                            <option value="#6F42C1">Фиолетовый</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="createFolder()">Создать</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно загрузки документа -->
+<div class="modal fade" id="uploadDocumentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Загрузить новый документ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="uploadDocumentForm" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Название документа *</label>
+                            <input type="text" class="form-control" name="name" required>
+                            <small class="text-muted" id="docNameCounter">0/255 символов</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Папка</label>
+                            <select class="form-select" name="folderId" id="documentFolderSelect">
+                                <option value="">Без папки</option>
+                                <!-- Папки будут загружены через JS -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Описание (опционально)</label>
+                            <textarea class="form-control" name="description" rows="2"></textarea>
+                            <small class="text-muted" id="docDescCounter">0/500 символов</small>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Выберите файл *</label>
+                            <input type="file" class="form-control" name="file" required accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.txt,.xls,.xlsx">
+                            <div class="form-text">Максимальный размер: 10MB</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Тип документа</label>
+                            <select class="form-select" name="documentType">
+                                <option value="passport">Паспорт</option>
+                                <option value="ticket">Билет</option>
+                                <option value="insurance">Страховка</option>
+                                <option value="booking">Бронирование</option>
+                                <option value="other">Другое</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Дата документа</label>
+                            <input type="date" class="form-control" name="documentDate">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Номер документа (опционально)</label>
+                            <input type="text" class="form-control" name="documentNumber" placeholder="Номер паспорта, билета и т.д.">
+                            <small class="text-muted" id="docNumberCounter">0/100 символов</small>
+                        </div> 
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="uploadDocument()">Загрузить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно просмотра документа -->
+<div class="modal fade" id="viewDocumentModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="documentViewTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="documentPreview"></div>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn btn-outline-primary" id="downloadDocumentBtn" download>
+                    <i class="fas fa-download me-2"></i>Скачать
+                </a>
+                <button type="button" class="btn btn-danger" onclick="deleteDocument()" id="deleteDocumentBtn">
+                    <i class="fas fa-trash me-2"></i>Удалить
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно перемещения документа -->
+<div class="modal fade" id="moveDocumentModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Переместить документ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Переместить документ <strong id="moveDocumentName"></strong> в папку:</p>
+                <select class="form-select" id="moveToFolderSelect">
+                    <option value="">Без папки</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="moveDocument()">Переместить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .page-header-section {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 25px 30px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .page-header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(to bottom, #0379D9, #40B624);
+        }
+
+    .page-header-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #0379D9, #40B624);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 4px 15px rgba(3, 121, 217, 0.2);
+        flex-shrink: 0;
+    }
+
+        .page-header-icon i {
+            color: white !important;
+        }
+
+    .page-header-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .page-title {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 800;
+        font-size: 2.5rem;
+        color: #0379D9;
+        margin: 0 0 8px 0;
+        line-height: 1.2;
+        word-break: break-word;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        font-size: 1.1rem;
+        margin: 0;
+        line-height: 1.4;
+        word-break: break-word;
+        max-width: 600px;
+    }
+
+    .section-subtitle {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        font-size: 1.3rem;
+        color: #334155;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    /* Мобильный отступ */
+    .mobile-header-spacer {
+        display: none;
+    }
+
+    /* Мобильная адаптация - шапка не меняется */
+    @@media (max-width: 768px) {
+        .mobile-header-spacer
+
+    {
+        display: block;
+        height: 70px;
+    }
+
+    /* Шапка остается как на десктопе */
+    .page-header-section {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px;
+        gap: 15px;
+    }
+
+        .page-header-section::before {
+            width: 100%;
+            height: 6px;
+            top: 0;
+            left: 0;
+            background: linear-gradient(to right, #0379D9, #40B624);
+        }
+
+    .page-header-icon {
+        width: 55px;
+        height: 55px;
+        font-size: 1.5rem;
+    }
+
+    .page-title {
+        font-size: 1.6rem;
+        margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.2rem;
+    }
+
+    }
+
+    @@media (max-width: 576px) {
+        .page-header-section
+
+    {
+        padding: 15px;
+        gap: 12px;
+    }
+
+    .page-header-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.3rem;
+    }
+
+    .page-title {
+        font-size: 1.4rem;
+    }
+
+    .page-subtitle {
+        font-size: 0.85rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.1rem;
+    }
+
+    }
+    /* Стили для документов */
+    .document-item {
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+        .document-item:hover {
+            border-color: #0379D9;
+            background: #f8fafc;
+            transform: translateY(-2px);
+        }
+
+    .document-icon {
+        width: 60px;
+        height: 60px;
+        background: #e8f4fe;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #0379D9;
+    }
+
+    .document-info {
+        flex: 1;
+    }
+
+    .document-name {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #334155;
+    }
+
+    .document-meta {
+        font-size: 0.85rem;
+        color: #64748b;
+    }
+
+    .folder-item {
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        padding-left: 45px;
+    }
+
+        .folder-item:hover {
+            border-color: #0379D9;
+            background: #f8fafc;
+        }
+
+        .folder-item.active {
+            border-color: #0379D9;
+            background: #e8f4fe;
+        }
+
+        .folder-item::before {
+            content: '';
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            background-color: #0379D9;
+            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z'/%3E%3C/svg%3E") no-repeat 50% 50%;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z'/%3E%3C/svg%3E") no-repeat 50% 50%;
+        }
+
+    .folder-color-indicator {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+    }
+
+    .folder-name {
+        font-weight: 600;
+        color: #334155;
+    }
+
+    .folder-meta {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin-top: 3px;
+    }
+
+    .documents-stats {
+        text-align: center;
+        padding: 10px;
+    }
+
+        .documents-stats .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0379D9;
+        }
+
+        .documents-stats .label {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+    .color-picker {
+        flex-wrap: wrap;
+    }
+
+    .color-option {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: all 0.2s ease;
+    }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .color-option.selected {
+            border-color: #334155;
+            transform: scale(1.1);
+        }
+
+    /* Адаптивность */
+    @@media (max-width: 768px) {
+        .document-item {
+            flex-direction: column;
+            text-align: center;
+            padding: 15px 10px;
+        }
+
+        .document-icon {
+            margin-bottom: 10px;
+        }
+    }
+    /* Стили для прокрутки в модальном окне просмотра */
+    #documentPreview {
+        max-height: 70vh;
+        overflow-y: auto;
+        overflow-x: auto;
+    }
+
+        /* Стили для таблицы информации о документе */
+        #documentPreview .table td {
+            word-break: break-word;
+            white-space: normal;
+            overflow-wrap: break-word;
+            max-width: 300px;
+        }
+
+    /* Для мобильных устройств */
+    @@media (max-width: 768px) {
+        #documentPreview .table td
+
+    {
+        max-width: 200px;
+    }
+
+    }
+
+    /* Стили для списка документов - предотвращение выхода текста */
+    .document-info {
+        flex: 1;
+        min-width: 0; /* Важно для flex-элементов */
+        overflow: hidden;
+    }
+
+    .document-name {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #334155;
+        word-break: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+    }
+
+    .document-meta {
+        font-size: 0.85rem;
+        color: #64748b;
+        word-break: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+    }
+
+    /* Добавляем горизонтальную прокрутку для контейнера с документами на мобильных */
+    @@media (max-width: 768px) {
+        #documentsList .row
+
+    {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 10px;
+        margin: 0 -10px;
+    }
+
+    #documentsList .col-md-6 {
+        flex: 0 0 280px;
+        max-width: 280px;
+        padding: 0 10px;
+    }
+
+    }
+    /* Стили для заголовка модального окна */
+    .modal-header {
+        position: relative;
+        padding-right: 45px; /* Место для кнопки закрытия */
+    }
+
+    #documentViewTitle {
+        word-break: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+        max-width: calc(100% - 30px);
+        font-size: 1.1rem;
+        line-height: 1.4;
+    }
+
+    /* Для мобильных устройств */
+    @@media (max-width: 768px) {
+        #documentViewTitle
+
+    {
+        font-size: 0.95rem;
+        max-width: calc(100% - 40px);
+    }
+
+    .modal-header {
+        padding-right: 40px;
+    }
+
+    }
+</style>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        loadFolders();
+        loadDocuments();
+        loadFolderOptions();
+
+        // Поиск документов с debounce
+        let searchTimeout;
+        const searchInput = document.getElementById('searchDocuments');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => loadDocuments(), 300);
+            });
+        }
+
+        // Фильтрация и сортировка
+        const filterType = document.getElementById('filterType');
+        if (filterType) filterType.addEventListener('change', () => loadDocuments());
+
+        const sortDocuments = document.getElementById('sortDocuments');
+        if (sortDocuments) sortDocuments.addEventListener('change', () => loadDocuments());
+
+        // Установка даты документа по умолчанию (сегодняшняя)
+        const documentDateInput = document.querySelector('input[name="documentDate"]');
+        if (documentDateInput) {
+            const today = new Date().toISOString().split('T')[0];
+            documentDateInput.value = today;
+
+            documentDateInput.addEventListener('change', function() {
+                const selectedDate = new Date(this.value);
+                const todayDate = new Date();
+                todayDate.setHours(0, 0, 0, 0);
+                if (selectedDate > todayDate) {
+                    showNotification('Дата документа не может быть в будущем', 'warning');
+                    this.value = today;
+                }
+            });
+        }
+
+        initCharCounters();
+    });
+
+    let currentFolderId = null;
+    let currentDocumentId = null;
+
+    // ==================== СЧЁТЧИКИ СИМВОЛОВ ====================
+    function initCharCounters() {
+        const folderName = document.getElementById('folderName');
+        if (folderName) {
+            folderName.setAttribute('maxlength', '100');
+            folderName.addEventListener('input', () => updateCharCounter('folderName', 'folderNameCounter', 100));
+            updateCharCounter('folderName', 'folderNameCounter', 100);
+        }
+
+        const folderDesc = document.getElementById('folderDescription');
+        if (folderDesc) {
+            folderDesc.setAttribute('maxlength', '500');
+            folderDesc.addEventListener('input', () => updateCharCounter('folderDescription', 'folderDescCounter', 500));
+            updateCharCounter('folderDescription', 'folderDescCounter', 500);
+        }
+
+        const docName = document.querySelector('input[name="name"]');
+        if (docName) {
+            docName.setAttribute('maxlength', '255');
+            docName.addEventListener('input', () => updateCharCounter('name', 'docNameCounter', 255));
+            updateCharCounter('name', 'docNameCounter', 255);
+        }
+
+        const docDesc = document.querySelector('textarea[name="description"]');
+        if (docDesc) {
+            docDesc.setAttribute('maxlength', '500');
+            docDesc.addEventListener('input', () => updateCharCounter('description', 'docDescCounter', 500));
+            updateCharCounter('description', 'docDescCounter', 500);
+        }
+
+        const docNumber = document.querySelector('input[name="documentNumber"]');
+        if (docNumber) {
+            docNumber.setAttribute('maxlength', '100');
+            docNumber.addEventListener('input', () => updateCharCounter('documentNumber', 'docNumberCounter', 100));
+            updateCharCounter('documentNumber', 'docNumberCounter', 100);
+        }
+    }
+
+    function updateCharCounter(inputId, counterId, maxLength) {
+        let input = document.getElementById(inputId);
+        if (!input) input = document.querySelector(`[name="${inputId}"]`);
+        const counter = document.getElementById(counterId);
+        if (input && counter) {
+            const length = input.value.length;
+            counter.textContent = `${length}/${maxLength}`;
+            counter.style.color = length >= maxLength ? '#dc3545' : length >= maxLength - 10 ? '#ffc107' : '#6c757d';
+        }
+    }
+
+    // ==================== ПАПКИ ====================
+    async function loadFolders() {
+        try {
+            const response = await fetch('/Documents/GetUserFolders');
+            const folders = await response.json();
+            const container = document.getElementById('foldersList');
+            if (!container) return;
+
+            if (folders.length === 0) {
+                container.innerHTML = `<div class="text-center py-4"><i class="fas fa-folder-open fa-2x text-muted mb-3"></i><p class="text-muted">Папок пока нет</p></div>`;
+                return;
+            }
+
+            let html = `
+                <div class="folder-item ${currentFolderId === null ? 'active' : ''}" onclick="selectFolder(null, this)">
+                    <div class="folder-color-indicator" style="background-color: #64748b;"></div>
+                    <div style="flex:1; min-width:0;">
+                        <div class="folder-name" style="word-break:break-word; overflow-wrap:break-word;">Все документы</div>
+                        <div class="folder-meta">Все файлы</div>
+                    </div>
+                </div>
+            `;
+
+            folders.forEach(folder => {
+                const safeName = escapeHtml(folder.name);
+                const shortName = safeName.length > 25 ? safeName.substring(0, 22) + '...' : safeName;
+                html += `
+                    <div class="folder-item ${currentFolderId === folder.idFolder ? 'active' : ''}" onclick="selectFolder(${folder.idFolder}, this)">
+                        <div class="folder-color-indicator" style="background-color: ${folder.color || '#0379D9'};"></div>
+                        <div style="flex:1; min-width:0;">
+                            <div class="folder-name" style="word-break:break-word; overflow-wrap:break-word;" title="${safeName}">${shortName}</div>
+                            <div class="folder-meta">${folder.documentCount || 0} документов</div>
+                        </div>
+                        <button class="btn btn-sm btn-link text-danger" onclick="event.stopPropagation(); deleteFolder(${folder.idFolder}, '${safeName.replace(/'/g, "\\'")}')" title="Удалить папку">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            updateCurrentFolderTitle();
+        } catch (error) {
+            console.error('Ошибка загрузки папок:', error);
+            showNotification('Ошибка при загрузке папок', 'danger');
+        }
+    }
+
+    // Удаление папки с перемещением документов
+            async function deleteFolder(folderId, folderName) {
+        if (!confirm(`Вы уверены, что хотите удалить папку "${folderName}"? Документы из папки будут перемещены в "Все документы".`)) return;
+
+        try {
+            // Получаем документы в папке
+            const docsResponse = await fetch(`/Documents/GetUserDocuments?folderId=${folderId}`);
+            const documents = await docsResponse.json();
+
+            // Перемещаем каждый документ в корень
+            for (const doc of documents) {
+                await fetch('/Documents/MoveDocument', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': getAntiForgeryToken() },
+                    body: JSON.stringify({ documentId: doc.idDocument, folderId: null })
+                });
+            }
+
+            // Исправленный URL для удаления папки
+            const response = await fetch(`/Documents/DeleteFolder`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': getAntiForgeryToken()
+                },
+                body: JSON.stringify({ id: folderId }) // Передаем id в теле
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                if (currentFolderId === folderId) currentFolderId = null;
+                await loadFolders();
+                await loadDocuments();
+                await loadFolderOptions();
+                showNotification('Папка удалена', 'success');
+            } else {
+                showNotification(result.message || 'Ошибка при удалении папки', 'danger');
+            }
+        } catch (error) {
+            console.error('Ошибка удаления папки:', error);
+            showNotification('Произошла ошибка при удалении папки', 'danger');
+        }
+    }
+
+    async function createFolder() {
+        const nameInput = document.getElementById('folderName');
+        const descInput = document.getElementById('folderDescription');
+        const colorSelect = document.getElementById('folderColor');
+
+        const name = nameInput?.value.trim() || '';
+        const description = descInput?.value || '';
+        const color = colorSelect?.value || '#0379D9';
+
+        if (!name) { showNotification('Введите название папки', 'warning'); return; }
+        if (name.length > 100) { showNotification('Название папки не может превышать 100 символов', 'warning'); return; }
+        if (name.length < 2) { showNotification('Название папки должно содержать минимум 2 символа', 'warning'); return; }
+        if (description.length > 500) { showNotification('Описание не может превышать 500 символов', 'warning'); return; }
+
+        try {
+            const response = await fetch('/Documents/CreateFolder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': getAntiForgeryToken() },
+                body: JSON.stringify({ name, description, color })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('createFolderModal'));
+                if (modal) modal.hide();
+                if (nameInput) nameInput.value = '';
+                if (descInput) descInput.value = '';
+                if (colorSelect) colorSelect.value = '#0379D9';
+                await loadFolders();
+                await loadFolderOptions();
+                showNotification('Папка успешно создана', 'success');
+            } else {
+                showNotification(data.message || 'Ошибка при создании папки', 'danger');
+            }
+        } catch (error) {
+            console.error('Ошибка при создании папки:', error);
+            showNotification('Произошла ошибка при создании папки', 'danger');
+        }
+    }
+
+    // ==================== ДОКУМЕНТЫ ====================
+    async function loadFolderOptions() {
+        try {
+            const response = await fetch('/Documents/GetUserFolders');
+            const folders = await response.json();
+
+            const select = document.getElementById('documentFolderSelect');
+            if (select) {
+                select.innerHTML = '<option value="">Без папки</option>' + folders.map(f => `<option value="${f.idFolder}">${escapeHtml(f.name)}</option>`).join('');
+            }
+
+            const moveSelect = document.getElementById('moveToFolderSelect');
+            if (moveSelect) {
+                moveSelect.innerHTML = '<option value="">Без папки</option>' + folders.map(f => `<option value="${f.idFolder}">${escapeHtml(f.name)}</option>`).join('');
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки папок для селекта:', error);
+        }
+    }
+
+    async function loadDocuments() {
+        try {
+            const search = document.getElementById('searchDocuments')?.value || '';
+            const filterType = document.getElementById('filterType')?.value || '';
+            const sortBy = document.getElementById('sortDocuments')?.value || 'newest';
+            const url = `/Documents/GetUserDocuments?folderId=${currentFolderId || ''}&search=${encodeURIComponent(search)}&filterType=${encodeURIComponent(filterType)}&sortBy=${encodeURIComponent(sortBy)}`;
+
+            const response = await fetch(url);
+            const documents = await response.json();
+
+            const container = document.getElementById('documentsList');
+            const countSpan = document.getElementById('documentsCount');
+            if (countSpan) countSpan.textContent = `${documents.length} ${getDocumentWord(documents.length)}`;
+
+            if (!container) return;
+
+            if (documents.length === 0) {
+                container.innerHTML = `<div class="text-center py-5"><i class="fas fa-file-alt fa-3x text-muted mb-3"></i><p class="text-muted">Документов не найдено</p><button class="btn btn-primary mt-2" onclick="openUploadModal()"><i class="fas fa-upload me-2"></i>Загрузить первый документ</button></div>`;
+                return;
+            }
+
+            let html = '<div class="row">';
+            documents.forEach(doc => {
+                const fileName = doc.name.length > 25 ? doc.name.substring(0, 22) + '...' : doc.name;
+                html += `
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="document-item" onclick="viewDocument(${doc.idDocument})">
+                            <div class="document-icon"><i class="fas fa-${getFileIcon(doc.fileType)}"></i></div>
+                            <div class="document-info">
+                                <div class="document-name" title="${escapeHtml(doc.name)}">${escapeHtml(fileName)}</div>
+                                <div class="document-meta">${formatFileSize(doc.fileSize)} • ${new Date(doc.createdAt).toLocaleDateString('ru-RU')}</div>
+                                ${doc.folderName ? `<div class="document-meta"><i class="fas fa-folder me-1"></i>${escapeHtml(doc.folderName.length > 20 ? doc.folderName.substring(0, 17) + '...' : doc.folderName)}</div>` : ''}
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary move-doc-btn" onclick="event.stopPropagation(); openMoveModal(${doc.idDocument}, '${escapeHtml(doc.name).replace(/'/g, "\\'")}')" title="Переместить">
+                                <i class="fas fa-exchange-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        } catch (error) {
+            console.error('Ошибка загрузки документов:', error);
+            const container = document.getElementById('documentsList');
+            if (container) {
+                container.innerHTML = `<div class="text-center py-5 text-danger">Ошибка при загрузке документов</div>`;
+            }
+        }
+    }
+
+    async function uploadDocument() {
+        const form = document.getElementById('uploadDocumentForm');
+        if (!form) return;
+
+        const nameInput = document.querySelector('input[name="name"]');
+        const fileInput = document.querySelector('input[name="file"]');
+        const descriptionInput = document.querySelector('textarea[name="description"]');
+        const numberInput = document.querySelector('input[name="documentNumber"]');
+        const dateInput = document.querySelector('input[name="documentDate"]');
+        const submitBtn = event?.target;
+
+        const name = nameInput?.value.trim() || '';
+        const file = fileInput?.files[0];
+        const description = descriptionInput?.value || '';
+        const docNumber = numberInput?.value || '';
+        const docDate = dateInput?.value;
+
+        // Валидация
+        if (!name) { showNotification('Введите название документа', 'warning'); return; }
+        if (name.length > 255) { showNotification('Название документа не может превышать 255 символов', 'warning'); return; }
+        if (name.length < 2) { showNotification('Название документа должно содержать минимум 2 символа', 'warning'); return; }
+        if (!file) { showNotification('Выберите файл для загрузки', 'warning'); return; }
+        if (file.size > 10 * 1024 * 1024) { showNotification('Размер файла не должен превышать 10 МБ', 'warning'); return; }
+        if (description.length > 500) { showNotification('Описание не может превышать 500 символов', 'warning'); return; }
+        if (docNumber.length > 100) { showNotification('Номер документа не может превышать 100 символов', 'warning'); return; }
+        if (docDate) {
+            const selected = new Date(docDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (selected > today) { showNotification('Дата документа не может быть в будущем', 'warning'); return; }
+        }
+
+        const formData = new FormData(form);
+
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Загрузка...';
+
+            try {
+                const response = await fetch('/Documents/UploadDocument', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'RequestVerificationToken': getAntiForgeryToken() }
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('uploadDocumentModal'));
+                    if (modal) modal.hide();
+                    form.reset();
+                    // Восстанавливаем дату по умолчанию
+                    const todayInput = document.querySelector('input[name="documentDate"]');
+                    if (todayInput) todayInput.value = new Date().toISOString().split('T')[0];
+                    await loadDocuments();
+                    await loadFolders();
+                    showNotification('Документ успешно загружен', 'success');
+                } else {
+                    showNotification(result.message || 'Ошибка при загрузке', 'danger');
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+                showNotification('Произошла ошибка при загрузке', 'danger');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        }
+    }
+
+    // ==================== ПЕРЕМЕЩЕНИЕ ====================
+        let moveDocumentId = null;
+
+    function openMoveModal(documentId, documentName) {
+        moveDocumentId = documentId;
+        const nameSpan = document.getElementById('moveDocumentName');
+        if (nameSpan) {
+            // Обрезаем длинное название документа
+            const maxNameLength = 50;
+            const displayName = documentName.length > maxNameLength ? documentName.substring(0, maxNameLength - 3) + '...' : documentName;
+            nameSpan.textContent = displayName;
+            nameSpan.title = documentName; // Полное название при наведении
+        }
+        loadFolderOptionsForMove();
+        new bootstrap.Modal(document.getElementById('moveDocumentModal')).show();
+    }
+        async function loadFolderOptionsForMove() {
+        try {
+            const response = await fetch('/Documents/GetUserFolders');
+            const folders = await response.json();
+
+            const moveSelect = document.getElementById('moveToFolderSelect');
+            if (moveSelect) {
+                let html = '<option value="">Без папки</option>';
+                folders.forEach(folder => {
+                    const safeName = escapeHtml(folder.name);
+                    // Обрезаем длинное название папки (максимум 40 символов)
+                    const shortName = safeName.length > 40 ? safeName.substring(0, 37) + '...' : safeName;
+                    html += `<option value="${folder.idFolder}" title="${safeName}">${shortName}</option>`;
+                });
+                moveSelect.innerHTML = html;
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки папок для перемещения:', error);
+        }
+    }
+
+    async function moveDocument() {
+        const folderSelect = document.getElementById('moveToFolderSelect');
+        const newFolderId = folderSelect?.value ? parseInt(folderSelect.value) : null;
+
+        if (!moveDocumentId) {
+            showNotification('Ошибка: документ не выбран', 'danger');
+            return;
+        }
+
+        // Показываем индикатор загрузки
+        const moveBtn = document.querySelector('#moveDocumentModal .btn-primary');
+        const originalText = moveBtn?.innerHTML;
+        if (moveBtn) {
+            moveBtn.disabled = true;
+            moveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Перемещение...';
+        }
+
+        try {
+            const response = await fetch('/Documents/MoveDocument', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': getAntiForgeryToken()
+                },
+                body: JSON.stringify({ documentId: moveDocumentId, folderId: newFolderId })
+            });
+
+            // Проверяем статус ответа
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const result = await response.json();
+
+            if (result.success) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('moveDocumentModal'));
+                if (modal) modal.hide();
+                await loadDocuments();
+                await loadFolders();
+                showNotification(`Документ перемещен${newFolderId ? ' в папку' : ''}`, 'success');
+            } else {
+                showNotification(result.message || 'Ошибка при перемещении документа', 'danger');
+            }
+        } catch (error) {
+            console.error('Ошибка перемещения:', error);
+            showNotification('Произошла ошибка при перемещении документа. Проверьте подключение к серверу.', 'danger');
+        } finally {
+            if (moveBtn) {
+                moveBtn.disabled = false;
+                moveBtn.innerHTML = originalText;
+            }
+        }
+    }
+
+    // ==================== ПРОСМОТР ====================
+        async function viewDocument(documentId) {
+        currentDocumentId = documentId;
+        try {
+            const response = await fetch(`/Documents/GetDocument/${documentId}`);
+            const result = await response.json();
+
+            if (!result.success) {
+                showNotification(result.message || 'Не удалось загрузить документ', 'danger');
+                return;
+            }
+
+            const doc = result;
+            const modalTitle = document.getElementById('documentViewTitle');
+            if (modalTitle) {
+                // Обрезаем длинное название и добавляем tooltip
+                const fullName = doc.name || 'Документ';
+                // Определяем максимальную длину в зависимости от ширины экрана
+                const maxLength = window.innerWidth < 768 ? 40 : 80;
+                const displayName = fullName.length > maxLength ? fullName.substring(0, maxLength - 3) + '...' : fullName;
+                modalTitle.textContent = displayName;
+                modalTitle.title = fullName; // Полное название при наведении
+                modalTitle.style.wordBreak = 'break-word';
+                modalTitle.style.whiteSpace = 'normal';
+            }
+
+            const downloadBtn = document.getElementById('downloadDocumentBtn');
+            if (downloadBtn) downloadBtn.href = `/Documents/Download/${documentId}`;
+
+            const deleteBtn = document.getElementById('deleteDocumentBtn');
+            if (deleteBtn) deleteBtn.dataset.documentId = documentId;
+
+            const preview = document.getElementById('documentPreview');
+            if (!preview) return;
+
+            const fileType = (doc.fileType || '').toLowerCase();
+            const isImage = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'image/jpg', 'image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'].includes(fileType);
+            const isPdf = ['pdf', 'application/pdf'].includes(fileType);
+
+            // Форматируем даты для отображения
+            const formatDate = (dateString) => {
+                if (!dateString) return '—';
+                try {
+                    return new Date(dateString).toLocaleDateString('ru-RU', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                } catch (e) {
+                    return dateString;
+                }
+            };
+
+            preview.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-3 shadow-sm">
+                            <div class="card-header bg-light">
+                                <strong><i class="fas fa-info-circle me-2 text-primary"></i>Информация о документе</strong>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-sm table-borderless">
+                                    <tr>
+                                        <td style="width: 40%; vertical-align: top;"><strong>Название:</strong></td>
+                                        <td style="word-break: break-word; white-space: normal;">${escapeHtml(doc.name || '—')}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="vertical-align: top;"><strong>Папка:</strong></td>
+                                        <td style="word-break: break-word;">${escapeHtml(doc.folderName || 'Без папки')}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Тип файла:</strong></td>
+                                        <td>${escapeHtml(doc.fileType || '—')}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Размер:</strong></td>
+                                        <td>${formatFileSize(doc.fileSize || 0)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Загружен:</strong></td>
+                                        <td>${formatDate(doc.createdAt)}</td>
+                                    </tr>
+                                    ${doc.documentType ? `
+                                    <tr>
+                                        <td><strong>Тип документа:</strong></td>
+                                        <td>${getDocumentTypeName(doc.documentType)}</td>
+                                    </tr>
+                                    ` : ''}
+                                    ${doc.documentNumber ? `
+                                    <tr>
+                                        <td style="vertical-align: top;"><strong>Номер документа:</strong></td>
+                                        <td style="word-break: break-word;">${escapeHtml(doc.documentNumber)}</td>
+                                    </tr>
+                                    ` : ''}
+                                    ${doc.documentDate ? `
+                                    <tr>
+                                        <td><strong>Дата документа:</strong></td>
+                                        <td>${formatDate(doc.documentDate)}</td>
+                                    </tr>
+                                    ` : ''}
+                                    ${doc.description ? `
+                                    <tr>
+                                        <td style="vertical-align: top;"><strong>Описание:</strong></td>
+                                        <td style="word-break: break-word; white-space: normal;">${escapeHtml(doc.description)}</td>
+                                    </tr>
+                                    ` : ''}
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-3 shadow-sm">
+                            <div class="card-header bg-light">
+                                <strong><i class="fas fa-eye me-2 text-primary"></i>Просмотр</strong>
+                            </div>
+                            <div class="card-body text-center" style="min-height: 300px; display: flex; align-items: center; justify-content: center;">
+                                ${isPdf ? `
+                                    <div class="text-center py-4">
+                                        <i class="fas fa-file-pdf fa-5x text-danger mb-3"></i>
+                                        <p class="mb-2">PDF документ</p>
+                                        <a href="/Documents/Download/${documentId}" class="btn btn-primary mt-2">
+                                            <i class="fas fa-download me-2"></i>Скачать PDF
+                                        </a>
+                                    </div>
+                                ` : isImage ? `
+                                    <div class="image-preview-container" style="max-width: 100%; max-height: 400px; overflow: auto;">
+                                        <img src="/Documents/GetFile/${documentId}"
+                                             alt="preview"
+                                             class="img-fluid rounded"
+                                             style="max-height: 350px; max-width: 100%; object-fit: contain;"
+                                             onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'text-center py-4\'><i class=\'fas fa-file-image fa-5x text-muted mb-3\'></i><p>Не удалось загрузить изображение</p><a href=\'/Documents/Download/${documentId}\' class=\'btn btn-primary mt-2\'><i class=\'fas fa-download me-2\'></i>Скачать файл</a></div>';">
+                                    </div>
+                                ` : `
+                                    <div class="text-center py-4">
+                                        <i class="fas fa-file-alt fa-5x text-secondary mb-3"></i>
+                                        <p class="mb-2">Файл: ${escapeHtml(doc.fileType || 'документ')}</p>
+                                        <a href="/Documents/Download/${documentId}" class="btn btn-primary mt-2">
+                                            <i class="fas fa-download me-2"></i>Скачать файл
+                                        </a>
+                                    </div>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Показываем модальное окно
+            const modal = new bootstrap.Modal(document.getElementById('viewDocumentModal'));
+            modal.show();
+
+            // Обработчик изменения размера окна для обновления заголовка
+            const handleResize = () => {
+                if (modalTitle && doc.name) {
+                    const newMaxLength = window.innerWidth < 768 ? 40 : 80;
+                    const newDisplayName = doc.name.length > newMaxLength ? doc.name.substring(0, newMaxLength - 3) + '...' : doc.name;
+                    modalTitle.textContent = newDisplayName;
+                }
+            };
+
+            // Удаляем предыдущий обработчик, если он был
+            window.removeEventListener('resize', handleResize);
+            window.addEventListener('resize', handleResize);
+
+            // Сохраняем обработчик для удаления при закрытии модального окна
+            modal._element.addEventListener('hidden.bs.modal', function() {
+                window.removeEventListener('resize', handleResize);
+            }, { once: true });
+
+        } catch (error) {
+            console.error('Ошибка при просмотре документа:', error);
+            showNotification('Не удалось загрузить информацию о документе', 'danger');
+        }
+    }
+
+    function getDocumentTypeName(type) {
+        const names = { 'passport': 'Паспорт', 'ticket': 'Билет', 'insurance': 'Страховка', 'booking': 'Бронирование', 'other': 'Другое' };
+        return names[type] || type;
+    }
+
+            async function deleteDocument() {
+        if (!confirm('Вы уверены, что хотите удалить этот документ?')) return;
+
+        const documentId = document.getElementById('deleteDocumentBtn')?.dataset.documentId;
+        if (!documentId) return;
+
+        try {
+            const response = await fetch(`/Documents/DeleteDocument`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': getAntiForgeryToken()
+                },
+                body: JSON.stringify({ id: parseInt(documentId) }) // Передаем id в теле
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('viewDocumentModal'));
+                if (modal) modal.hide();
+                await loadDocuments();
+                await loadFolders();
+                showNotification('Документ удален', 'success');
+            } else {
+                showNotification(result.message || 'Ошибка при удалении', 'danger');
+            }
+        } catch (error) {
+            console.error('Ошибка удаления:', error);
+            showNotification('Произошла ошибка при удалении документа', 'danger');
+        }
+    }
+
+    // ==================== ВСПОМОГАТЕЛЬНЫЕ ====================
+    function selectFolder(folderId, element) {
+        document.querySelectorAll('.folder-item').forEach(el => el.classList.remove('active'));
+        if (element) element.classList.add('active');
+        currentFolderId = folderId;
+        updateCurrentFolderTitle();
+        loadDocuments();
+    }
+
+    function updateCurrentFolderTitle() {
+        const titleEl = document.getElementById('currentFolderTitle');
+        if (!titleEl) return;
+        const activeFolder = document.querySelector('.folder-item.active .folder-name');
+        titleEl.innerHTML = activeFolder ? `<i class="fas fa-folder text-primary me-2"></i>${activeFolder.textContent}` : `<i class="fas fa-files text-primary me-2"></i>Все документы`;
+    }
+
+    function openUploadModal() {
+        loadFolderOptions();
+        new bootstrap.Modal(document.getElementById('uploadDocumentModal')).show();
+    }
+
+    function getFileIcon(type) {
+        const t = (type || '').toLowerCase();
+        if (t === 'pdf' || t === 'application/pdf') return 'file-pdf';
+        if (t === 'doc' || t === 'docx' || t === 'application/msword') return 'file-word';
+        if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'image/jpeg', 'image/png'].includes(t)) return 'file-image';
+        if (t === 'txt' || t === 'text/plain') return 'file-alt';
+        if (t === 'xls' || t === 'xlsx') return 'file-excel';
+        return 'file-alt';
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function getDocumentWord(count) {
+        if (count % 10 === 1 && count % 100 !== 11) return 'документ';
+        if ([2, 3, 4].includes(count % 10) && ![12, 13, 14].includes(count % 100)) return 'документа';
+        return 'документов';
+    }
+
+    function getAntiForgeryToken() {
+        return document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        notification.style.cssText = 'top:20px; right:20px; z-index:9999; min-width:280px; max-width:350px;';
+        notification.innerHTML = `<div class="d-flex align-items-center"><i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} me-2"></i><div class="flex-grow-1">${message}</div><button type="button" class="btn-close ms-2" data-bs-dismiss="alert"></button></div>`;
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 5000);
+    }
+</script>

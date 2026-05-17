@@ -1,0 +1,966 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Вместе В Путь - Совместное планирование путешествий</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/TripWise.styles.css" asp-append-version="true" />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <!-- Выдвижное меню -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h5 class="sidebar-title">Дополнительные возможности</h5>
+            <button class="sidebar-close" id="sidebarClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="sidebar-content">
+            <div class="sidebar-menu">
+                <a class="sidebar-item" asp-controller="Home" asp-action="Trips">
+                    <div class="sidebar-icon">
+                        <i class="fas fa-route"></i>
+                    </div>
+                    <div class="sidebar-text">
+                        <div class="sidebar-item-title">Мои поездки</div>
+                        <div class="sidebar-item-desc">История и планирование</div>
+                    </div>
+                </a>
+                <a class="sidebar-item" asp-controller="Home" asp-action="Budget">
+                    <div class="sidebar-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="sidebar-text">
+                        <div class="sidebar-item-title">Бюджет</div>
+                        <div class="sidebar-item-desc">Управление расходами</div>
+                    </div>
+                </a>
+                <a class="sidebar-item" asp-controller="Notes" asp-action="Index">
+                    <div class="sidebar-icon">
+                        <i class="fas fa-sticky-note"></i>
+                    </div>
+                    <div class="sidebar-text">
+                        <div class="sidebar-item-title">Заметки</div>
+                        <div class="sidebar-item-desc">Ваши личные записи</div>
+                    </div>
+                </a>
+                <a class="sidebar-item" asp-controller="Home" asp-action="MyOrders">
+                    <div class="sidebar-icon">
+                        <i class="fas fa-ticket-alt"></i>
+                    </div>
+                    <div class="sidebar-text">
+                        <div class="sidebar-item-title">Мои заказы</div>
+                        <div class="sidebar-item-desc">Авиабилеты и бронирования</div>
+                    </div>
+                </a>
+                <a class="sidebar-item" asp-controller="Home" asp-action="Activities">
+                    <div class="sidebar-icon">
+                        <i class="fas fa-hiking"></i>
+                    </div>
+                    <div class="sidebar-text">
+                        <div class="sidebar-item-title">Активности</div>
+                        <div class="sidebar-item-desc">Развлечения и события</div>
+                    </div>
+                </a>
+                <a class="sidebar-item" asp-controller="Home" asp-action="Chats">
+                    <div class="sidebar-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <div class="sidebar-text">
+                        <div class="sidebar-item-title">Чаты</div>
+                        <div class="sidebar-item-desc">Поиск друзей и общение</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom py-2">
+            <div class="container-fluid">
+                <div class="d-flex align-items-center w-100">
+                    <a class="navbar-brand d-flex align-items-center me-4" href="/">
+                        <img src="/favicon-32x32.png" width="35" height="35" class="d-inline-block align-top me-2" alt="Логотип">
+                        Вместе В Путь
+                    </a>
+                    <div class="navbar-integrated-tabs">
+                        <div class="nav-tabs-wrapper">
+                            <ul class="nav-tabs">
+                                <!-- Основные вкладки -->
+                                <li class="nav-tab" data-tab="flights">
+                                    <a asp-controller="Home" asp-action="Flights">
+                                        <div class="tab-icon">
+                                            <i class="fas fa-plane"></i>
+                                        </div>
+                                        <div class="tab-text">Авиабилеты</div>
+                                    </a>
+                                </li>
+                                <li class="nav-tab" data-tab="railway">
+                                    <a asp-controller="Home" asp-action="Railway">
+                                        <div class="tab-icon">
+                                            <i class="fas fa-train"></i>
+                                        </div>
+                                        <div class="tab-text">ЖД билеты</div>
+                                    </a>
+                                </li>
+                                <li class="nav-tab" data-tab="hotels">
+                                    <a asp-controller="Home" asp-action="Hotels">
+                                        <div class="tab-icon">
+                                            <i class="fas fa-hotel"></i>
+                                        </div>
+                                        <div class="tab-text">Отели</div>
+                                    </a>
+                                </li>
+                                <li class="nav-tab" data-tab="favorites">
+                                    <a asp-controller="Home" asp-action="Favorites">
+                                        <div class="tab-icon">
+                                            <i class="fas fa-heart"></i>
+                                        </div>
+                                        <div class="tab-text">Избранное</div>
+                                    </a>
+                                </li>
+
+                                <!-- Кнопка для открытия выдвижного меню -->
+                                @if (Context.Session.GetInt32("UserId") != null)
+                                {
+                                    <li class="nav-tab" data-tab="more">
+                                        <a href="#" role="button" id="sidebarToggle">
+                                            <div class="tab-icon">
+                                                <i class="fas fa-bars"></i>
+                                            </div>
+                                            <div class="tab-text">Ещё</div>
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse flex-grow-0" id="navbarContent">
+                    <div class="d-flex align-items-center">
+                        @if (Context.Session.GetInt32("UserId") != null)
+                        {
+                            <div class="d-flex align-items-center">
+                                <a class="btn btn-outline-secondary me-2" asp-controller="Account" asp-action="Profile">
+                                    <i class="fas fa-user me-1"></i>Аккаунт
+                                </a>
+                                <a class="btn btn-outline-danger" asp-controller="Account" asp-action="Logout">
+                                    <i class="fas fa-sign-out-alt me-1"></i>Выйти
+                                </a>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="d-flex align-items-center">
+                                <a class="btn btn-outline-secondary me-2" asp-controller="Account" asp-action="Login">
+                                    <i class="fas fa-sign-in-alt me-1"></i>Войти
+                                </a>
+                                <a class="btn btn-primary" asp-controller="Account" asp-action="Register">
+                                    Регистрация
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <h5 class="fw-bold">Вместе В Путь</h5>
+                    <p class="text-muted">Планируйте путешествия вместе с друзьями и семьей</p>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <h6 class="fw-bold">Сервисы</h6>
+                    <ul class="list-unstyled">
+                        <li><a asp-controller="Home" asp-action="Flights" class="text-muted text-decoration-none">Авиабилеты</a></li>
+                        <li><a asp-controller="Home" asp-action="Railway" class="text-muted text-decoration-none">ЖД билеты</a></li>
+                        <li><a asp-controller="Home" asp-action="Hotels" class="text-muted text-decoration-none">Отели</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <h6 class="fw-bold">Поддержка</h6>
+                    <ul class="list-unstyled">
+                        <li><a asp-controller="Home" asp-action="Help" class="text-muted text-decoration-none">Помощь</a></li>
+                        <li><a asp-controller="Home" asp-action="Contact" class="text-muted text-decoration-none">Контакты</a></li>
+                        <li><a asp-controller="Home" asp-action="FAQ" class="text-muted text-decoration-none">FAQ</a></li>
+                        <li><a asp-controller="Home" asp-action="Reviews" class="text-muted text-decoration-none">Отзывы</a></li>
+                        @if (Context.Session.GetInt32("UserId") != null)
+                        {
+                            <li><a asp-controller="Newsletter" asp-action="UnsubscribePage" class="text-muted text-decoration-none">Управление подпиской</a></li>
+                        }
+                    </ul>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <h6 class="fw-bold">Компания</h6>
+                    <ul class="list-unstyled">
+                        <li><a asp-controller="Home" asp-action="About" class="text-muted text-decoration-none">О нас</a></li>
+                        <li><a asp-controller="Home" asp-action="Partners" class="text-muted text-decoration-none">Партнеры</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <h6 class="fw-bold">Правовая информация</h6>
+                    <ul class="list-unstyled">
+                        <li><a asp-controller="Home" asp-action="Privacy" class="text-muted text-decoration-none">Политика конфиденциальности</a></li>
+                        <li><a asp-controller="Home" asp-action="Terms" class="text-muted text-decoration-none">Условия использования</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-6 mb-3">
+                    <h6 class="fw-bold">Подпишитесь на рассылку</h6>
+                    <form id="newsletterForm" class="newsletter-form">
+                        @Html.AntiForgeryToken()
+                        <div class="input-group newsletter-input-group">
+                            <input type="email"
+                                   class="form-control newsletter-email"
+                                   id="newsletterEmail"
+                                   placeholder="Ваш email"
+                                   required>
+                            <button type="submit" class="btn btn-primary newsletter-submit-btn" id="subscribeBtn">
+                                Подписаться
+                            </button>
+                        </div>
+                        <div class="form-text small mt-2">
+                            <i class="fas fa-envelope me-1"></i>
+                            Только полезные советы и лучшие предложения. Без спама.
+                        </div>
+                        <div id="newsletterMessage" class="mt-2"></div>
+                    </form>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="text-center text-md-start text-muted">
+                        <small>© 2025 Вместе В Путь. Все права защищены.</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-center text-md-end">
+                        <small class="text-muted">
+                            <i class="fas fa-globe me-1"></i>Русский |
+                            <i class="fas fa-map-marker-alt ms-2 me-1"></i>Россия
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <style>
+        .social-links {
+            display: flex;
+            gap: 12px;
+            margin-top: 1rem;
+        }
+
+        .social-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+            .social-icon i {
+                color: white;
+                transition: color 0.3s ease;
+            }
+
+            .social-icon:hover {
+                transform: translateY(-3px) scale(1.1);
+                box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+                background: rgba(255, 255, 255, 0.2);
+                border-color: rgba(255, 255, 255, 0.3);
+            }
+
+                .social-icon:hover i {
+                    color: white;
+                }
+
+        .payment-methods {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .payment-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 70px;
+            min-height: 40px;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            padding: 0 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+            .payment-icon:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                background: rgba(255, 255, 255, 0.2);
+                border-color: rgba(255, 255, 255, 0.3);
+            }
+
+        .list-unstyled li {
+            margin-bottom: 0.5rem;
+        }
+
+        .list-unstyled a {
+            transition: color 0.3s ease;
+        }
+
+            .list-unstyled a:hover {
+                color: #ffffff !important;
+            }
+
+        /* Стили для навигационных вкладок */
+        .nav-tabs {
+            display: flex;
+            align-items: center;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-tab {
+            position: relative;
+        }
+
+            .nav-tab a {
+                display: flex;
+                align-items: center;
+                text-decoration: none;
+                color: #333;
+                padding: 8px 16px;
+                border-radius: 8px;
+                transition: all 0.3s ease;
+                cursor: pointer;
+                background: none;
+                border: none;
+                white-space: nowrap;
+            }
+
+                .nav-tab a:hover {
+                    background-color: #f8f9fa;
+                    color: #333;
+                }
+
+            .nav-tab.active a {
+                color: white !important;
+            }
+
+                .nav-tab.active a:hover {
+                    color: white !important;
+                }
+
+        .tab-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+        }
+
+        .tab-text {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Стили для выдвижного меню */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1040;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+            .sidebar-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 350px;
+            height: 100%;
+            background: white;
+            box-shadow: -5px 0 25px rgba(0, 0, 0, 0.1);
+            z-index: 1050;
+            transition: right 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+            .sidebar.active {
+                right: 0;
+            }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e9ecef;
+            background: #f8f9fa;
+        }
+
+        .sidebar-title {
+            margin: 0;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .sidebar-close {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            color: #6c757d;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+            .sidebar-close:hover {
+                color: #333;
+                background: #e9ecef;
+            }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+            .sidebar-item:hover {
+                background: #f8f9fa;
+                border-color: #e9ecef;
+                transform: translateX(5px);
+            }
+
+        .sidebar-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: #047bd6;
+            color: white;
+            border-radius: 10px;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .sidebar-text {
+            flex: 1;
+        }
+
+        .sidebar-item-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .sidebar-item-desc {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+
+        /* Стили для формы подписки */
+        .newsletter-form {
+            max-width: 400px;
+        }
+
+        .newsletter-input-group {
+            display: flex;
+        }
+
+        .newsletter-email {
+            flex: 1;
+            border-radius: 8px 0 0 8px;
+            border: 1px solid #0379D9;
+            border-right: none;
+            padding: 10px 15px;
+            font-size: 0.9rem;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+            .newsletter-email:focus {
+                outline: none;
+                border-color: #0379D9;
+                box-shadow: 0 0 0 2px rgba(3, 121, 217, 0.2);
+            }
+
+        .newsletter-submit-btn {
+            border-radius: 0 8px 8px 0;
+            background: #0379D9;
+            border: none;
+            white-space: nowrap;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+            .newsletter-submit-btn:hover {
+                background: #0268c0;
+                transform: translateY(-2px);
+            }
+
+        #newsletterMessage .alert {
+            font-size: 0.9rem;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-top: 10px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @@keyframes slideIn {
+            from
+
+        {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        }
+
+        #subscribeBtn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        /* ========== МОБИЛЬНАЯ АДАПТАЦИЯ (до 768px) ========== */
+        @@media (max-width: 768px) {
+            .nav-tabs
+
+        {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .nav-tab {
+            margin-bottom: 5px;
+        }
+
+        .sidebar {
+            width: 300px;
+        }
+
+        /* Форма подписки на мобильных - на всю ширину */
+        .newsletter-form {
+            max-width: 100%;
+            width: 100%;
+        }
+
+        .newsletter-input-group {
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .newsletter-email {
+            border-radius: 8px !important;
+            border: 1px solid #0379D9 !important;
+            border-right: 1px solid #0379D9 !important;
+            padding: 14px 16px !important;
+            font-size: 16px !important;
+            height: auto !important;
+            min-height: 52px;
+            width: 100% !important;
+            box-sizing: border-box;
+        }
+
+        .newsletter-submit-btn {
+            border-radius: 8px !important;
+            padding: 14px 16px !important;
+            font-size: 16px !important;
+            font-weight: 600;
+            width: 100% !important;
+            min-height: 52px;
+            box-sizing: border-box;
+        }
+
+            .newsletter-submit-btn i {
+                font-size: 16px;
+            }
+
+        .form-text.small {
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        /* Футер */
+        footer .container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        footer .row > div {
+            margin-bottom: 1.5rem;
+        }
+
+            footer .row > div:last-child {
+                margin-bottom: 0;
+            }
+
+        footer h5, footer h6 {
+            font-size: 1rem;
+        }
+
+        footer .list-unstyled a {
+            font-size: 0.85rem;
+        }
+
+        }
+
+        /* ========== ОЧЕНЬ МАЛЕНЬКИЕ ТЕЛЕФОНЫ (до 480px) ========== */
+        @@media (max-width: 480px) {
+            .sidebar
+
+        {
+            width: 280px;
+        }
+
+        .newsletter-email {
+            padding: 12px 14px !important;
+            min-height: 48px;
+            font-size: 15px !important;
+        }
+
+        .newsletter-submit-btn {
+            padding: 12px 14px !important;
+            min-height: 48px;
+            font-size: 15px !important;
+        }
+
+        }
+    </style>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/newsletter.js" asp-append-version="true"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Определяем активную вкладку
+            const currentPath = window.location.pathname;
+            const tabs = document.querySelectorAll('.nav-tab');
+
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            if (currentPath.includes('/flights') || currentPath === '/Home/Flights' || currentPath === '/Home/Flights/') {
+                const flightsTab = document.querySelector('[data-tab="flights"]');
+                if (flightsTab) flightsTab.classList.add('active');
+            } else if (currentPath.includes('/railway') || currentPath === '/Home/Railway' || currentPath === '/Home/Railway/') {
+                const railwayTab = document.querySelector('[data-tab="railway"]');
+                if (railwayTab) railwayTab.classList.add('active');
+            } else if (currentPath.includes('/hotels') || currentPath === '/Home/Hotels' || currentPath === '/Home/Hotels/') {
+                const hotelsTab = document.querySelector('[data-tab="hotels"]');
+                if (hotelsTab) hotelsTab.classList.add('active');
+            } else if (currentPath.includes('/favorites') || currentPath === '/Home/Favorites' || currentPath === '/Home/Favorites/') {
+                const favoritesTab = document.querySelector('[data-tab="favorites"]');
+                if (favoritesTab) favoritesTab.classList.add('active');
+            }
+
+            // Управление выдвижным меню
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebarClose = document.getElementById('sidebarClose');
+            const mobileMoreButton = document.getElementById('mobileMoreButton');
+
+            function openSidebar() {
+                if (sidebar) sidebar.classList.add('active');
+                if (sidebarOverlay) sidebarOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeSidebar() {
+                if (sidebar) sidebar.classList.remove('active');
+                if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+
+            // Обработчик для десктопной кнопки "Ещё"
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openSidebar();
+                });
+            }
+
+            // Обработчик для мобильной кнопки "Ещё"
+            if (mobileMoreButton) {
+                mobileMoreButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openSidebar();
+                });
+            }
+
+            // Обработчик для крестика закрытия сайдбара
+            if (sidebarClose) {
+                sidebarClose.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeSidebar();
+                });
+            }
+
+            // Обработчик для оверлея
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeSidebar();
+                });
+            }
+
+            // Закрытие меню при клике на пункт меню
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    setTimeout(closeSidebar, 300);
+                });
+            });
+
+            // Закрытие меню при нажатии Escape
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    const isSidebarOpen = sidebar && sidebar.classList.contains('active');
+                    const isNavbarOpen = document.getElementById('navbarContent') &&
+                                        document.getElementById('navbarContent').classList.contains('show');
+
+                    if (isSidebarOpen) {
+                        closeSidebar();
+                    }
+
+                    if (isNavbarOpen && window.innerWidth < 992) {
+                        const navbarContent = document.getElementById('navbarContent');
+                        const navbarToggler = document.querySelector('.navbar-toggler');
+
+                        if (navbarContent && navbarToggler) {
+                            const bsCollapse = new bootstrap.Collapse(navbarContent, {
+                                toggle: false
+                            });
+                            bsCollapse.hide();
+                        }
+                    }
+                }
+            });
+
+            // Исправление для мобильной навигации
+            const navbarContent = document.getElementById('navbarContent');
+            if (navbarContent) {
+                navbarContent.addEventListener('click', function(e) {
+                    if (window.innerWidth < 992) {
+                        e.stopPropagation();
+                    }
+                });
+            }
+
+            // Автоматическое закрытие мобильного меню при переходе по ссылкам
+            document.querySelectorAll('#navbarContent a').forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth < 992) {
+                        const navbarContent = document.getElementById('navbarContent');
+                        if (navbarContent && navbarContent.classList.contains('show')) {
+                            const bsCollapse = new bootstrap.Collapse(navbarContent, {
+                                toggle: false
+                            });
+                            bsCollapse.hide();
+                        }
+                    }
+                });
+            });
+
+            // Исправление для фиксации шапки при скролле на мобильных
+            if (window.innerWidth < 992) {
+                let lastScrollTop = 0;
+                const navbar = document.querySelector('.navbar');
+
+                if (navbar) {
+                    window.addEventListener('scroll', function() {
+                        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+                        if (scrollTop > lastScrollTop && scrollTop > 100) {
+                            navbar.style.transform = 'translateY(-100%)';
+                        } else {
+                            navbar.style.transform = 'translateY(0)';
+                        }
+
+                        lastScrollTop = scrollTop;
+                    }, { passive: true });
+                }
+            }
+
+            // Предотвращаем закрытие меню при клике на три полоски
+            const navbarToggler = document.querySelector('.navbar-toggler');
+            if (navbarToggler) {
+                navbarToggler.addEventListener('click', function(e) {
+                    e.stopPropagation();
+
+                    if (window.innerWidth < 992) {
+                        const navbarContent = document.getElementById('navbarContent');
+                        if (navbarContent) {
+                            navbarContent.style.position = 'fixed';
+                            navbarContent.style.top = '70px';
+                            navbarContent.style.left = '0';
+                            navbarContent.style.right = '0';
+                            navbarContent.style.zIndex = '1020';
+                        }
+                    }
+                });
+            }
+
+            // Исправление для кликов внутри фиксированного меню
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth < 992) {
+                    const navbarContent = document.getElementById('navbarContent');
+                    const navbarToggler = document.querySelector('.navbar-toggler');
+
+                    if (navbarContent && navbarContent.classList.contains('show') &&
+                        navbarToggler && !navbarToggler.contains(e.target) &&
+                        navbarContent && !navbarContent.contains(e.target)) {
+                        const bsCollapse = new bootstrap.Collapse(navbarContent, {
+                            toggle: false
+                        });
+                        bsCollapse.hide();
+                    }
+                }
+            });
+
+            // Анимация для мобильной кнопки "Ещё"
+            if (mobileMoreButton) {
+                setTimeout(() => {
+                    mobileMoreButton.style.opacity = '1';
+                    mobileMoreButton.style.transform = 'translateY(0)';
+                }, 300);
+
+                mobileMoreButton.style.opacity = '0';
+                mobileMoreButton.style.transform = 'translateY(20px)';
+                mobileMoreButton.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            }
+
+            // Исправление для активных ссылок в сайдбаре
+            const sidebarLinks = document.querySelectorAll('.sidebar-item');
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    sidebarLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            console.log('Script loaded successfully');
+            console.log('Current path:', currentPath);
+            console.log('Window width:', window.innerWidth);
+            console.log('Is mobile:', window.innerWidth < 992);
+        });
+
+        window.addEventListener('resize', function() {
+            const mobileMoreButton = document.getElementById('mobileMoreButton');
+            const navbarContent = document.getElementById('navbarContent');
+
+            if (window.innerWidth >= 992) {
+                if (navbarContent) {
+                    navbarContent.style.position = '';
+                    navbarContent.style.top = '';
+                    navbarContent.style.left = '';
+                    navbarContent.style.right = '';
+                    navbarContent.style.zIndex = '';
+                }
+            } else {
+                if (navbarContent && navbarContent.classList.contains('show')) {
+                    navbarContent.style.position = 'fixed';
+                    navbarContent.style.top = '70px';
+                    navbarContent.style.left = '0';
+                    navbarContent.style.right = '0';
+                    navbarContent.style.zIndex = '1020';
+                }
+            }
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+    @if (Context.Session.GetInt32("UserId") != null)
+    {
+        <div class="mobile-more-button logged-in d-lg-none" id="mobileMoreButton">
+            <i class="fas fa-bars"></i>
+        </div>
+    }
+</body>
+</html>

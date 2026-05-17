@@ -1,0 +1,958 @@
+﻿<div class="mobile-header-spacer d-block d-lg-none" style="height: 70px;"></div>
+
+@{
+    ViewData["Title"] = "Условия использования";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Заголовок страницы в стиле сайта -->
+            <div class="page-header-section mb-5">
+                <div class="page-header-icon">
+                    <i class="fas fa-balance-scale text-white"></i>
+                </div>
+                <div class="page-header-content">
+                    <h1 class="page-title">
+                        Условия использования
+                    </h1>
+                    <p class="page-subtitle">Пожалуйста, внимательно ознакомьтесь с правилами пользования сервисом</p>
+                </div>
+            </div>
+
+            <!-- Внимание -->
+            <div class="alert alert-warning border-0 shadow-sm mb-5">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-exclamation-triangle fa-2x text-warning me-3"></i>
+                    <div>
+                        <h5 class="alert-heading mb-2">Внимательно ознакомьтесь</h5>
+                        <p class="mb-0">С настоящими Условиями перед использованием Сервиса "Вместе В Путь"</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Навигация по разделам -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-list text-primary me-2"></i>
+                        Быстрая навигация
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-2">
+                        <div class="col-md-3 col-sm-6">
+                            <a href="#section1" class="terms-nav d-flex flex-column align-items-center text-decoration-none p-2 border rounded">
+                                <div class="terms-nav-icon mb-1">
+                                    <i class="fas fa-gavel fa-lg"></i>
+                                </div>
+                                <span class="text-center small fw-semibold">Общие положения</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="#section2" class="terms-nav d-flex flex-column align-items-center text-decoration-none p-2 border rounded">
+                                <div class="terms-nav-icon mb-1">
+                                    <i class="fas fa-user-plus fa-lg"></i>
+                                </div>
+                                <span class="text-center small fw-semibold">Регистрация</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="#section3" class="terms-nav d-flex flex-column align-items-center text-decoration-none p-2 border rounded">
+                                <div class="terms-nav-icon mb-1">
+                                    <i class="fas fa-concierge-bell fa-lg"></i>
+                                </div>
+                                <span class="text-center small fw-semibold">Услуги сервиса</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="#section4" class="terms-nav d-flex flex-column align-items-center text-decoration-none p-2 border rounded">
+                                <div class="terms-nav-icon mb-1">
+                                    <i class="fas fa-credit-card fa-lg"></i>
+                                </div>
+                                <span class="text-center small fw-semibold">Оплата</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="#section5" class="terms-nav d-flex flex-column align-items-center text-decoration-none p-2 border rounded">
+                                <div class="terms-nav-icon mb-1">
+                                    <i class="fas fa-undo fa-lg"></i>
+                                </div>
+                                <span class="text-center small fw-semibold">Возвраты</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="#section6" class="terms-nav d-flex flex-column align-items-center text-decoration-none p-2 border rounded">
+                                <div class="terms-nav-icon mb-1">
+                                    <i class="fas fa-user-shield fa-lg"></i>
+                                </div>
+                                <span class="text-center small fw-semibold">Обязанности</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="#section7" class="terms-nav d-flex flex-column align-items-center text-decoration-none p-2 border rounded">
+                                <div class="terms-nav-icon mb-1">
+                                    <i class="fas fa-copyright fa-lg"></i>
+                                </div>
+                                <span class="text-center small fw-semibold">Интеллект. собственность</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="#section8" class="terms-nav d-flex flex-column align-items-center text-decoration-none p-2 border rounded">
+                                <div class="terms-nav-icon mb-1">
+                                    <i class="fas fa-exclamation-circle fa-lg"></i>
+                                </div>
+                                <span class="text-center small fw-semibold">Ограничение ответственности</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="#section9" class="terms-nav d-flex flex-column align-items-center text-decoration-none p-2 border rounded">
+                                <div class="terms-nav-icon mb-1">
+                                    <i class="fas fa-user-secret fa-lg"></i>
+                                </div>
+                                <span class="text-center small fw-semibold">Конфиденциальность</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="#section10" class="terms-nav d-flex flex-column align-items-center text-decoration-none p-2 border rounded">
+                                <div class="terms-nav-icon mb-1">
+                                    <i class="fas fa-edit fa-lg"></i>
+                                </div>
+                                <span class="text-center small fw-semibold">Изменение условий</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="#section11" class="terms-nav d-flex flex-column align-items-center text-decoration-none p-2 border rounded">
+                                <div class="terms-nav-icon mb-1">
+                                    <i class="fas fa-headset fa-lg"></i>
+                                </div>
+                                <span class="text-center small fw-semibold">Контакты</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="#section12" class="terms-nav d-flex flex-column align-items-center text-decoration-none p-2 border rounded">
+                                <div class="terms-nav-icon mb-1">
+                                    <i class="fas fa-flag-checkered fa-lg"></i>
+                                </div>
+                                <span class="text-center small fw-semibold">Заключительные положения</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 1. Общие положения -->
+            <div class="card border-0 shadow-sm mb-4" id="section1">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-gavel text-primary me-2"></i>
+                        1. Общие положения
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="terms-point">
+                        <span class="terms-number">1.1</span>
+                        <p>Настоящие Условия использования (далее — "Условия") регулируют отношения между сервисом "Вместе В Путь" (далее — "Сервис", "Мы") и пользователем (далее — "Пользователь", "Вы") при использовании веб-сайта и сопутствующих услуг.</p>
+                    </div>
+                    <div class="terms-point">
+                        <span class="terms-number">1.2</span>
+                        <p>Используя Сервис, Вы подтверждаете, что ознакомились с настоящими Условиями, понимаете их и принимаете в полном объеме.</p>
+                    </div>
+                    <div class="terms-point">
+                        <span class="terms-number">1.3</span>
+                        <p>Сервис предоставляет платформу для поиска, бронирования и покупки авиабилетов, железнодорожных билетов, отелей и других туристических услуг.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Регистрация и учетная запись -->
+            <div class="card border-0 shadow-sm mb-4" id="section2">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-user-plus text-primary me-2"></i>
+                        2. Регистрация и учетная запись
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="terms-point">
+                        <span class="terms-number">2.1</span>
+                        <p>Для доступа к некоторым функциям Сервиса требуется регистрация.</p>
+                    </div>
+                    <div class="terms-point">
+                        <span class="terms-number">2.2</span>
+                        <p>При регистрации Вы обязаны предоставить достоверную и полную информацию о себе.</p>
+                    </div>
+                    <div class="terms-point">
+                        <span class="terms-number">2.3</span>
+                        <p>Вы несете ответственность за сохранность своих учетных данных и за все действия, совершенные под вашей учетной записью.</p>
+                    </div>
+                    <div class="terms-point">
+                        <span class="terms-number">2.4</span>
+                        <p>Мы оставляем за собой право отказать в регистрации или заблокировать учетную запись при нарушении настоящих Условий.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Услуги сервиса -->
+            <div class="card border-0 shadow-sm mb-4" id="section3">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-concierge-bell text-primary me-2"></i>
+                        3. Услуги сервиса
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="terms-point">
+                        <span class="terms-number">3.1</span>
+                        <p>Сервис предоставляет возможность:</p>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="service-card p-3 border rounded mb-3">
+                                    <div class="d-flex align-items-start">
+                                        <i class="fas fa-search text-primary me-2 mt-1"></i>
+                                        <div>
+                                            <h6 class="fw-semibold mb-1">Поиск и сравнение</h6>
+                                            <p class="small mb-0">Нахождение лучших предложений по авиа и ЖД билетам, отелям</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="service-card p-3 border rounded mb-3">
+                                    <div class="d-flex align-items-start">
+                                        <i class="fas fa-ticket-alt text-primary me-2 mt-1"></i>
+                                        <div>
+                                            <h6 class="fw-semibold mb-1">Бронирование и покупка</h6>
+                                            <p class="small mb-0">Оформление и оплата туристических услуг онлайн</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="terms-point">
+                        <span class="terms-number">3.2</span>
+                        <p>Мы являемся агрегатором информации и не являемся прямой стороной договоров перевозки или размещения.</p>
+                    </div>
+                    <div class="terms-point">
+                        <span class="terms-number">3.3</span>
+                        <p>Все бронирования и покупки осуществляются через партнеров Сервиса (авиакомпании, железные дороги, отели).</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Бронирование и оплата -->
+            <div class="card border-0 shadow-sm mb-4" id="section4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-credit-card text-primary me-2"></i>
+                        4. Бронирование и оплата
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="terms-point">
+                        <span class="terms-number">4.1</span>
+                        <p>Цены, отображаемые на Сайте, включают все налоги и сборы, если не указано иное.</p>
+                    </div>
+                    <div class="terms-point">
+                        <span class="terms-number">4.2</span>
+                        <p>Оплата производится через защищенные платежные системы наших партнеров.</p>
+                    </div>
+                    <div class="terms-point">
+                        <span class="terms-number">4.3</span>
+                        <p>После подтверждения бронирования Вы получаете электронный билет/ваучер на указанную электронную почту.</p>
+                    </div>
+                    <div class="terms-point">
+                        <span class="terms-number">4.4</span>
+                        <p>Правила возврата и обмена определяются условиями перевозчиков и поставщиков услуг.</p>
+                    </div>
+                    <div class="alert alert-info mt-4 border-0 rounded-lg">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle fa-2x text-info me-3"></i>
+                            <div>
+                                <h5 class="alert-heading mb-2">Важная информация</h5>
+                                <p class="mb-0">Внимательно проверяйте все данные перед оплатой. Исправление ошибок после оплаты может быть невозможно или потребовать дополнительных расходов.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Отмена и возвраты -->
+            <div class="card border-0 shadow-sm mb-4" id="section5">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-undo text-primary me-2"></i>
+                        5. Отмена и возвраты
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="terms-point">
+                        <span class="terms-number">5.1</span>
+                        <p>Условия отмены и возврата средств определяются правилами конкретного перевозчика или поставщика услуг.</p>
+                    </div>
+                    <div class="terms-point">
+                        <span class="terms-number">5.2</span>
+                        <p>Для оформления возврата необходимо обратиться в службу поддержки Сервиса.</p>
+                    </div>
+                    <div class="terms-point">
+                        <span class="terms-number">5.3</span>
+                        <p>Сервисный сбор Сервиса при отмене бронирования не возвращается, если иное не предусмотрено правилами партнера.</p>
+                    </div>
+                    <div class="terms-point">
+                        <span class="terms-number">5.4</span>
+                        <p>Срок обработки возврата составляет до 30 рабочих дней с момента получения всех необходимых документов.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. Обязанности пользователя -->
+            <div class="card border-0 shadow-sm mb-4" id="section6">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-user-shield text-primary me-2"></i>
+                        6. Обязанности пользователя
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <p class="mb-3">Пользователь обязуется:</p>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="obligation-card p-3 border rounded">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                                    <div>
+                                        <h6 class="fw-semibold mb-1">Достоверная информация</h6>
+                                        <p class="small mb-0">Предоставлять правдивые данные при регистрации и бронировании</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="obligation-card p-3 border rounded">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                                    <div>
+                                        <h6 class="fw-semibold mb-1">Соблюдение правил</h6>
+                                        <p class="small mb-0">Следовать требованиям перевозчиков и поставщиков услуг</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="obligation-card p-3 border rounded">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                                    <div>
+                                        <h6 class="fw-semibold mb-1">Законное использование</h6>
+                                        <p class="small mb-0">Не использовать Сервис в противоправных целях</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="obligation-card p-3 border rounded">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                                    <div>
+                                        <h6 class="fw-semibold mb-1">Проверка документов</h6>
+                                        <p class="small mb-0">Своевременно проверять паспортные данные и визовые требования</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. Интеллектуальная собственность -->
+            <div class="card border-0 shadow-sm mb-4" id="section7">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-copyright text-primary me-2"></i>
+                        7. Интеллектуальная собственность
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="terms-point">
+                        <span class="terms-number">7.1</span>
+                        <p>Все материалы Сервиса (дизайн, текст, графика, логотипы, программное обеспечение) являются интеллектуальной собственностью Сервиса или его партнеров.</p>
+                    </div>
+                    <div class="terms-point">
+                        <span class="terms-number">7.2</span>
+                        <p>Любое копирование, распространение или использование материалов Сервиса без нашего письменного согласия запрещено.</p>
+                    </div>
+                    <div class="terms-point">
+                        <span class="terms-number">7.3</span>
+                        <p>Пользователь сохраняет права на контент, который он размещает на Сервисе, предоставляя нам право на его использование для целей предоставления услуг.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 8. Ограничение ответственности -->
+            <div class="card border-0 shadow-sm mb-4" id="section8">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-exclamation-circle text-primary me-2"></i>
+                        8. Ограничение ответственности
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="terms-point">
+                        <span class="terms-number">8.1</span>
+                        <p>Сервис не несет ответственности за:</p>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="responsibility-card p-3 border rounded mb-3">
+                                    <div class="d-flex align-items-start">
+                                        <i class="fas fa-plane text-primary me-2 mt-1"></i>
+                                        <div>
+                                            <h6 class="fw-semibold mb-1">Задержки рейсов</h6>
+                                            <p class="small mb-0">Задержки и отмены рейсов/поездов</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="responsibility-card p-3 border rounded mb-3">
+                                    <div class="d-flex align-items-start">
+                                        <i class="fas fa-users text-primary me-2 mt-1"></i>
+                                        <div>
+                                            <h6 class="fw-semibold mb-1">Действия третьих лиц</h6>
+                                            <p class="small mb-0">Действия или бездействие перевозчиков, отелей</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="terms-point">
+                        <span class="terms-number">8.2</span>
+                        <p>В случае возникновения споров между Пользователем и поставщиком услуг, Сервис выступает в качестве посредника для их разрешения.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 9. Конфиденциальность -->
+            <div class="card border-0 shadow-sm mb-4" id="section9">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-user-secret text-primary me-2"></i>
+                        9. Конфиденциальность
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="terms-point">
+                        <span class="terms-number">9.1</span>
+                        <p>Обработка персональных данных Пользователя осуществляется в соответствии с нашей <a asp-controller="Home" asp-action="Privacy" target="_blank" rel="noopener noreferrer" class="text-primary fw-semibold">Политикой конфиденциальности</a>.</p>
+                    </div>
+                    <div class="terms-point">
+                        <span class="terms-number">9.2</span>
+                        <p>Мы принимаем все необходимые меры для защиты конфиденциальности Ваших данных.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 10. Изменение условий -->
+            <div class="card border-0 shadow-sm mb-4" id="section10">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-edit text-primary me-2"></i>
+                        10. Изменение условий
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="terms-point">
+                        <span class="terms-number">10.1</span>
+                        <p>Мы оставляем за собой право в одностороннем порядке изменять настоящие Условия.</p>
+                    </div>
+                    <div class="terms-point">
+                        <span class="terms-number">10.2</span>
+                        <p>Изменения вступают в силу с момента их публикации на Сайте.</p>
+                    </div>
+                    <div class="terms-point">
+                        <span class="terms-number">10.3</span>
+                        <p>Продолжение использования Сервиса после внесения изменений означает Ваше согласие с новыми Условиями.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 11. Контакты и поддержка -->
+            <div class="card border-0 shadow-sm mb-4" id="section11">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-headset text-primary me-2"></i>
+                        11. Контакты и поддержка
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <p class="mb-3">По всем вопросам, связанным с использованием Сервиса, Вы можете обратиться:</p>
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="support-card d-flex flex-column align-items-center text-center p-3 border rounded">
+                                <div class="support-icon mb-2">
+                                    <i class="fas fa-envelope fa-2x"></i>
+                                </div>
+                                <h6 class="fw-semibold mb-1">Email</h6>
+                                <p class="mb-1">tripwise@yandex.ru</p>
+                                <small class="text-muted">Общие вопросы</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="support-card d-flex flex-column align-items-center text-center p-3 border rounded">
+                                <div class="support-icon mb-2">
+                                    <i class="fas fa-phone-alt fa-2x"></i>
+                                </div>
+                                <h6 class="fw-semibold mb-1">Телефон</h6>
+                                <p class="mb-1">+7 (800) 123-45-67</p>
+                                <small class="text-muted">Бесплатно по России</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="support-card d-flex flex-column align-items-center text-center p-3 border rounded">
+                                <div class="support-icon mb-2">
+                                    <i class="fas fa-clock fa-2x"></i>
+                                </div>
+                                <h6 class="fw-semibold mb-1">Время работы</h6>
+                                <p class="mb-1">Круглосуточно</p>
+                                <small class="text-muted">7 дней в неделю</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 12. Заключительные положения -->
+            <div class="card border-0 shadow-sm" id="section12">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-flag-checkered text-primary me-2"></i>
+                        12. Заключительные положения
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="terms-point">
+                        <span class="terms-number">12.1</span>
+                        <p>Настоящие Условия регулируются законодательством Российской Федерации.</p>
+                    </div>
+                    <div class="terms-point">
+                        <span class="terms-number">12.2</span>
+                        <p>Все споры подлежат разрешению в соответствии с законодательством РФ.</p>
+                    </div>
+                    <div class="terms-point">
+                        <span class="terms-number">12.3</span>
+                        <p>Если какое-либо положение настоящих Условий будет признано недействительным, остальные положения сохраняют свою силу.</p>
+                    </div>
+                    <div class="alert alert-success mt-4 border-0 rounded-lg">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-check-circle fa-2x text-success me-3"></i>
+                            <div>
+                                <h5 class="alert-heading mb-2">Благодарим за выбор нашего Сервиса!</h5>
+                                <p class="mb-0">Желаем приятных путешествий и незабываемых впечатлений!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0 py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">Версия 1.0</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Стили для заголовка страницы (унифицированные) */
+    .page-header-section {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 25px 30px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .page-header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(to bottom, #0379D9, #40B624);
+        }
+
+    .page-header-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #0379D9, #40B624);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 4px 15px rgba(3, 121, 217, 0.2);
+        flex-shrink: 0;
+    }
+
+        .page-header-icon i {
+            color: white !important;
+        }
+
+    .page-header-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .page-title {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 800;
+        font-size: 2.5rem;
+        color: #0379D9;
+        margin: 0 0 8px 0;
+        line-height: 1.2;
+        word-break: break-word;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        font-size: 1.1rem;
+        margin: 0;
+        line-height: 1.4;
+        word-break: break-word;
+    }
+
+    .section-subtitle {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        font-size: 1.3rem;
+        color: #334155;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    /* Стили для карточек */
+    .card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+        .card:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+    /* Навигация по условиям */
+    .terms-nav {
+        transition: all 0.3s ease;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+    }
+
+        .terms-nav:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            border-color: #0379D9;
+            text-decoration: none;
+        }
+
+        .terms-nav.active {
+            border-color: #0379D9;
+            background-color: #f0f7ff;
+        }
+
+    .terms-nav-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .terms-nav-icon i {
+            color: #0379D9 !important;
+        }
+
+    /* Пункты условий */
+    .terms-point {
+        margin-bottom: 1.5rem;
+        display: flex;
+        gap: 15px;
+    }
+
+        .terms-point:last-child {
+            margin-bottom: 0;
+        }
+
+    .terms-number {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 700;
+        color: #0379D9;
+        background: linear-gradient(135deg, #f0f7ff, #e3f2fd);
+        padding: 4px 10px;
+        border-radius: 8px;
+        height: fit-content;
+        flex-shrink: 0;
+    }
+
+    /* Карточки услуг */
+    .service-card,
+    .obligation-card,
+    .responsibility-card {
+        transition: all 0.3s ease;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+    }
+
+        .service-card:hover,
+        .obligation-card:hover,
+        .responsibility-card:hover {
+            border-color: #0379D9;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+    /* Карточки поддержки */
+    .support-card {
+        transition: all 0.3s ease;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        height: 100%;
+    }
+
+        .support-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            border-color: #0379D9;
+        }
+
+    .support-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .support-icon i {
+            color: #0379D9 !important;
+        }
+
+    /* Алерты */
+    .alert-warning {
+        background-color: #fff9db;
+        border: 1px solid #ffec99;
+        border-radius: 16px;
+        color: #5c4400;
+    }
+
+    .alert-info {
+        background-color: #e8f4fe;
+        border: 1px solid #b6d4fe;
+        border-radius: 12px;
+        color: #084298;
+    }
+
+    .alert-success {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        border-radius: 12px;
+        color: #155724;
+    }
+
+    /* Иконки */
+    .fa-balance-scale,
+    .fa-list,
+    .fa-gavel,
+    .fa-user-plus,
+    .fa-concierge-bell,
+    .fa-credit-card,
+    .fa-undo,
+    .fa-user-shield,
+    .fa-copyright,
+    .fa-exclamation-circle,
+    .fa-user-secret,
+    .fa-edit,
+    .fa-headset,
+    .fa-flag-checkered,
+    .fa-exclamation-triangle,
+    .fa-info-circle,
+    .fa-check-circle,
+    .fa-search,
+    .fa-ticket-alt,
+    .fa-plane,
+    .fa-users,
+    .fa-envelope,
+    .fa-phone-alt,
+    .fa-clock,
+    .fa-shield-alt {
+        color: #0379D9 !important;
+    }
+
+        .fa-check-circle.text-success {
+            color: #198754 !important;
+        }
+
+        .fa-info-circle.text-info {
+            color: #0dcaf0 !important;
+        }
+
+        .fa-exclamation-triangle.text-warning {
+            color: #ffc107 !important;
+        }
+
+    /* Адаптивность как на других страницах */
+    @@media (max-width: 768px) {
+        .page-header-section
+
+    {
+        padding: 20px;
+        gap: 15px;
+    }
+
+    .page-header-section::before {
+        width: 100%;
+        height: 6px;
+        top: 0;
+        left: 0;
+        background: linear-gradient(to right, #0379D9, #40B624);
+    }
+
+    .page-header-icon {
+        width: 55px;
+        height: 55px;
+        font-size: 1.5rem;
+    }
+
+    .page-title {
+        font-size: 1.6rem;
+        margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.2rem;
+    }
+
+    .terms-nav {
+        margin-bottom: 10px;
+    }
+
+    .terms-nav-icon {
+        width: 35px;
+        height: 35px;
+    }
+
+        .terms-nav-icon i {
+            font-size: 1rem !important;
+        }
+
+    .terms-point {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .support-card {
+        margin-bottom: 1rem;
+    }
+
+    }
+
+    @@media (max-width: 576px) {
+        .page-header-section
+
+    {
+        padding: 15px;
+        gap: 12px;
+    }
+
+    .page-header-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.3rem;
+    }
+
+    .page-title {
+        font-size: 1.4rem;
+    }
+
+    .page-subtitle {
+        font-size: 0.85rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.1rem;
+    }
+
+    .support-icon {
+        width: 50px;
+        height: 50px;
+    }
+
+        .support-icon i {
+            font-size: 1.5rem !important;
+        }
+
+    }
+</style>
+
+<script>
+    // Плавная прокрутка к разделам
+    document.querySelectorAll('.terms-nav').forEach(nav => {
+        nav.addEventListener('click', function(e) {
+            const targetId = this.getAttribute('href');
+            if (targetId && targetId.startsWith('#')) {
+                e.preventDefault();
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        });
+    });
+
+    // Подсветка активного пункта при прокрутке
+    window.addEventListener('scroll', function() {
+        const sections = document.querySelectorAll('.card[id]');
+        const navLinks = document.querySelectorAll('.terms-nav');
+
+        let currentSection = '';
+
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop - 100;
+            const sectionHeight = section.clientHeight;
+            if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
+                currentSection = section.getAttribute('id');
+            }
+        });
+
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === `#${currentSection}`) {
+                link.classList.add('active');
+            }
+        });
+    });
+</script>

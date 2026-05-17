@@ -1,0 +1,537 @@
+﻿<div class="mobile-header-spacer d-block d-lg-none" style="height: 70px;"></div>
+
+@{
+    ViewData["Title"] = "Партнеры";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Заголовок страницы в стиле сайта (как на странице "О нас") -->
+            <div class="page-header-section mb-5">
+                <div class="page-header-icon">
+                    <i class="fas fa-handshake text-white"></i>
+                </div>
+                <div class="page-header-content">
+                    <h1 class="page-title">
+                        Наши партнеры
+                    </h1>
+                    <p class="page-subtitle">Сотрудничаем с ведущими компаниями для лучшего сервиса</p>
+                </div>
+            </div>
+
+            <!-- Вступительный текст -->
+            <div class="card border-0 shadow-sm mb-5">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-3 text-center mb-3 mb-md-0">
+                            <div class="partner-main-icon">
+                                <i class="fas fa-handshake fa-3x"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <h4 class="fw-bold text-primary mb-3">Надежное партнерство</h4>
+                            <p class="lead mb-0">Мы сотрудничаем с ведущими компаниями в сфере туризма и транспорта, чтобы предложить вам лучший сервис и самые выгодные условия.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Авиакомпании -->
+            <div class="card border-0 shadow-sm mb-5">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-plane text-primary me-2"></i>
+                        Авиакомпании
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="partner-card d-flex flex-column align-items-center text-center p-4 border rounded h-100">
+                                <div class="partner-icon mb-3">
+                                    <i class="fas fa-plane fa-3x"></i>
+                                </div>
+                                <h5 class="fw-semibold mb-2">Аэрофлот</h5>
+                                <p class="text-muted">Национальный авиаперевозчик России</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="partner-card d-flex flex-column align-items-center text-center p-4 border rounded h-100">
+                                <div class="partner-icon mb-3">
+                                    <i class="fas fa-plane-departure fa-3x"></i>
+                                </div>
+                                <h5 class="fw-semibold mb-2">S7 Airlines</h5>
+                                <p class="text-muted">Одна из крупнейших авиакомпаний</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="partner-card d-flex flex-column align-items-center text-center p-4 border rounded h-100">
+                                <div class="partner-icon mb-3">
+                                    <i class="fas fa-plane-arrival fa-3x"></i>
+                                </div>
+                                <h5 class="fw-semibold mb-2">Победа</h5>
+                                <p class="text-muted">Бюджетные авиаперевозки</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Железные дороги -->
+            <div class="card border-0 shadow-sm mb-5">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-train text-primary me-2"></i>
+                        Железные дороги
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="partner-card d-flex flex-column align-items-center text-center p-4 border rounded h-100">
+                                <div class="partner-icon mb-3">
+                                    <i class="fas fa-train fa-3x"></i>
+                                </div>
+                                <h5 class="fw-semibold mb-2">РЖД</h5>
+                                <p class="text-muted">Российские железные дороги</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="partner-card d-flex flex-column align-items-center text-center p-4 border rounded h-100">
+                                <div class="partner-icon mb-3">
+                                    <i class="fas fa-bolt fa-3x"></i>
+                                </div>
+                                <h5 class="fw-semibold mb-2">Аэроэкспресс</h5>
+                                <p class="text-muted">Скоростные поезда в аэропорты</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Отели и проживание -->
+            <div class="card border-0 shadow-sm mb-5">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-hotel text-primary me-2"></i>
+                        Отели и проживание
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <div class="col-md-3 col-sm-6">
+                            <div class="partner-card hotel-card d-flex flex-column align-items-center text-center p-3 border rounded">
+                                <div class="partner-icon mb-2">
+                                    <i class="fas fa-hotel fa-2x"></i>
+                                </div>
+                                <h6 class="fw-semibold mb-0">Azimut</h6>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="partner-card hotel-card d-flex flex-column align-items-center text-center p-3 border rounded">
+                                <div class="partner-icon mb-2">
+                                    <i class="fas fa-hotel fa-2x"></i>
+                                </div>
+                                <h6 class="fw-semibold mb-0">Hilton</h6>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="partner-card hotel-card d-flex flex-column align-items-center text-center p-3 border rounded">
+                                <div class="partner-icon mb-2">
+                                    <i class="fas fa-hotel fa-2x"></i>
+                                </div>
+                                <h6 class="fw-semibold mb-0">Marriott</h6>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="partner-card hotel-card d-flex flex-column align-items-center text-center p-3 border rounded">
+                                <div class="partner-icon mb-2">
+                                    <i class="fas fa-hotel fa-2x"></i>
+                                </div>
+                                <h6 class="fw-semibold mb-0">Ibis</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Статистика -->
+            <div class="card border-0 shadow-sm mb-5">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-chart-line text-primary me-2"></i>
+                        Статистика сотрудничества
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-3 col-sm-6">
+                            <div class="stat-card d-flex flex-column align-items-center text-center p-3 border rounded">
+                                <div class="stat-number text-primary fs-2 fw-bold">50+</div>
+                                <div class="stat-label text-muted">Партнеров</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="stat-card d-flex flex-column align-items-center text-center p-3 border rounded">
+                                <div class="stat-number text-primary fs-2 fw-bold">1000+</div>
+                                <div class="stat-label text-muted">Направлений</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="stat-card d-flex flex-column align-items-center text-center p-3 border rounded">
+                                <div class="stat-number text-primary fs-2 fw-bold">24/7</div>
+                                <div class="stat-label text-muted">Поддержка</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="stat-card d-flex flex-column align-items-center text-center p-3 border rounded">
+                                <div class="stat-number text-primary fs-2 fw-bold">99%</div>
+                                <div class="stat-label text-muted">Успешных бронирований</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Стать партнером -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-3 text-center mb-3 mb-md-0">
+                            <div class="partner-main-icon">
+                                <i class="fas fa-briefcase fa-3x"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h4 class="fw-bold text-primary mb-2">Хотите стать нашим партнером?</h4>
+                            <p class="mb-0">Мы открыты для сотрудничества с туристическими компаниями, перевозчиками и сервисами.</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <a asp-controller="Home" asp-action="Contact" class="btn btn-primary btn-lg w-100">
+                                Написать нам
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Стили для заголовка страницы (как на странице "О нас") */
+    .page-header-section {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 25px 30px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .page-header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(to bottom, #0379D9, #40B624);
+        }
+
+    .page-header-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #0379D9, #40B624);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 4px 15px rgba(3, 121, 217, 0.2);
+        flex-shrink: 0;
+    }
+
+        .page-header-icon i {
+            color: white !important;
+        }
+
+    .page-header-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .page-title {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 800;
+        font-size: 2.5rem;
+        color: #0379D9;
+        margin: 0 0 8px 0;
+        line-height: 1.2;
+        word-break: break-word;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        font-size: 1.1rem;
+        margin: 0;
+        line-height: 1.4;
+        word-break: break-word;
+    }
+
+    .section-subtitle {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        font-size: 1.3rem;
+        color: #334155;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    /* Стили для карточек */
+    .card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+        .card:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+    /* Основная иконка партнера */
+    .partner-main-icon {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+    }
+
+        .partner-main-icon i {
+            color: #0379D9 !important;
+        }
+
+    /* Карточки партнеров */
+    .partner-card {
+        transition: all 0.3s ease;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        height: 100%;
+    }
+
+        .partner-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border-color: #0379D9;
+        }
+
+    .partner-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .partner-icon i {
+            color: #0379D9 !important;
+        }
+
+    /* Карточки отелей */
+    .hotel-card .partner-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+    }
+
+    /* Статистические карточки */
+    .stat-card {
+        transition: all 0.3s ease;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            border-color: #0379D9;
+        }
+
+    .stat-number {
+        font-family: 'Nunito', sans-serif;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+    }
+
+    /* Кнопки */
+    .btn {
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        font-family: 'Nunito', sans-serif;
+    }
+
+    .btn-primary {
+        background: #0379D9;
+        border: none;
+        box-shadow: 0 4px 12px rgba(3, 121, 217, 0.2);
+        padding: 14px 20px;
+        font-size: 1.1rem;
+    }
+
+        .btn-primary:hover {
+            background: #0356a8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(3, 121, 217, 0.3);
+        }
+
+    .btn-lg {
+        padding: 16px 24px;
+        font-size: 1.2rem;
+    }
+
+    /* Иконки */
+    .fa-handshake,
+    .fa-plane,
+    .fa-plane-departure,
+    .fa-plane-arrival,
+    .fa-train,
+    .fa-bolt,
+    .fa-hotel,
+    .fa-chart-line,
+    .fa-briefcase {
+        color: #0379D9 !important;
+    }
+
+    /* Адаптивность как на странице "О нас" */
+    @@media (max-width: 768px) {
+        .page-header-section
+
+    {
+        padding: 20px;
+        gap: 15px;
+    }
+
+    .page-header-section::before {
+        width: 100%;
+        height: 6px;
+        top: 0;
+        left: 0;
+        background: linear-gradient(to right, #0379D9, #40B624);
+    }
+
+    .page-header-icon {
+        width: 55px;
+        height: 55px;
+        font-size: 1.5rem;
+    }
+
+    .page-title {
+        font-size: 1.6rem;
+        margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.2rem;
+    }
+
+    .partner-main-icon {
+        width: 80px;
+        height: 80px;
+    }
+
+    .partner-icon {
+        width: 70px;
+        height: 70px;
+    }
+
+    .hotel-card .partner-icon {
+        width: 50px;
+        height: 50px;
+    }
+
+    .btn-lg {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    }
+
+    @@media (max-width: 576px) {
+        .page-header-section
+
+    {
+        padding: 15px;
+        gap: 12px;
+    }
+
+    .page-header-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.3rem;
+    }
+
+    .page-title {
+        font-size: 1.4rem;
+    }
+
+    .page-subtitle {
+        font-size: 0.85rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.1rem;
+    }
+
+    .partner-main-icon {
+        width: 70px;
+        height: 70px;
+    }
+
+        .partner-main-icon i {
+            font-size: 2.5rem !important;
+        }
+
+    .partner-icon {
+        width: 60px;
+        height: 60px;
+    }
+
+        .partner-icon i {
+            font-size: 2rem !important;
+        }
+
+    .hotel-card .partner-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+        .hotel-card .partner-icon i {
+            font-size: 1.5rem !important;
+        }
+
+    }
+</style>

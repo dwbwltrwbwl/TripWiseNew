@@ -1,0 +1,510 @@
+﻿@model TripWise.Models.TrainOrder
+@{
+    ViewData["Title"] = "Билет оформлен";
+    var passengers = ViewBag.Passengers as List<TripWise.Models.ViewModels.PassengerInfoViewModel> ?? new List<TripWise.Models.ViewModels.PassengerInfoViewModel>();
+
+    // Правильное разбиение мест для каждого пассажира
+    var seatNumbersStr = (ViewBag.SeatNumbers as string ?? Model.SeatNumbers ?? "");
+    var passengerSeats = new Dictionary<int, string>(); // индекс пассажира -> место
+
+    if (!string.IsNullOrEmpty(seatNumbersStr))
+    {
+        // Разбиваем по пассажирам (разделитель ", ")
+        var passengerSeatsRaw = seatNumbersStr.Split(new[] { ", " }, StringSplitOptions.None);
+
+        for (int i = 0; i < passengerSeatsRaw.Length; i++)
+        {
+            var seatText = passengerSeatsRaw[i];
+            string displaySeat = seatText;
+
+            // Если есть маркеры (туда) и (обратно), показываем их
+            if (seatText.Contains("(туда)") && seatText.Contains("(обратно)"))
+            {
+                // Показываем полную информацию
+                displaySeat = seatText;
+            }
+            else if (seatText.Contains("(туда)"))
+            {
+                displaySeat = seatText;
+            }
+            else if (seatText.Contains("(обратно)"))
+            {
+                displaySeat = seatText;
+            }
+
+            passengerSeats[i] = displaySeat;
+        }
+    }
+
+    // Функция для получения места пассажира
+    string GetPassengerSeat(int index)
+    {
+        return passengerSeats.ContainsKey(index) ? passengerSeats[index] : "—";
+    }
+}
+<script>
+    // Отключаем кэширование страницы
+    window.onpageshow = function(event) {
+        if (event.persisted) {
+            window.location.replace('/Home/Railway');
+        }
+    };
+</script>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Успешное оформление -->
+            <div class="text-center mb-5">
+                <div class="success-animation mb-4">
+                    <i class="fas fa-check-circle text-success" style="font-size: 5rem;"></i>
+                </div>
+                <h1 class="display-4 fw-bold text-success mb-3">Билет успешно оформлен!</h1>
+                <p class="lead text-muted">Номер заказа: <strong class="text-dark">@Model.OrderNumber</strong></p>
+                <p class="text-muted">Билет отправлен на вашу почту <strong>@Model.ContactEmail</strong></p>
+            </div>
+
+            <!-- Информация о билете -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-ticket-alt text-primary me-2"></i>
+                        Детали билета
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Маршрут -->
+                    <div class="text-center mb-4">
+                        <h2 class="route-title">
+                            @Model.DepartureStationName → @Model.ArrivalStationName
+                        </h2>
+                        @if (Model.IsRoundTrip)
+                        {
+                            <div class="mt-2">
+                                <span class="badge bg-success">Туда и обратно</span>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="row g-4">
+                        <!-- Поезд туда -->
+                        <div class="col-md-6">
+                            <div class="ticket-section">
+                                <h5 class="section-subtitle mb-3">
+                                    <i class="fas fa-train text-primary me-2"></i>
+                                    Туда
+                                </h5>
+                                <div class="train-info p-3 bg-light rounded">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <span class="badge bg-primary">Поезд № @Model.TrainNumber</span>
+                                        <small class="text-muted">@GetTrainType(Model.TrainNumber)</small>
+                                    </div>
+
+                                    <div class="row text-center">
+                                        <div class="col-5">
+                                            <div class="fw-bold fs-5">@Model.DepartureDateTime.ToString("HH:mm")</div>
+                                            <div class="text-muted small">@Model.DepartureDateTime.ToString("dd.MM.yyyy")</div>
+                                            <div class="mt-2">@Model.DepartureStationName</div>
+                                        </div>
+                                        <div class="col-2">
+                                            <div class="text-primary">
+                                                <i class="fas fa-arrow-right"></i>
+                                            </div>
+                                            <div class="small text-muted">@FormatDuration(Model.Duration)</div>
+                                        </div>
+                                        <div class="col-5">
+                                            <div class="fw-bold fs-5">@(Model.ArrivalDateTime?.ToString("HH:mm") ?? "—")</div>
+                                            <div class="text-muted small">@(Model.ArrivalDateTime?.ToString("dd.MM.yyyy") ?? "—")</div>
+                                            <div class="mt-2">@Model.ArrivalStationName</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Поезд обратно (если есть) -->
+                        @if (Model.IsRoundTrip && Model.ReturnDepartureDateTime.HasValue)
+                        {
+                            <div class="col-md-6">
+                                <div class="ticket-section">
+                                    <h5 class="section-subtitle mb-3">
+                                        <i class="fas fa-train text-secondary me-2"></i>
+                                        Обратно
+                                    </h5>
+                                    <div class="train-info p-3 bg-light rounded">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <span class="badge bg-secondary">Поезд № @Model.ReturnTrainNumber</span>
+                                        </div>
+
+                                        <div class="row text-center">
+                                            <div class="col-5">
+                                                <div class="fw-bold fs-5">@Model.ReturnDepartureDateTime.Value.ToString("HH:mm")</div>
+                                                <div class="text-muted small">@Model.ReturnDepartureDateTime.Value.ToString("dd.MM.yyyy")</div>
+                                                <div class="mt-2">@Model.ArrivalStationName</div>
+                                            </div>
+                                            <div class="col-2">
+                                                <div class="text-secondary">
+                                                    <i class="fas fa-arrow-right"></i>
+                                                </div>
+                                                <div class="small text-muted">@FormatDuration(Model.ReturnDuration ?? 0)</div>
+                                            </div>
+                                            <div class="col-5">
+                                                <div class="fw-bold fs-5">@(Model.ReturnArrivalDateTime?.ToString("HH:mm") ?? "—")</div>
+                                                <div class="text-muted small">@(Model.ReturnArrivalDateTime?.ToString("dd.MM.yyyy") ?? "—")</div>
+                                                <div class="mt-2">@Model.DepartureStationName</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Информация о местах -->
+                    <div class="seat-info p-3 bg-light rounded mt-4">
+                        <h6 class="fw-bold mb-3">
+                            <i class="fas fa-chair me-2 text-primary"></i>
+                            Места
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-12">
+                                @if (passengers.Count > 1)
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Пассажир</th>
+                                                    <th>Место</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @for (int i = 0; i < passengers.Count; i++)
+                                                {
+                                                    <tr>
+                                                        <td>Пассажир @(i + 1)</td>
+                                                        <td><strong>@GetPassengerSeat(i)</strong></td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <p class="mb-1"><strong>Место:</strong> @GetPassengerSeat(0)</p>
+                                }
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Тип вагона:</strong> @Model.CarType (@Model.CarClass)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Пассажиры -->
+                    <div class="passengers-info mt-4">
+                        <h6 class="fw-bold mb-3">
+                            <i class="fas fa-users me-2 text-primary"></i>
+                            Пассажиры
+                        </h6>
+
+                        @if (passengers != null && passengers.Any())
+                        {
+                            for (int i = 0; i < passengers.Count; i++)
+                            {
+                                var p = passengers[i];
+                                var seatInfo = GetPassengerSeat(i);
+
+                                <div class="passenger-card p-3 bg-light rounded mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="fw-bold text-primary mb-0">Пассажир @(i + 1)</h6>
+                                        <span class="badge bg-secondary">@seatInfo</span>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col-md-12">
+                                            <div class="small text-muted">ФИО</div>
+                                            <div class="fw-semibold word-break">@($"{p.LastName} {p.FirstName} {p.MiddleName}".Trim())</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="small text-muted">Дата рождения</div>
+                                            <div>@(p.DateOfBirth.Year > 1900 ? p.DateOfBirth.ToString("dd.MM.yyyy") : "—")</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="small text-muted">Пол</div>
+                                            <div>@(p.Gender == "M" ? "Мужской" : p.Gender == "F" ? "Женский" : "—")</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="small text-muted">Гражданство</div>
+                                            <div>@(!string.IsNullOrEmpty(p.Citizenship) ? p.Citizenship : "—")</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="small text-muted">Тип документа</div>
+                                            <div>@GetDocumentTypeName(p.DocumentType)</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="small text-muted">Номер документа</div>
+                                            <div>@p.DocumentNumber</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning">Данные пассажиров отсутствуют</div>
+                        }
+                    </div>
+
+                    <!-- Стоимость и статус -->
+                    <div class="price-info mt-4 p-3 bg-success bg-opacity-10 rounded">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold">Статус:</span>
+                            <span class="fw-bold fs-4 text-success">Бесплатное бронирование</span>
+                        </div>
+                        <p class="text-muted small mt-2 mb-0">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Бронирование выполнено успешно. Билет действителен.
+                        </p>
+                    </div>
+
+                    <!-- Информация о транзакции -->
+                    <div class="transaction-info mt-3 small text-muted">
+                        <p class="mb-0">Код бронирования: @Model.BookingReference</p>
+                        <p class="mb-0">Номер билета: @Model.TicketNumber</p>
+                        <p class="mb-0">Время покупки: @Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Кнопки действий -->
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <a href="/Home/MyOrders" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-ticket-alt me-2"></i>
+                    Мои билеты
+                </a>
+                <div>
+                    <a href="@Url.Action("DownloadTicket", "TrainBooking", new { orderId = Model.Id })" class="btn btn-outline-success btn-lg me-2">
+                        <i class="fas fa-download me-2"></i>
+                        Скачать билет
+                    </a>
+                    <a href="/Home/Railway" class="btn btn-primary btn-lg">
+                        <i class="fas fa-search me-2"></i>
+                        Новый поиск
+                    </a>
+                </div>
+            </div>
+
+            <!-- Информация о посадке -->
+            <div class="alert alert-info mt-4 border-0 rounded-lg">
+                <div class="d-flex">
+                    <i class="fas fa-info-circle fa-2x text-info me-3"></i>
+                    <div>
+                        <h6 class="alert-heading mb-2">Как пройти посадку?</h6>
+                        <p class="mb-0 small">
+                            Для посадки на поезд предъявите документ, указанный при оформлении,
+                            и данный электронный билет (можно на экране телефона или распечатанный).
+                            Рекомендуем прибыть на вокзал за 45-60 минут до отправления.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Очищаем историю, чтобы при нажатии "Назад" уходило на поиск
+    (function() {
+        var currentUrl = window.location.href;
+        if (window.history && window.history.replaceState) {
+            window.history.replaceState({ page: 'confirmation' }, document.title, currentUrl);
+            window.history.pushState({ page: 'confirmation' }, document.title, currentUrl);
+        }
+    })();
+
+    window.addEventListener('popstate', function(event) {
+        if (window._redirecting) return;
+        window._redirecting = true;
+        window.location.replace('/Home/Railway');
+    });
+</script>
+
+<style>
+    .section-subtitle {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        font-size: 1.3rem;
+        color: #334155;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .route-title {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 700;
+        font-size: 2rem;
+        color: #0379D9;
+        margin: 0;
+    }
+
+    .card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .train-info, .seat-info, .passenger-card {
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .btn {
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        font-family: 'Nunito', sans-serif;
+    }
+
+    .btn-primary {
+        background: #0379D9;
+        border: none;
+        box-shadow: 0 4px 12px rgba(3, 121, 217, 0.2);
+        padding: 14px 30px;
+        font-size: 1.1rem;
+    }
+
+        .btn-primary:hover {
+            background: #0356a8;
+            transform: translateY(-2px);
+        }
+
+    .btn-outline-primary {
+        border: 2px solid #0379D9;
+        color: #0379D9;
+        padding: 14px 30px;
+        font-size: 1.1rem;
+    }
+
+        .btn-outline-primary:hover {
+            background: #0379D9;
+            color: white;
+        }
+
+    .btn-outline-success {
+        border: 2px solid #40B624;
+        color: #40B624;
+        padding: 14px 30px;
+        font-size: 1.1rem;
+    }
+
+        .btn-outline-success:hover {
+            background: #40B624;
+            color: white;
+        }
+
+    .badge {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        padding: 6px 12px;
+        border-radius: 8px;
+    }
+
+        .badge.bg-primary {
+            background: #0379D9 !important;
+        }
+
+        .badge.bg-secondary {
+            background: #64748b !important;
+        }
+
+        .badge.bg-success {
+            background: #40B624 !important;
+        }
+
+    @@media (max-width: 768px) {
+        .page-header-section {
+            flex-direction: column;
+            text-align: center;
+            padding: 20px;
+            gap: 15px;
+        }
+
+            .page-header-section::before {
+                width: 100%;
+                height: 6px;
+                top: 0;
+                left: 0;
+                background: linear-gradient(to right, #0379D9, #40B624);
+            }
+
+        .page-header-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 1.75rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+        }
+
+        .route-title {
+            font-size: 1.5rem;
+        }
+
+        .passenger-card .row {
+            flex-direction: column;
+            gap: 8px;
+        }
+    }
+
+    .word-break {
+        word-break: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+    }
+
+    .table-sm td, .table-sm th {
+        vertical-align: middle;
+    }
+
+    @@media (max-width: 576px) {
+        .table-sm td {
+            word-break: break-word;
+        }
+    }
+</style>
+
+@{
+    string GetTrainType(string trainNumber)
+    {
+        if (trainNumber.StartsWith("0") || trainNumber.StartsWith("1") || trainNumber.StartsWith("2"))
+            return "Фирменный";
+        if (trainNumber.StartsWith("3") || trainNumber.StartsWith("4"))
+            return "Скоростной";
+        if (trainNumber.StartsWith("7") || trainNumber.StartsWith("8"))
+            return "Пригородный";
+        return "Пассажирский";
+    }
+
+    string FormatDuration(int minutes)
+    {
+        var hours = minutes / 60;
+        var mins = minutes % 60;
+        return $"{hours} ч {mins} мин";
+    }
+
+    string GetDocumentTypeName(string type)
+    {
+        return type switch
+        {
+            "passport" => "Паспорт РФ",
+            "foreign_passport" => "Загранпаспорт",
+            "birth_certificate" => "Свидетельство о рождении",
+            "military_id" => "Военный билет",
+            _ => type ?? "—"
+        };
+    }
+}

@@ -1,0 +1,109 @@
+﻿{
+  "trains": [
+    {
+      "trainNumber": "002Э",
+      "brand": "Фирменный",
+      "departureTime": "01:00",
+      "arrivalTime": "21:32",
+      "travelTime": "20:32",
+      "categories": [
+        {
+          "type": "plazcard",
+          "price": 3500
+        },
+        {
+          "type": "coupe",
+          "price": 5500
+        },
+        {
+          "type": "lux",
+          "price": 8500
+        }
+      ]
+    },
+    {
+      "trainNumber": "038С",
+      "brand": "Скоростной",
+      "departureTime": "00:32",
+      "arrivalTime": "06:14",
+      "travelTime": "05:42",
+      "categories": [
+        {
+          "type": "sedentary",
+          "price": 1200
+        },
+        {
+          "type": "plazcard",
+          "price": 1800
+        },
+        {
+          "type": "coupe",
+          "price": 2800
+        }
+      ]
+    },
+    {
+      "trainNumber": "059А",
+      "brand": "Пассажирский",
+      "departureTime": "03:08",
+      "arrivalTime": "08:30",
+      "travelTime": "05:22",
+      "categories": [
+        {
+          "type": "sedentary",
+          "price": 1000
+        },
+        {
+          "type": "plazcard",
+          "price": 1500
+        },
+        {
+          "type": "coupe",
+          "price": 2500
+        }
+      ]
+    },
+    {
+      "trainNumber": "099А",
+      "brand": "Скорый",
+      "departureTime": "05:04",
+      "arrivalTime": "13:55",
+      "travelTime": "08:51",
+      "categories": [
+        {
+          "type": "plazcard",
+          "price": 2000
+        },
+        {
+          "type": "coupe",
+          "price": 3500
+        },
+        {
+          "type": "lux",
+          "price": 6500
+        }
+      ]
+    },
+    {
+      "trainNumber": "137С",
+      "brand": "Скоростной",
+      "departureTime": "00:32",
+      "arrivalTime": "06:14",
+      "travelTime": "05:42",
+      "categories": [
+        {
+          "type": "sedentary",
+          "price": 1100
+        },
+        {
+          "type": "plazcard",
+          "price": 1700
+        },
+        {
+          "type": "coupe",
+          "price": 2700
+        }
+      ]
+    }
+  ]
+}

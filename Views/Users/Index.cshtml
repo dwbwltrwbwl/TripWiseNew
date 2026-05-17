@@ -1,0 +1,98 @@
+﻿@model IEnumerable<TripWise.Models.User>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <!-- Фамилия -->
+            <th>
+                @Html.DisplayNameFor(model => model.LastName)
+            </th>
+
+            <!-- Имя -->
+            <th>
+                @Html.DisplayNameFor(model => model.FirstName)
+            </th>
+
+            <!-- Отчество -->
+            <th>
+                @Html.DisplayNameFor(model => model.MiddleName)
+            </th>
+
+            <!-- Email -->
+            <th>
+                @Html.DisplayNameFor(model => model.Email)
+            </th>
+
+            <!-- Пароль (может быть скрыт или показывать метку) -->
+            <th>
+                Пароль
+            </th>
+
+            <!-- Возраст -->
+            <th>
+                @Html.DisplayNameFor(model => model.Age)
+            </th>
+
+            <!-- Дата создания -->
+            <th>
+                @Html.DisplayNameFor(model => model.CreatedAt)
+            </th>
+
+            <!-- Роль -->
+            <th>
+                Роль
+            </th>
+
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+                <!-- Фамилия -->
+                <td>
+                    @Html.DisplayFor(modelItem => item.LastName)
+                </td>
+
+                <!-- Имя -->
+                <td>
+                    @Html.DisplayFor(modelItem => item.FirstName)
+                </td>
+
+                <!-- Отчество -->
+                <td>
+                    @Html.DisplayFor(modelItem => item.MiddleName)
+                </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Email)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PasswordHash)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Age)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CreatedAt)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdRoleNavigation.IdRole)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.IdUser">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.IdUser">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.IdUser">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

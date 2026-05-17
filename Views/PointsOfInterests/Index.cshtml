@@ -1,0 +1,107 @@
+﻿@model IEnumerable<TripWise.Models.PointsOfInterest>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Description)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Latitude)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Longitude)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Address)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PlannedDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PlannedTime)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Cost)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.BookingLink)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Notes)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AddedBy)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IdInterestCategoryNavigation)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IdTripNavigation)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Latitude)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Longitude)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Address)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PlannedDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PlannedTime)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Cost)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.BookingLink)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Notes)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AddedBy.IdUser)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdInterestCategoryNavigation.IdInterestCategory)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdTripNavigation.IdTrip)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.IdPoint">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.IdPoint">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.IdPoint">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

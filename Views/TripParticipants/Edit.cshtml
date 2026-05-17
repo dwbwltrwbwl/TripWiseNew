@@ -1,0 +1,49 @@
+﻿@model TripWise.Models.TripParticipant
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>TripParticipant</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="IdTripParticipant" />
+            <div class="form-group">
+                <label asp-for="IdTrip" class="control-label"></label>
+                <select asp-for="IdTrip" class="form-control" asp-items="ViewBag.IdTrip"></select>
+                <span asp-validation-for="IdTrip" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="IdUser" class="control-label"></label>
+                <select asp-for="IdUser" class="form-control" asp-items="ViewBag.IdUser"></select>
+                <span asp-validation-for="IdUser" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="IdParticipantRole" class="control-label"></label>
+                <select asp-for="IdParticipantRole" class="form-control" asp-items="ViewBag.IdParticipantRole"></select>
+                <span asp-validation-for="IdParticipantRole" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="JoinedAt" class="control-label"></label>
+                <input asp-for="JoinedAt" class="form-control" />
+                <span asp-validation-for="JoinedAt" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,65 @@
+﻿@model IEnumerable<TripWise.Models.DTOs.ChatDto>
+
+@{
+    var activeChatId = ViewBag.ActiveChatId as int?;
+}
+
+@if (Model != null && Model.Any())
+{
+    foreach (var chat in Model)
+    {
+        var isActive = activeChatId.HasValue && activeChatId.Value == chat.Id;
+        <div class="chat-item p-3 border-bottom @(isActive ? "active" : "")"
+             onclick="loadChat(@chat.Id)"
+             data-chat-id="@chat.Id"
+             style="cursor: pointer;">
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="mb-1 fw-bold">@chat.Name</h6>
+                        @if (chat.LastMessage != null)
+                        {
+                            <small class="text-muted ms-2">@chat.LastMessage.SentAt.ToString("HH:mm")</small>
+                        }
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted text-truncate" style="max-width: 180px;">
+                            @if (chat.LastMessage != null)
+                            {
+                                <span class="fw-semibold">@chat.LastMessage.SenderName:</span>
+                                <span>@chat.LastMessage.Text</span>
+                            }
+                            else
+                            {
+                                <span class="fst-italic">Нет сообщений</span>
+                            }
+                        </small>
+                        @if (chat.UnreadCount > 0)
+                        {
+                            <span class="badge bg-primary rounded-pill ms-2">@chat.UnreadCount</span>
+                        }
+                    </div>
+                    <small class="text-muted">
+                        <i class="fas fa-users me-1"></i>@chat.MemberCount
+                        @if (chat.Type == "private")
+                        {
+                            <i class="fas fa-lock ms-2"></i>
+                        }
+                        else if (chat.Type == "trip")
+                        {
+                            <i class="fas fa-suitcase ms-2"></i>
+                        }
+                    </small>
+                </div>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="text-center p-4">
+        <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+        <p class="text-muted mb-0">У вас пока нет чатов</p>
+        <small class="text-muted">Найдите попутчиков, чтобы начать общение</small>
+    </div>
+}

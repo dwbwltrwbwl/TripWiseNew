@@ -1,0 +1,498 @@
+﻿<div class="mobile-header-spacer d-block d-lg-none" style="height: 70px;"></div>
+
+@{
+    ViewData["Title"] = "Часто задаваемые вопросы";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Заголовок страницы в стиле сайта -->
+            <div class="page-header-section mb-5">
+                <div class="page-header-icon">
+                    <i class="fas fa-comments text-white"></i>
+                </div>
+                <div class="page-header-content">
+                    <h1 class="page-title">
+                        Часто задаваемые вопросы
+                    </h1>
+                    <p class="page-subtitle">Здесь собраны ответы на самые популярные вопросы наших пользователей</p>
+                </div>
+            </div>
+
+            <!-- Основное содержание -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-question-circle text-primary me-2"></i>
+                        Общие вопросы
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item border-0 mb-2">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    Нужно ли распечатывать электронный билет?
+                                </button>
+                            </h2>
+                            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Для авиаперелетов обычно достаточно электронного билета на смартфоне. Для ЖД билетов рекомендуется иметь распечатанную копию или показывать QR-код на устройстве.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item border-0 mb-2">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    Можно ли изменить данные пассажира после оплаты?
+                                </button>
+                            </h2>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Изменение данных пассажира после оплаты возможно только в соответствии с правилами перевозчика и может потребовать дополнительной оплаты. Рекомендуем внимательно проверять данные перед оплатой.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item border-0 mb-2">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                    Как получить налоговый вычет за покупку билетов?
+                                </button>
+                            </h2>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Мы предоставляем все необходимые документы для налогового вычета. После поездки вы можете запросить справки через личный кабинет или обратившись в поддержку.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item border-0 mb-2">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                                    Что делать, если рейс задержали или отменили?
+                                </button>
+                            </h2>
+                            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Сразу свяжитесь с нашей поддержкой. Мы поможем перебронировать билет или оформить возврат согласно правилам авиакомпании.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Дополнительные вопросы -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white border-0 py-3">
+                            <h3 class="section-subtitle mb-0">
+                                <i class="fas fa-ticket-alt text-primary me-2"></i>
+                                Вопросы по бронированию
+                            </h3>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="accordion" id="bookingFaqAccordion">
+                                <div class="accordion-item border-0 mb-2">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#bookingFaq1">
+                                            Как забронировать билет для ребенка?
+                                        </button>
+                                    </h2>
+                                    <div id="bookingFaq1" class="accordion-collapse collapse" data-bs-parent="#bookingFaqAccordion">
+                                        <div class="accordion-body">
+                                            При бронировании укажите возраст ребенка. Для детей до 2 лет обычно доступны бесплатные билеты или билеты со скидкой. Не забудьте указать дату рождения ребенка.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item border-0 mb-2">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#bookingFaq2">
+                                            Можно ли забронировать несколько мест рядом?
+                                        </button>
+                                    </h2>
+                                    <div id="bookingFaq2" class="accordion-collapse collapse" data-bs-parent="#bookingFaqAccordion">
+                                        <div class="accordion-body">
+                                            Да, мы автоматически подбираем соседние места при бронировании для нескольких пассажиров.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white border-0 py-3">
+                            <h3 class="section-subtitle mb-0">
+                                <i class="fas fa-credit-card text-primary me-2"></i>
+                                Вопросы по оплате
+                            </h3>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="accordion" id="paymentFaqAccordion">
+                                <div class="accordion-item border-0 mb-2">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#paymentFaq1">
+                                            Как быстро приходит подтверждение оплаты?
+                                        </button>
+                                    </h2>
+                                    <div id="paymentFaq1" class="accordion-collapse collapse" data-bs-parent="#paymentFaqAccordion">
+                                        <div class="accordion-body">
+                                            Подтверждение приходит моментально после успешной оплаты. Электронный билет отправляется на email в течение 5-10 минут.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item border-0 mb-2">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#paymentFaq2">
+                                            Что делать, если деньги списались, а билета нет?
+                                        </button>
+                                    </h2>
+                                    <div id="paymentFaq2" class="accordion-collapse collapse" data-bs-parent="#paymentFaqAccordion">
+                                        <div class="accordion-body">
+                                            Свяжитесь с нашей поддержкой немедленно.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Блок "Не нашли ответ" -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-body p-4 text-center">
+                    <i class="fas fa-headset fa-3x text-primary mb-3"></i>
+                    <h3 class="section-subtitle mb-3" style="justify-content: center;">Не нашли ответ на свой вопрос?</h3>
+                    <p class="text-muted mb-4">Наша служба поддержки всегда готова помочь вам</p>
+                    <div class="d-flex justify-content-center gap-3 flex-wrap">
+                        <a asp-controller="Home" asp-action="Contact" class="btn btn-primary btn-lg">
+                            <i class="fas fa-envelope me-2"></i>Написать сообщение
+                        </a>
+                        <a href="tel:+78001234567" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-phone me-2"></i>Позвонить
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Стили для заголовка страницы (унифицированные) */
+    .page-header-section {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 25px 30px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .page-header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(to bottom, #0379D9, #40B624);
+        }
+
+    .page-header-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #0379D9, #40B624);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 4px 15px rgba(3, 121, 217, 0.2);
+        flex-shrink: 0;
+    }
+
+        .page-header-icon i {
+            color: white !important;
+        }
+
+    .page-header-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .page-title {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 800;
+        font-size: 2.5rem;
+        color: #0379D9;
+        margin: 0 0 8px 0;
+        line-height: 1.2;
+        word-break: break-word;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        font-size: 1.1rem;
+        margin: 0;
+        line-height: 1.4;
+        word-break: break-word;
+    }
+
+    .section-subtitle {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        font-size: 1.3rem;
+        color: #334155;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    /* Стили для карточек */
+    .card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+        .card:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+    /* Стили для аккордеона */
+    .accordion-button {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        border-radius: 12px !important;
+        border: 1px solid #e2e8f0;
+        background-color: white;
+        color: #334155;
+        padding: 16px 20px;
+    }
+
+        .accordion-button:not(.collapsed) {
+            background-color: #f0f7ff;
+            color: #0379D9;
+            border-color: #0379D9;
+            box-shadow: none;
+        }
+
+        .accordion-button:focus {
+            box-shadow: 0 0 0 0.2rem rgba(3, 121, 217, 0.25);
+            border-color: #0379D9;
+        }
+
+        .accordion-button::after {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%230379D9'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+        }
+
+    .accordion-body {
+        padding: 20px;
+        background-color: white;
+        border-radius: 0 0 12px 12px;
+    }
+
+    /* Кнопки */
+    .btn {
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        font-family: 'Nunito', sans-serif;
+    }
+
+    .btn-primary {
+        background: #0379D9;
+        border: none;
+        box-shadow: 0 4px 12px rgba(3, 121, 217, 0.2);
+        padding: 14px 20px;
+        font-size: 1.1rem;
+    }
+
+        .btn-primary:hover {
+            background: #0356a8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(3, 121, 217, 0.3);
+        }
+
+        .btn-primary i {
+            color: white !important;
+        }
+
+    .btn-outline-primary {
+        border: 2px solid #0379D9;
+        color: #0379D9;
+        background: white;
+    }
+
+        .btn-outline-primary:hover {
+            background: #f0f7ff;
+            border-color: #0356a8;
+            color: #0356a8;
+        }
+
+    .btn-lg {
+        padding: 16px 24px;
+        font-size: 1.2rem;
+    }
+
+    /* Иконки */
+    .fa-question-circle,
+    .fa-ticket-alt,
+    .fa-credit-card,
+    .fa-headset,
+    .fa-comments {
+        color: #0379D9 !important;
+    }
+
+    /* Центрирование блока "Не нашли ответ" */
+    .text-center {
+        text-align: center;
+    }
+
+    .card-body.text-center .section-subtitle {
+        justify-content: center;
+    }
+
+    .d-flex.justify-content-center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    /* Адаптивность */
+    @@media (max-width: 768px) {
+        .page-header-section
+
+    {
+        padding: 20px;
+        gap: 15px;
+    }
+
+    .page-header-section::before {
+        width: 100%;
+        height: 6px;
+        top: 0;
+        left: 0;
+        background: linear-gradient(to right, #0379D9, #40B624);
+    }
+
+    .page-header-icon {
+        width: 55px;
+        height: 55px;
+        font-size: 1.5rem;
+    }
+
+    .page-title {
+        font-size: 1.6rem;
+        margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.2rem;
+    }
+
+    .accordion-button {
+        padding: 12px 16px;
+        font-size: 0.95rem;
+    }
+
+    .btn {
+        width: 100%;
+    }
+
+    .d-flex.justify-content-center {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+        .d-flex.justify-content-center .btn {
+            width: 100%;
+            max-width: 280px;
+            margin: 0 auto;
+        }
+
+    }
+
+    @@media (max-width: 576px) {
+        .page-header-section
+
+    {
+        padding: 15px;
+        gap: 12px;
+    }
+
+    .page-header-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.3rem;
+    }
+
+    .page-title {
+        font-size: 1.4rem;
+    }
+
+    .page-subtitle {
+        font-size: 0.85rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.1rem;
+    }
+
+    .btn-lg {
+        padding: 14px 20px;
+        font-size: 1.1rem;
+    }
+
+    }
+</style>
+
+<script>
+    // Автоматическое открытие первого аккордеона
+    document.addEventListener('DOMContentLoaded', function() {
+        const firstAccordion = document.querySelector('#faq1');
+        if (firstAccordion) {
+            const bsCollapse = new bootstrap.Collapse(firstAccordion, {
+                toggle: true
+            });
+        }
+    });
+
+    // Плавная прокрутка
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            const targetId = this.getAttribute('href');
+            if (targetId !== '#') {
+                e.preventDefault();
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        });
+    });
+</script>

@@ -1,0 +1,581 @@
+﻿@{
+    ViewData["Title"] = "Регистрация";
+}
+
+<style>
+    body {
+        background: url('/ostrov-optimized.jpg');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        min-height: 100vh;
+    }
+
+    .card {
+        border-radius: 15px;
+        background: rgba(255, 255, 255, 0.98);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Базовые стили для полей ввода */
+    .form-control {
+        border-radius: 10px;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+
+        .form-control:focus {
+            border-color: #047bd6;
+            box-shadow: 0 0 0 0.2rem rgba(4, 123, 214, 0.25);
+        }
+
+    /* Группа поля с паролем */
+    .password-input-group {
+        position: relative;
+        display: block;
+    }
+
+    /* Контейнер для поля ввода и кнопки */
+    .password-input-wrapper {
+        position: relative;
+        display: block;
+    }
+
+        /* Стили для полей ввода внутри группы пароля */
+        .password-input-wrapper .form-control {
+            padding-right: 70px;
+        }
+
+            /* Стили для иконок валидации (галочка/крестик) */
+            .password-input-wrapper .form-control.is-valid {
+                border-color: #28a745;
+                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+                background-repeat: no-repeat;
+                background-position: right 55px center;
+                background-size: 0.75rem 0.75rem;
+            }
+
+            .password-input-wrapper .form-control.is-invalid {
+                border-color: #dc3545;
+                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+                background-repeat: no-repeat;
+                background-position: right 55px center;
+                background-size: 0.75rem 0.75rem;
+            }
+
+    /* Кнопка переключения видимости пароля */
+    .password-toggle {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #6c757d;
+        cursor: pointer;
+        z-index: 10;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+    }
+
+        .password-toggle:hover {
+            background-color: #f8f9fa;
+            color: #047bd6;
+        }
+
+        .password-toggle i {
+            font-size: 1rem;
+        }
+
+    /* Сообщение об ошибке не влияет на позицию глаза */
+    .invalid-feedback {
+        display: block;
+        width: 100%;
+        margin-top: 0.25rem;
+    }
+
+    /* Кнопка отправки */
+    .btn {
+        border-radius: 10px;
+        padding: 12px;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+    }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(4, 123, 214, 0.3);
+        }
+
+    /* Анимация успешного сообщения */
+    .alert-success {
+        animation: slideIn 0.5s ease-out;
+        transform-origin: top center;
+    }
+
+    @@keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px) scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    /* Счетчики символов */
+    .char-counter {
+        font-size: 0.75rem;
+        margin-top: 4px;
+        transition: color 0.2s ease;
+    }
+
+        .char-counter.warning {
+            color: #ffc107;
+        }
+
+        .char-counter.danger {
+            color: #dc3545;
+        }
+
+    /* Стили для обычных полей (не парольных) */
+    .form-control.is-valid:not(.password-input-wrapper .form-control) {
+        border-color: #28a745;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 0.75rem 0.75rem;
+        padding-right: 2.25rem;
+    }
+
+    .form-control.is-invalid:not(.password-input-wrapper .form-control) {
+        border-color: #dc3545;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 0.75rem 0.75rem;
+        padding-right: 2.25rem;
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h1 class="h3 font-weight-bold" style="font-family: 'Nunito', sans-serif; color: #047bd6;">Регистрация</h1>
+                        <p class="text-muted">Создайте новый аккаунт</p>
+                    </div>
+
+                    <!-- Сообщение об успехе -->
+                    @if (ViewData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert"
+                             style="background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border: none; border-radius: 12px; border-left: 4px solid #28a745;">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <div class="rounded-circle bg-success p-2 d-flex align-items-center justify-content-center"
+                                         style="width: 40px; height: 40px;">
+                                        <i class="fas fa-check text-white"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h5 class="mb-1 text-success fw-bold">
+                                        <i class="fas fa-trophy me-2"></i>Регистрация успешно завершена!
+                                    </h5>
+                                    <p class="mb-0">@ViewData["SuccessMessage"]</p>
+                                </div>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            <div class="mt-2">
+                                <a asp-controller="Account" asp-action="Login"
+                                   class="btn btn-sm btn-outline-success mt-2">
+                                    <i class="fas fa-sign-in-alt me-1"></i>Перейти к входу
+                                </a>
+                            </div>
+                        </div>
+                    }
+
+                    <form method="post" asp-action="Register" id="registerForm">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="lastName" class="form-label">Фамилия <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg" id="lastName" name="lastName"
+                                       placeholder="Иванов" maxlength="100"
+                                       value="@ViewData["LastName"]"
+                                       required>
+                                <div class="char-counter" id="lastNameCounter">0/100 символов</div>
+                                <div class="invalid-feedback" id="lastNameError"></div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="firstName" class="form-label">Имя <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg" id="firstName" name="firstName"
+                                       placeholder="Иван" maxlength="100"
+                                       value="@ViewData["FirstName"]"
+                                       required>
+                                <div class="char-counter" id="firstNameCounter">0/100 символов</div>
+                                <div class="invalid-feedback" id="firstNameError"></div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="middleName" class="form-label">Отчество</label>
+                                <input type="text" class="form-control form-control-lg" id="middleName" name="middleName"
+                                       placeholder="Иванович" maxlength="100"
+                                       value="@ViewData["MiddleName"]">
+                                <div class="char-counter" id="middleNameCounter">0/100 символов</div>
+                                <div class="invalid-feedback" id="middleNameError"></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email адрес <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control form-control-lg" id="email" name="email"
+                                   placeholder="ваш@email.com" maxlength="255"
+                                   value="@ViewData["Email"]"
+                                   required>
+                            <div class="char-counter" id="emailCounter">0/255 символов</div>
+                            <div class="invalid-feedback" id="emailError"></div>
+                        </div>
+
+                        <div class="mb-3 password-input-group">
+                            <label for="password" class="form-label">Пароль <span class="text-danger">*</span></label>
+                            <div class="password-input-wrapper">
+                                <input type="password" class="form-control form-control-lg" id="password" name="password"
+                                       placeholder="Создайте пароль" maxlength="50"
+                                       value="@ViewData["Password"]"
+                                       required>
+                                <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="char-counter" id="passwordCounter">0/50 символов</div>
+                            <div class="invalid-feedback" id="passwordError"></div>
+                        </div>
+
+                        <div class="mb-3 password-input-group">
+                            <label for="confirmPassword" class="form-label">Подтверждение пароля <span class="text-danger">*</span></label>
+                            <div class="password-input-wrapper">
+                                <input type="password" class="form-control form-control-lg" id="confirmPassword" name="confirmPassword"
+                                       placeholder="Повторите пароль" maxlength="50"
+                                       value="@ViewData["ConfirmPassword"]"
+                                       required>
+                                <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="invalid-feedback" id="confirmPasswordError"></div>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="agreeTerms" name="agreeTerms"
+                                   @(ViewData["AgreeTerms"]?.ToString() == "on" ? "checked" : "") required>
+                            <label class="form-check-label" for="agreeTerms">
+                                Я соглашаюсь с <a asp-controller="Home" asp-action="Terms" class="text-decoration-none" style="color: #047bd6;" target="_blank">условиями использования</a>
+                            </label>
+                            <div class="invalid-feedback" id="agreeTermsError">Необходимо согласиться с условиями использования</div>
+                        </div>
+
+                        <!-- Вывод ошибок валидации -->
+                        <div id="formErrors" class="alert alert-danger d-none mb-3" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <span id="formErrorsText"></span>
+                        </div>
+
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger">
+                                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                {
+                                    <div>@error.ErrorMessage</div>
+                                }
+                            </div>
+                        }
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100" id="submitBtn"
+                                style="background: linear-gradient(90deg, #047bd6, #3ab326); border: none; font-family: 'Nunito', sans-serif; font-weight: 800;">
+                            Зарегистрироваться
+                        </button>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <div class="text-center">
+                        <p class="text-muted">
+                            Уже есть аккаунт?
+                            <a asp-controller="Account" asp-action="Login" class="text-decoration-none" style="color: #3ab326; font-weight: 600;">
+                                Войти
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Функция для переключения видимости пароля
+    function togglePassword(inputId) {
+        const passwordInput = document.getElementById(inputId);
+        const toggleButton = passwordInput.nextElementSibling;
+        const icon = toggleButton.querySelector('i');
+
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    // Функция обновления счетчика символов
+    function updateCounter(input, counterId, maxLength) {
+        const length = input.value.length;
+        const counter = document.getElementById(counterId);
+        if (counter) {
+            counter.textContent = `${length}/${maxLength} символов`;
+            if (length === maxLength) {
+                counter.classList.add('danger');
+                counter.classList.remove('warning');
+            } else if (length > maxLength * 0.9) {
+                counter.classList.add('warning');
+                counter.classList.remove('danger');
+            } else {
+                counter.classList.remove('warning', 'danger');
+            }
+        }
+    }
+
+    // Валидация имени/фамилии/отчества (только буквы и дефис)
+    function validateNameField(input, errorId, fieldName) {
+        const value = input.value.trim();
+        const error = document.getElementById(errorId);
+        const nameRegex = /^[а-яА-ЯёЁa-zA-Z\-]+$/;
+
+        if (value.length === 0) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            error.textContent = `${fieldName} обязательно для заполнения`;
+            return false;
+        } else if (value.length < 2) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            error.textContent = `${fieldName} должно содержать минимум 2 символа`;
+            return false;
+        } else if (!nameRegex.test(value)) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            error.textContent = `${fieldName} может содержать только буквы и дефис`;
+            return false;
+        } else {
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+            error.textContent = '';
+            return true;
+        }
+    }
+
+    // Валидация email
+    function validateEmail(input, errorId) {
+        const value = input.value.trim();
+        const error = document.getElementById(errorId);
+        const emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+
+        if (value.length === 0) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            error.textContent = 'Email обязателен для заполнения';
+            return false;
+        } else if (!emailRegex.test(value)) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            error.textContent = 'Введите корректный email адрес (example@domain.com)';
+            return false;
+        } else {
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+            error.textContent = '';
+            return true;
+        }
+    }
+
+    // Валидация пароля
+    function validatePassword(input, errorId) {
+        const value = input.value;
+        const error = document.getElementById(errorId);
+
+        if (value.length === 0) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            error.textContent = 'Пароль обязателен для заполнения';
+            return false;
+        } else if (value.length < 6) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            error.textContent = 'Пароль должен содержать минимум 6 символов';
+            return false;
+        } else {
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+            error.textContent = '';
+            return true;
+        }
+    }
+
+    // Проверка совпадения паролей
+    function validatePasswordMatch() {
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirmPassword');
+        const error = document.getElementById('confirmPasswordError');
+
+        if (confirmPassword.value.length === 0) {
+            confirmPassword.classList.add('is-invalid');
+            confirmPassword.classList.remove('is-valid');
+            error.textContent = 'Подтвердите пароль';
+            return false;
+        } else if (password.value !== confirmPassword.value) {
+            confirmPassword.classList.add('is-invalid');
+            confirmPassword.classList.remove('is-valid');
+            error.textContent = 'Пароли не совпадают';
+            return false;
+        } else {
+            confirmPassword.classList.remove('is-invalid');
+            confirmPassword.classList.add('is-valid');
+            error.textContent = '';
+            return true;
+        }
+    }
+
+    // Валидация согласия
+    function validateAgreeTerms(checkbox, errorId) {
+        const error = document.getElementById(errorId);
+        if (!checkbox.checked) {
+            checkbox.classList.add('is-invalid');
+            error.textContent = 'Необходимо согласиться с условиями использования';
+            return false;
+        } else {
+            checkbox.classList.remove('is-invalid');
+            error.textContent = '';
+            return true;
+        }
+    }
+
+    // Инициализация всех валидаций
+    document.addEventListener('DOMContentLoaded', function() {
+        // Получаем все поля
+        const lastName = document.getElementById('lastName');
+        const firstName = document.getElementById('firstName');
+        const middleName = document.getElementById('middleName');
+        const email = document.getElementById('email');
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirmPassword');
+        const agreeTerms = document.getElementById('agreeTerms');
+        const form = document.getElementById('registerForm');
+
+        // Устанавливаем счетчики символов
+        if (lastName) {
+            updateCounter(lastName, 'lastNameCounter', 100);
+            lastName.addEventListener('input', function() {
+                updateCounter(this, 'lastNameCounter', 100);
+                validateNameField(this, 'lastNameError', 'Фамилия');
+            });
+        }
+
+        if (firstName) {
+            updateCounter(firstName, 'firstNameCounter', 100);
+            firstName.addEventListener('input', function() {
+                updateCounter(this, 'firstNameCounter', 100);
+                validateNameField(this, 'firstNameError', 'Имя');
+            });
+        }
+
+        if (middleName) {
+            updateCounter(middleName, 'middleNameCounter', 100);
+            middleName.addEventListener('input', function() {
+                updateCounter(this, 'middleNameCounter', 100);
+                if (this.value.length > 0) {
+                    validateNameField(this, 'middleNameError', 'Отчество');
+                } else {
+                    this.classList.remove('is-invalid', 'is-valid');
+                }
+            });
+        }
+
+        if (email) {
+            updateCounter(email, 'emailCounter', 255);
+            email.addEventListener('input', function() {
+                updateCounter(this, 'emailCounter', 255);
+                validateEmail(this, 'emailError');
+            });
+        }
+
+        if (password) {
+            updateCounter(password, 'passwordCounter', 50);
+            password.addEventListener('input', function() {
+                updateCounter(this, 'passwordCounter', 50);
+                validatePassword(this, 'passwordError');
+                if (confirmPassword.value) {
+                    validatePasswordMatch();
+                }
+            });
+        }
+
+        if (confirmPassword) {
+            confirmPassword.addEventListener('input', function() {
+                validatePasswordMatch();
+            });
+        }
+
+        // Отправка формы с полной валидацией
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const isLastNameValid = lastName ? validateNameField(lastName, 'lastNameError', 'Фамилия') : true;
+                const isFirstNameValid = firstName ? validateNameField(firstName, 'firstNameError', 'Имя') : true;
+                const isMiddleNameValid = middleName && middleName.value.length > 0 ? validateNameField(middleName, 'middleNameError', 'Отчество') : true;
+                const isEmailValid = email ? validateEmail(email, 'emailError') : true;
+                const isPasswordValid = password ? validatePassword(password, 'passwordError') : true;
+                const isPasswordMatchValid = confirmPassword ? validatePasswordMatch() : true;
+                const isAgreeTermsValid = agreeTerms ? validateAgreeTerms(agreeTerms, 'agreeTermsError') : true;
+
+                if (!isLastNameValid || !isFirstNameValid || !isMiddleNameValid || !isEmailValid ||
+                    !isPasswordValid || !isPasswordMatchValid || !isAgreeTermsValid) {
+                    e.preventDefault();
+
+                    const formErrors = document.getElementById('formErrors');
+                    const formErrorsText = document.getElementById('formErrorsText');
+                    if (formErrors && formErrorsText) {
+                        formErrorsText.textContent = 'Пожалуйста, исправьте ошибки в форме перед отправкой';
+                        formErrors.classList.remove('d-none');
+                        setTimeout(() => {
+                            formErrors.classList.add('d-none');
+                        }, 5000);
+                    }
+
+                    // Прокрутка к первому ошибочному полю
+                    const firstInvalid = document.querySelector('.is-invalid');
+                    if (firstInvalid) {
+                        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        firstInvalid.focus();
+                    }
+                }
+            });
+        }
+
+        // Восстанавливаем состояние чекбокса
+        const agreeTermsValue = "@ViewData["AgreeTerms"]";
+        if (agreeTermsValue === "on" && agreeTerms) {
+            agreeTerms.checked = true;
+        }
+    });
+</script>

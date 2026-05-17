@@ -1,0 +1,141 @@
+﻿@{
+    ViewData["Title"] = "Вход в админ панель";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Вместе В Путь</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #0379D9 0%, #40B624 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .login-body {
+            padding: 2rem;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+            .form-control:focus {
+                border-color: #0379D9;
+                box-shadow: 0 0 0 0.2rem rgba(3, 121, 217, 0.25);
+            }
+
+        .btn-admin {
+            background: linear-gradient(135deg, #0379D9, #40B624);
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+            .btn-admin:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(3, 121, 217, 0.3);
+            }
+
+        .admin-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #0379D9, #40B624);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .security-notice {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="admin-icon">
+                <i class="fas fa-lock"></i>
+            </div>
+            <h3 class="mb-2">Админ панель</h3>
+            <p class="mb-0 opacity-75">Вместе В Путь</p>
+        </div>
+
+        <div class="login-body">
+            <form method="post" asp-controller="Admin" asp-action="Login">
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Имя пользователя</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0">
+                            <i class="fas fa-user text-muted"></i>
+                        </span>
+                        <input type="text" class="form-control border-start-0" name="username" placeholder="admin" required>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-medium">Пароль</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0">
+                            <i class="fas fa-key text-muted"></i>
+                        </span>
+                        <input type="password" class="form-control border-start-0" name="password" placeholder="••••••••" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-admin w-100 mb-3">
+                    <i class="fas fa-sign-in-alt me-2"></i>Войти
+                </button>
+
+                <div class="security-notice">
+                    <i class="fas fa-shield-alt me-2 text-warning"></i>
+                    <strong>Доступ ограничен</strong><br>
+                    Только для авторизованного персонала
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

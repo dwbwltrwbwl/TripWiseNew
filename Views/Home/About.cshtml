@@ -1,0 +1,603 @@
+﻿@{
+    ViewData["Title"] = "О нас";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Заголовок страницы в стиле сайта -->
+            <div class="mobile-header-spacer d-block d-lg-none" style="height: 70px;"></div>
+            <div class="page-header-section mb-5">
+                <div class="page-header-icon">
+                    <i class="fas fa-info-circle text-white"></i>
+                </div>
+                <div class="page-header-content">
+                    <h1 class="page-title">
+                        О нас
+                    </h1>
+                    <p class="page-subtitle">Сделаем ваши путешествия незабываемыми</p>
+                </div>
+            </div>
+
+            <!-- О компании -->
+            <div class="card border-0 shadow-sm mb-5">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-route text-primary me-2"></i>
+                        Вместе В Путь
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 text-center mb-4 mb-md-0">
+                            <div class="about-icon mb-3">
+                                <i class="fas fa-route fa-4x text-primary"></i>
+                            </div>
+                            <h4 class="fw-bold mb-1">С 2025 года</h4>
+                            <p class="text-muted">Делаем путешествия проще</p>
+                        </div>
+                        <div class="col-md-8">
+                            <h4 class="fw-bold text-primary mb-3">Наша миссия</h4>
+                            <p class="lead mb-4">Сделать планирование путешествий простым, удобным и доступным для каждого.</p>
+                            <p>Мы верим, что путешествия объединяют людей, расширяют горизонты и дарят незабываемые впечатления. Наша цель — помочь вам создать идеальное путешествие без лишних хлопот.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Что мы предлагаем -->
+            <div class="card border-0 shadow-sm mb-5">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-gift text-primary me-2"></i>
+                        Что мы предлагаем
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="feature-card d-flex flex-column align-items-center text-center p-4 border rounded h-100">
+                                <div class="feature-icon mb-3">
+                                    <i class="fas fa-plane-departure fa-3x"></i>
+                                </div>
+                                <h5 class="fw-semibold mb-2">Авиабилеты</h5>
+                                <p class="text-muted">Поиск и бронирование авиабилетов по лучшим ценам от всех авиакомпаний</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="feature-card d-flex flex-column align-items-center text-center p-4 border rounded h-100">
+                                <div class="feature-icon mb-3">
+                                    <i class="fas fa-train fa-3x"></i>
+                                </div>
+                                <h5 class="fw-semibold mb-2">ЖД билеты</h5>
+                                <p class="text-muted">Билеты на поезда по России и СНГ с удобной электронной регистрацией</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="feature-card d-flex flex-column align-items-center text-center p-4 border rounded h-100">
+                                <div class="feature-icon mb-3">
+                                    <i class="fas fa-hotel fa-3x"></i>
+                                </div>
+                                <h5 class="fw-semibold mb-2">Отели</h5>
+                                <p class="text-muted">Подбор жилья для любого бюджета с отзывами реальных гостей</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Совместное планирование и бюджет -->
+            <div class="card border-0 shadow-sm mb-5">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-users text-primary me-2"></i>
+                        Совместное планирование
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="feature-card d-flex flex-column align-items-center text-center p-4 border rounded h-100">
+                                <div class="feature-icon mb-3">
+                                    <i class="fas fa-people-arrows fa-3x"></i>
+                                </div>
+                                <h5 class="fw-semibold mb-2">Планируйте вместе</h5>
+                                <p class="text-muted">Создавайте поездки, приглашайте друзей и семью, делитесь идеями и обсуждайте маршруты в общих чатах</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card d-flex flex-column align-items-center text-center p-4 border rounded h-100">
+                                <div class="feature-icon mb-3">
+                                    <i class="fas fa-wallet fa-3x"></i>
+                                </div>
+                                <h5 class="fw-semibold mb-2">Управление бюджетом</h5>
+                                <p class="text-muted">Добавляйте расходы, распределяйте их между участниками и отслеживайте баланс в реальном времени</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card d-flex flex-column align-items-center text-center p-4 border rounded h-100">
+                                <div class="feature-icon mb-3">
+                                    <i class="fas fa-map-marked-alt fa-3x"></i>
+                                </div>
+                                <h5 class="fw-semibold mb-2">Точки интереса</h5>
+                                <p class="text-muted">Сохраняйте достопримечательности, рестораны и места, которые хотите посетить, планируйте маршрут</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card d-flex flex-column align-items-center text-center p-4 border rounded h-100">
+                                <div class="feature-icon mb-3">
+                                    <i class="fas fa-file-alt fa-3x"></i>
+                                </div>
+                                <h5 class="fw-semibold mb-2">Документы и заметки</h5>
+                                <p class="text-muted">Храните все важные документы в одном месте, создавайте заметки и чек-листы для сборов</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Наши преимущества -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white border-0 py-3">
+                            <h3 class="section-subtitle mb-0">
+                                <i class="fas fa-medal text-primary me-2"></i>
+                                Наши преимущества
+                            </h3>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled mb-0">
+                                        <li class="mb-3 d-flex align-items-start">
+                                            <div class="advantage-icon me-3">
+                                                <i class="fas fa-search text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-semibold mb-1">Удобный поиск</h6>
+                                                <p class="text-muted mb-0">Быстрое сравнение цен от всех перевозчиков</p>
+                                            </div>
+                                        </li>
+                                        <li class="mb-3 d-flex align-items-start">
+                                            <div class="advantage-icon me-3">
+                                                <i class="fas fa-shield-alt text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-semibold mb-1">Безопасные платежи</h6>
+                                                <p class="text-muted mb-0">Защищенные транзакции и гарантия возврата</p>
+                                            </div>
+                                        </li>
+                                        <li class="d-flex align-items-start">
+                                            <div class="advantage-icon me-3">
+                                                <i class="fas fa-headset text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-semibold mb-1">Поддержка 24/7</h6>
+                                                <p class="text-muted mb-0">Круглосуточная помощь в любых ситуациях</p>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled mb-0">
+                                        <li class="mb-3 d-flex align-items-start">
+                                            <div class="advantage-icon me-3">
+                                                <i class="fas fa-mobile-alt text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-semibold mb-1">Мобильное приложение</h6>
+                                                <p class="text-muted mb-0">Бронирование в один клик с телефона</p>
+                                            </div>
+                                        </li>
+                                        <li class="mb-3 d-flex align-items-start">
+                                            <div class="advantage-icon me-3">
+                                                <i class="fas fa-users text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-semibold mb-1">Групповые поездки</h6>
+                                                <p class="text-muted mb-0">Удобное планирование с друзьями и семьей</p>
+                                            </div>
+                                        </li>
+                                        <li class="d-flex align-items-start">
+                                            <div class="advantage-icon me-3">
+                                                <i class="fas fa-chart-line text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-semibold mb-1">Отчеты и аналитика</h6>
+                                                <p class="text-muted mb-0">Детальная статистика расходов и аналитика поездок</p>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 mt-4 mt-lg-0">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white border-0 py-3">
+                            <h3 class="section-subtitle mb-0">
+                                <i class="fas fa-envelope text-primary me-2"></i>
+                                Контакты
+                            </h3>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="contact-info">
+                                <div class="contact-item d-flex align-items-start mb-4">
+                                    <div class="contact-icon me-3">
+                                        <i class="fas fa-envelope fa-2x"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-semibold mb-1">Email</h6>
+                                        <p class="mb-1">tripwise@yandex.ru</p>
+                                        <small class="text-muted">По всем вопросам</small>
+                                    </div>
+                                </div>
+                                <div class="contact-item d-flex align-items-start mb-4">
+                                    <div class="contact-icon me-3">
+                                        <i class="fas fa-phone-alt fa-2x"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-semibold mb-1">Телефон</h6>
+                                        <p class="mb-1">+7 (800) 123-45-67</p>
+                                        <small class="text-muted">Бесплатно по России</small>
+                                    </div>
+                                </div>
+                                <div class="contact-item d-flex align-items-start mb-4">
+                                    <div class="contact-icon me-3">
+                                        <i class="fas fa-clock fa-2x"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-semibold mb-1">Время работы</h6>
+                                        <p class="mb-1">Круглосуточно</p>
+                                        <small class="text-muted">7 дней в неделю</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Глобальное исправление перекрытия контента фиксированным хедером */
+    body {
+        padding-top: 72px;
+    }
+
+    @@media (max-width: 992px) {
+        body
+
+    {
+        padding-top: 68px;
+    }
+
+    }
+
+    @@media (max-width: 768px) {
+        body
+
+    {
+        padding-top: 60px;
+    }
+
+    }
+
+    /* Стили для заголовка страницы */
+    .page-header-section {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 25px 30px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .page-header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(to bottom, #0379D9, #40B624);
+        }
+
+    .page-header-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #0379D9, #40B624);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 4px 15px rgba(3, 121, 217, 0.2);
+        flex-shrink: 0;
+    }
+
+        .page-header-icon i {
+            color: white !important;
+        }
+
+    .page-header-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .page-title {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 800;
+        font-size: 2.5rem;
+        color: #0379D9;
+        margin: 0 0 8px 0;
+        line-height: 1.2;
+        word-break: break-word;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        font-size: 1.1rem;
+        margin: 0;
+        line-height: 1.4;
+        word-break: break-word;
+    }
+
+    .section-subtitle {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        font-size: 1.3rem;
+        color: #334155;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    /* Стили для карточек */
+    .card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+        .card:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+    /* Иконка о компании */
+    .about-icon {
+        width: 140px;
+        height: 140px;
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        border: 4px solid white;
+        box-shadow: 0 4px 20px rgba(3, 121, 217, 0.15);
+    }
+
+        .about-icon i {
+            color: #0379D9 !important;
+        }
+
+    /* Карточки услуг */
+    .feature-card {
+        transition: all 0.3s ease;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        height: 100%;
+    }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border-color: #0379D9;
+        }
+
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .feature-icon i {
+            color: #0379D9 !important;
+        }
+
+    /* Преимущества */
+    .advantage-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #f0f7ff, #e3f2fd);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+        .advantage-icon i {
+            color: #0379D9 !important;
+            font-size: 1.1rem;
+        }
+
+    /* Контакты */
+    .contact-item {
+        transition: all 0.3s ease;
+    }
+
+        .contact-item:hover {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+    .contact-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+        .contact-icon i {
+            color: #0379D9 !important;
+        }
+
+    /* Иконки */
+    .fa-info-circle,
+    .fa-route,
+    .fa-gift,
+    .fa-medal,
+    .fa-envelope,
+    .fa-plane-departure,
+    .fa-train,
+    .fa-hotel,
+    .fa-people-arrows,
+    .fa-wallet,
+    .fa-map-marked-alt,
+    .fa-file-alt {
+        color: #0379D9 !important;
+    }
+
+    /* Адаптивность для планшетов */
+    @@media (max-width: 768px) {
+        .page-header-section
+
+    {
+        padding: 20px;
+        gap: 15px;
+    }
+
+    .page-header-section::before {
+        width: 100%;
+        height: 6px;
+        top: 0;
+        left: 0;
+        background: linear-gradient(to right, #0379D9, #40B624);
+    }
+
+    .page-header-icon {
+        width: 55px;
+        height: 55px;
+        font-size: 1.5rem;
+    }
+
+    .page-title {
+        font-size: 1.6rem;
+        margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.1rem;
+    }
+
+    .about-icon {
+        width: 110px;
+        height: 110px;
+    }
+
+        .about-icon i {
+            font-size: 3rem !important;
+        }
+
+    .feature-icon {
+        width: 70px;
+        height: 70px;
+    }
+
+        .feature-icon i {
+            font-size: 2rem !important;
+        }
+
+    }
+
+    /* Адаптивность для мобильных телефонов */
+    @@media (max-width: 576px) {
+        .page-header-section
+
+    {
+        padding: 15px;
+        gap: 12px;
+    }
+
+    .page-header-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.3rem;
+    }
+
+    .page-title {
+        font-size: 1.4rem;
+    }
+
+    .page-subtitle {
+        font-size: 0.85rem;
+    }
+
+    .section-subtitle {
+        font-size: 1rem;
+    }
+
+    .about-icon {
+        width: 90px;
+        height: 90px;
+    }
+
+        .about-icon i {
+            font-size: 2.5rem !important;
+        }
+
+    .feature-icon {
+        width: 55px;
+        height: 55px;
+    }
+
+        .feature-icon i {
+            font-size: 1.75rem !important;
+        }
+
+    .advantage-icon {
+        width: 35px;
+        height: 35px;
+    }
+
+        .advantage-icon i {
+            font-size: 0.9rem;
+        }
+
+    .contact-icon {
+        width: 45px;
+        height: 45px;
+    }
+
+        .contact-icon i {
+            font-size: 1.2rem !important;
+        }
+
+    }
+</style>

@@ -1,0 +1,891 @@
+﻿<div class="mobile-header-spacer d-block d-lg-none" style="height: 70px;"></div>
+
+@{
+    ViewData["Title"] = "ЖД билеты";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+
+            <!-- HEADER -->
+            <div class="page-header-section mb-4">
+                <div class="page-header-icon">
+                    <i class="fas fa-train text-white"></i>
+                </div>
+                <div class="page-header-content">
+                    <h1 class="page-title">Поиск ЖД билетов</h1>
+                    <p class="page-subtitle">Найдите билеты на поезда по России и СНГ</p>
+                </div>
+            </div>
+
+            <!-- FORM -->
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+
+                    <form id="railwaySearchForm" class="railway-form">
+
+                        <!-- ОТКУДА -->
+                        <div class="form-block">
+                            <label>Откуда</label>
+                            <div class="input-custom">
+                                <i class="fas fa-train"></i>
+                                <input type="text" id="railwayDeparture" placeholder="Станция отправления" autocomplete="off">
+                            </div>
+                            <div class="autocomplete-dropdown" id="railwayDepartureDropdown"></div>
+                        </div>
+
+                        <!-- КУДА -->
+                        <div class="form-block">
+                            <label>Куда</label>
+                            <div class="input-custom">
+                                <i class="fas fa-train"></i>
+                                <input type="text" id="railwayArrival" placeholder="Станция назначения" autocomplete="off">
+                            </div>
+                            <div class="autocomplete-dropdown" id="railwayArrivalDropdown"></div>
+                        </div>
+
+                        <!-- SWAP -->
+                        <div class="swap-wrap">
+                            <button type="button" id="swapRailwayCitiesBtn">
+                                <i class="fas fa-exchange-alt"></i>
+                            </button>
+                        </div>
+
+                        <!-- ДАТЫ -->
+                        <div class="row g-3 desktop-row">
+                            <div class="col-12 col-md-6">
+                                <div class="form-block">
+                                    <label>Туда</label>
+                                    <div class="input-custom">
+                                        <i class="fas fa-calendar"></i>
+                                        <input type="date" id="railwayDepartureDate">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <div class="form-block">
+                                    <label>Обратно</label>
+                                    <div class="input-custom">
+                                        <i class="fas fa-calendar"></i>
+                                        <input type="date" id="railwayReturnDate">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ПАССАЖИРЫ -->
+                        <div class="form-block">
+                            <label>Пассажиры</label>
+                            <div class="input-custom">
+                                <i class="fas fa-users"></i>
+                                <select id="railwayPassengers">
+                                    <option value="1">1 пассажир</option>
+                                    <option value="2">2 пассажира</option>
+                                    <option value="3">3 пассажира</option>
+                                    <option value="4">4 пассажира</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- BUTTON -->
+                        <button type="submit" class="search-btn">
+                            <i class="fas fa-search"></i>
+                            Найти
+                        </button>
+
+                    </form>
+
+                </div>
+            </div>
+
+            <!-- Результаты поиска -->
+            <div id="railwayResults" class="mt-4"></div>
+
+            <div id="railwayLoading" class="text-center d-none">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
+                <p class="mt-2">Ищем доступные поезда...</p>
+            </div>
+
+            <!-- Популярные направления -->
+            <div class="mt-5">
+                <h3 class="mb-4">Популярные направления</h3>
+                <div class="row g-4" id="popularRailwayDestinations">
+                    <div class="col-12 text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Загрузка...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Загружаем популярные направления...</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для требования авторизации -->
+<div class="modal fade" id="authModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-primary">
+                    <i class="fas fa-lock me-2"></i>Требуется авторизация
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="fas fa-train text-primary mb-3" style="font-size: 3rem;"></i>
+                <h4 class="mb-3">Войдите в аккаунт</h4>
+                <p class="text-muted mb-4">
+                    Для сохранения поездов в избранное необходимо авторизоваться.<br>
+                    Сохраняйте понравившиеся маршруты и отслеживайте изменения цен.
+                </p>
+                <div class="d-grid gap-2">
+                    <a href="/Account/Login" class="btn btn-primary btn-lg">
+                        <i class="fas fa-sign-in-alt me-2"></i>Войти
+                    </a>
+                    <a href="/Account/Register" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>Зарегистрироваться
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer border-0 justify-content-center">
+                <small class="text-muted">После авторизации вы сможете сохранять поезда</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* HEADER */
+    .page-header-section {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 25px 30px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .page-header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(to bottom, #0379D9, #40B624);
+        }
+
+    .page-header-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #0379D9, #40B624);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 4px 15px rgba(3, 121, 217, 0.2);
+        flex-shrink: 0;
+    }
+
+        .page-header-icon i {
+            color: white !important;
+        }
+
+    .page-header-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .page-title {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 800;
+        font-size: 2.5rem;
+        color: #0379D9;
+        margin: 0 0 8px 0;
+        line-height: 1.2;
+        word-break: break-word;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        font-size: 1.1rem;
+        margin: 0;
+        line-height: 1.4;
+        word-break: break-word;
+    }
+
+    /* FORM */
+    .railway-form {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .form-block {
+        width: 100%;
+    }
+
+        .form-block label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+            font-size: 0.9rem;
+            color: #334155;
+        }
+
+    /* КАСТОМНЫЙ INPUT */
+    .input-custom {
+        display: flex;
+        align-items: center;
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        padding: 0 16px;
+        height: 52px;
+        transition: all 0.3s ease;
+    }
+
+        .input-custom:focus-within {
+            border-color: #0379D9;
+            box-shadow: 0 0 0 3px rgba(3, 121, 217, 0.1);
+        }
+
+        .input-custom i {
+            margin-right: 12px;
+            color: #333333 !important;
+            font-size: 1.1rem;
+            width: 20px;
+        }
+
+        .input-custom input,
+        .input-custom select {
+            border: none;
+            background: transparent;
+            width: 100%;
+            height: 100%;
+            outline: none;
+            font-size: 1rem;
+            font-family: 'Nunito', sans-serif;
+            color: #1a1a1a;
+        }
+
+        .input-custom select {
+            cursor: pointer;
+        }
+
+        .input-custom input::placeholder {
+            color: #999;
+        }
+
+    /* SWAP */
+    .swap-wrap {
+        display: flex;
+        justify-content: center;
+        margin: -5px 0;
+    }
+
+        .swap-wrap button {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            color: #333333;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .swap-wrap button:hover {
+                background: #f1f5f9;
+                transform: scale(1.05);
+            }
+
+    /* BUTTON */
+    .search-btn {
+        height: 56px;
+        border-radius: 12px;
+        background: #0379D9;
+        color: white;
+        border: none;
+        font-weight: 700;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        margin-top: 8px;
+    }
+
+        .search-btn i {
+            color: white;
+        }
+
+        .search-btn:hover {
+            background: #0356a8;
+            transform: translateY(-2px);
+        }
+
+    /* Автокомплит */
+    .autocomplete-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-top: none;
+        border-radius: 0 0 12px 12px;
+        max-height: 250px;
+        overflow-y: auto;
+        z-index: 1000;
+        display: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-block {
+        position: relative;
+    }
+
+    .autocomplete-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        border-bottom: 1px solid #f0f0f0;
+        transition: background-color 0.2s ease;
+    }
+
+        .autocomplete-item:hover {
+            background-color: #f1f5f9;
+        }
+
+    .station-name {
+        font-weight: 600;
+        color: #334155;
+        font-family: 'Nunito', sans-serif;
+    }
+
+    .station-region {
+        font-size: 0.8rem;
+        color: #64748b;
+        font-family: 'Nunito', sans-serif;
+    }
+
+    /* DESKTOP - 768px и выше */
+    @@media (min-width: 768px) {
+        .railway-form
+
+    {
+        max-width: 100%;
+    }
+
+    .desktop-row {
+        display: flex;
+        gap: 16px;
+    }
+
+        .desktop-row .col-md-6 {
+            flex: 1;
+        }
+
+    .search-btn {
+        width: 200px;
+        align-self: flex-end;
+        margin-top: 28px;
+    }
+
+    .swap-wrap {
+        display: none;
+    }
+
+    }
+
+    /* МОБИЛЬНАЯ АДАПТАЦИЯ - до 768px */
+    @@media (max-width: 768px) {
+        .page-header-section
+
+    {
+        padding: 20px;
+        gap: 15px;
+    }
+
+    .page-header-section::before {
+        width: 100%;
+        height: 6px;
+        top: 0;
+        left: 0;
+        background: linear-gradient(to right, #0379D9, #40B624);
+    }
+
+    .page-header-icon {
+        width: 55px;
+        height: 55px;
+        font-size: 1.5rem;
+    }
+
+    .page-title {
+        font-size: 1.6rem;
+        margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .input-custom {
+        height: 52px;
+    }
+
+        .input-custom input,
+        .input-custom select {
+            font-size: 1rem;
+        }
+
+    .search-btn {
+        height: 54px;
+        font-size: 1rem;
+    }
+
+    }
+
+    @@media (max-width: 576px) {
+        .page-header-section
+
+    {
+        padding: 15px;
+        gap: 12px;
+    }
+
+    .page-header-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.3rem;
+    }
+
+    .page-title {
+        font-size: 1.4rem;
+    }
+
+    .page-subtitle {
+        font-size: 0.85rem;
+    }
+
+    .input-custom {
+        height: 48px;
+        padding: 0 14px;
+    }
+
+        .input-custom i {
+            font-size: 1rem;
+        }
+
+        .input-custom input,
+        .input-custom select {
+            font-size: 0.95rem;
+        }
+
+    .search-btn {
+        height: 50px;
+        font-size: 0.95rem;
+    }
+
+    .swap-wrap button {
+        width: 40px;
+        height: 40px;
+    }
+
+    }
+
+    /* Карточки результатов */
+    .train-group-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px !important;
+        background: white;
+        margin-bottom: 16px;
+        overflow: hidden;
+    }
+
+        .train-group-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .train-group-card .card-header {
+            border-radius: 12px 12px 0 0 !important;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #e2e8f0;
+            font-family: 'Nunito', sans-serif;
+            background: #f8fafc !important;
+            color: #334155 !important;
+        }
+
+            .train-group-card .card-header h4 {
+                font-family: 'Nunito', sans-serif;
+                font-weight: 700;
+                margin-bottom: 0.125rem;
+                color: #0379D9;
+            }
+
+        .train-group-card .card-body {
+            padding: 1.25rem;
+        }
+
+    .train-section {
+        background: #ffffff;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s ease;
+    }
+
+        .train-section:hover {
+            background: #f8fafc;
+        }
+
+    .train-time {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        color: #0379D9;
+        margin-bottom: 0.25rem;
+    }
+
+        .train-time.fw-bold.fs-5 {
+            font-size: 1.25rem !important;
+            color: #0379D9 !important;
+        }
+
+    .train-duration {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0.5rem 0;
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+
+    .route-line {
+        color: #e2e8f0 !important;
+        font-size: 1.25rem;
+        margin: 0.5rem 0;
+    }
+
+    /* Мобильная адаптация для карточек поездов */
+    @@media (max-width: 768px) {
+        .train-group-card
+
+    {
+        margin-bottom: 12px;
+    }
+
+    .train-group-card .card-body {
+        padding: 1rem;
+    }
+
+    .train-section {
+        padding: 0.875rem;
+    }
+
+    .train-time.fw-bold.fs-5 {
+        font-size: 1.125rem !important;
+    }
+
+    .train-duration {
+        font-size: 0.8rem;
+    }
+
+    .route-line {
+        font-size: 1rem;
+    }
+
+    }
+
+    @@media (max-width: 576px) {
+        .train-group-card
+
+    {
+        border-radius: 10px !important;
+    }
+
+    .train-group-card .card-body {
+        padding: 0.875rem;
+    }
+
+    .train-section {
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .train-time.fw-bold.fs-5 {
+        font-size: 1rem !important;
+    }
+
+    .train-section h6 {
+        font-size: 0.9rem;
+    }
+
+    .train-duration {
+        font-size: 0.75rem;
+    }
+
+    }
+
+    /* Популярные направления */
+    .destination-card {
+        transition: transform 0.2s ease;
+        cursor: pointer;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        overflow: hidden;
+        background: white;
+    }
+
+        .destination-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .destination-card img {
+            height: 180px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .destination-card:hover img {
+            transform: scale(1.05);
+        }
+
+        .destination-card .card-body {
+            padding: 1rem;
+        }
+
+        .destination-card .card-title {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 0.5rem;
+        }
+
+    @@media (max-width: 768px) {
+        .destination-card img
+
+    {
+        height: 160px;
+    }
+
+    }
+
+    @@media (max-width: 576px) {
+        .destination-card img
+
+    {
+        height: 140px;
+    }
+
+    }
+
+    /* Уведомления */
+    .notification-alert {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 280px;
+        max-width: 350px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @@keyframes slideIn {
+        from
+
+    {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    }
+
+    .train-favorite-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .train-favorite-btn:hover {
+            transform: scale(1.2);
+        }
+    /* Стили для цен в ЖД карточках */
+    .train-group-card .bg-success.bg-opacity-10 {
+        background-color: rgba(64, 182, 36, 0.1) !important;
+    }
+
+    .train-group-card .btn-success {
+        background-color: #40B624 !important;
+        border: none !important;
+    }
+
+        .train-group-card .btn-success:hover {
+            background-color: #33991b !important;
+            transform: translateY(-2px);
+        }
+
+    .train-group-card .btn-outline-primary {
+        border: 1px solid #0379D9 !important;
+        color: #0379D9 !important;
+    }
+
+        .train-group-card .btn-outline-primary:hover {
+            background-color: #0379D9 !important;
+            color: white !important;
+        }
+
+    /* Общая цена в карточке */
+    .group-total-price {
+        background: linear-gradient(135deg, #40B624, #2d8a1a);
+        padding: 8px 16px;
+        border-radius: 12px;
+        color: white;
+        font-weight: bold;
+    }
+    /* Увеличенная кнопка Купить */
+    .btn-buy-now {
+        background-color: #40B624 !important;
+        border: none !important;
+        color: white !important;
+        padding: 14px 32px !important;
+        font-size: 1.2rem !important;
+        font-weight: 700 !important;
+        border-radius: 12px !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 12px rgba(64, 182, 36, 0.3) !important;
+    }
+
+        .btn-buy-now:hover {
+            background-color: #33991b !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 18px rgba(64, 182, 36, 0.4) !important;
+        }
+
+        .btn-buy-now i {
+            font-size: 1.1rem !important;
+        }
+
+    /* Адаптация для мобильных */
+    @@media (max-width: 768px) {
+        .btn-buy-now
+
+    {
+        padding: 10px 20px !important;
+        font-size: 1rem !important;
+    }
+
+    }
+
+    @@media (max-width: 576px) {
+        .btn-buy-now
+
+    {
+        padding: 8px 16px !important;
+        font-size: 0.9rem !important;
+    }
+
+    .train-favorite-btn {
+        margin-right: 8px !important;
+    }
+
+    }
+</style>
+
+<script>
+    // Функция для обмена городами
+    document.getElementById('swapRailwayCitiesBtn')?.addEventListener('click', function() {
+        const departureInput = document.getElementById('railwayDeparture');
+        const arrivalInput = document.getElementById('railwayArrival');
+        const departureDropdown = document.getElementById('railwayDepartureDropdown');
+        const arrivalDropdown = document.getElementById('railwayArrivalDropdown');
+
+        const tempValue = departureInput.value;
+        const tempStationId = departureInput.getAttribute('data-station-id');
+
+        departureInput.value = arrivalInput.value;
+        departureInput.setAttribute('data-station-id', arrivalInput.getAttribute('data-station-id'));
+
+        arrivalInput.value = tempValue;
+        arrivalInput.setAttribute('data-station-id', tempStationId);
+
+        // Скрываем дропдауны
+        if (departureDropdown) departureDropdown.style.display = 'none';
+        if (arrivalDropdown) arrivalDropdown.style.display = 'none';
+    });
+
+    // ========== УБИРАЕМ АВТОМАТИЧЕСКУЮ ПОДСТАНОВКУ ДАТ ==========
+    // Только устанавливаем минимальные даты, НЕ ставим значения
+    const today = new Date();
+    const departureDateInput = document.getElementById('railwayDepartureDate');
+    const returnDateInput = document.getElementById('railwayReturnDate');
+
+    if (departureDateInput) {
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 1);
+        departureDateInput.min = tomorrow.toISOString().split('T')[0];
+        // НЕ СТАВИМ ЗНАЧЕНИЕ - оставляем пустым
+        departureDateInput.value = '';
+    }
+
+    if (returnDateInput) {
+        // Для обратной даты минимальная дата - завтра
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 1);
+        returnDateInput.min = tomorrow.toISOString().split('T')[0];
+        // НЕ СТАВИМ ЗНАЧЕНИЕ - оставляем пустым
+        returnDateInput.value = '';
+    }
+
+    // При изменении даты "Туда", обновляем минимальную дату "Обратно"
+    departureDateInput?.addEventListener('change', function() {
+        if (this.value) {
+            const departureDate = new Date(this.value);
+            const nextDay = new Date(departureDate);
+            nextDay.setDate(departureDate.getDate() + 1);
+
+            const minReturnDate = nextDay.toISOString().split('T')[0];
+            returnDateInput.min = minReturnDate;
+
+            if (returnDateInput.value && returnDateInput.value < minReturnDate) {
+                returnDateInput.value = minReturnDate;
+            }
+        } else {
+            // Если дата туда не выбрана, сбрасываем минимальную дату обратно
+            const tomorrow = new Date(today);
+            tomorrow.setDate(today.getDate() + 1);
+            returnDateInput.min = tomorrow.toISOString().split('T')[0];
+        }
+    });
+</script>
+
+<script src="~/js/railway.js"></script>

@@ -1,0 +1,63 @@
+﻿@model dynamic
+@{
+    Layout = null;
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-4 text-center">
+            @if (Model.HasAvatar)
+            {
+                <img src="@Model.AvatarPath" class="rounded-circle img-fluid" style="width: 150px; height: 150px; object-fit: cover;" alt="Avatar">
+            }
+            else
+            {
+                <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center mx-auto" style="width: 150px; height: 150px;">
+                    <span class="text-white display-4 fw-bold">
+                        @Model.UserName?.Split(' ')[0][0]@Model.UserName?.Split(' ')[1][0]
+                    </span>
+                </div>
+            }
+        </div>
+        <div class="col-md-8">
+            <h4>@Model.UserName</h4>
+            <p class="text-muted mb-2"><i class="fas fa-envelope me-2"></i>@Model.UserEmail</p>
+            <p class="text-muted mb-2"><i class="fas fa-calendar me-2"></i>Зарегистрирован: @Model.RegisteredAt.ToString("dd.MM.yyyy HH:mm")</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3>@Model.TripsCount</h3>
+                    <small>Поездок</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3>@Model.TotalExpenses ₽</h3>
+                    <small>Расходов</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3>@Model.DocumentsCount</h3>
+                    <small>Документов</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h3>@Model.ReviewsCount</h3>
+                    <small>Отзывов</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

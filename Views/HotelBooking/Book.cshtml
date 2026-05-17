@@ -1,0 +1,773 @@
+﻿@model TripWise.Models.ViewModels.HotelBookingViewModel
+@{
+    ViewData["Title"] = "Бронирование отеля";
+}
+<div class="mobile-header-spacer d-block d-lg-none" style="height: 70px;"></div>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="page-header-section mb-5">
+                <div class="page-header-icon">
+                    <i class="fas fa-hotel text-white"></i>
+                </div>
+                <div class="page-header-content">
+                    <h1 class="page-title">
+                        Бронирование отеля
+                    </h1>
+                    <p class="page-subtitle">@Model.HotelName</p>
+                </div>
+            </div>
+
+            <!-- Информация об отеле -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-info-circle text-primary me-2"></i>
+                        Информация об отеле
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4 class="fw-bold text-primary mb-3">@Model.HotelName</h4>
+                            <p class="mb-2">
+                                <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                                @Model.HotelAddress
+                            </p>
+                            @if (!string.IsNullOrEmpty(Model.HotelPhone))
+                            {
+                                <p class="mb-2">
+                                    <i class="fas fa-phone text-primary me-2"></i>
+                                    @Model.HotelPhone
+                                </p>
+                            }
+                            <p class="mb-2">
+                                <i class="fas fa-bed text-primary me-2"></i>
+                                @Model.AccommodationType
+                                @if (Model.Stars.HasValue)
+                                {
+                                    <span class="ms-2">@string.Concat(Enumerable.Repeat("★", Model.Stars.Value))</span>
+                                }
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="price-box bg-light p-3 rounded">
+                                <small class="text-muted">Цена за ночь</small>
+                                <h3 class="text-primary mb-0">@Model.PricePerNight.ToString("N0") ₽</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Форма бронирования -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-edit text-primary me-2"></i>
+                        Детали бронирования
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <form id="bookingForm">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" id="HotelId" name="HotelId" value="@Model.HotelId" />
+                        <input type="hidden" id="HotelName" name="HotelName" value="@Model.HotelName" />
+                        <input type="hidden" id="HotelAddress" name="HotelAddress" value="@Model.HotelAddress" />
+                        <input type="hidden" id="HotelPhone" name="HotelPhone" value="@Model.HotelPhone" />
+                        <input type="hidden" id="HotelWebsite" name="HotelWebsite" value="@Model.HotelWebsite" />
+                        <input type="hidden" id="HotelLatitude" name="HotelLatitude" value="@Model.HotelLatitude" />
+                        <input type="hidden" id="HotelLongitude" name="HotelLongitude" value="@Model.HotelLongitude" />
+                        <input type="hidden" id="AccommodationType" name="AccommodationType" value="@Model.AccommodationType" />
+                        <input type="hidden" id="Stars" name="Stars" value="@Model.Stars" />
+                        <input type="hidden" id="PricePerNight" name="PricePerNight" value="@Model.PricePerNight" />
+
+                        <!-- Даты -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="CheckInDate" class="form-label fw-semibold">
+                                    <i class="fas fa-calendar-alt me-2"></i>Дата заезда
+                                </label>
+                                <input type="date" class="form-control form-control-lg" id="CheckInDate"
+                                       name="CheckInDate" value="@Model.CheckInDate.ToString("yyyy-MM-dd")" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="CheckOutDate" class="form-label fw-semibold">
+                                    <i class="fas fa-calendar-alt me-2"></i>Дата выезда
+                                </label>
+                                <input type="date" class="form-control form-control-lg" id="CheckOutDate"
+                                       name="CheckOutDate" value="@Model.CheckOutDate.ToString("yyyy-MM-dd")" required>
+                            </div>
+                        </div>
+
+                        <!-- Гости и комнаты -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="Guests" class="form-label fw-semibold">
+                                    <i class="fas fa-users me-2"></i>Количество гостей
+                                </label>
+                                <select class="form-select form-select-lg" id="Guests" name="Guests" required>
+                                    @for (int i = 1; i <= 10; i++)
+                                    {
+                                        <option value="@i" selected="@(i == Model.Guests)">@i @(i == 1 ? "гость" : (i < 5 ? "гостя" : "гостей"))</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="Rooms" class="form-label fw-semibold">
+                                    <i class="fas fa-door-open me-2"></i>Количество комнат
+                                </label>
+                                <select class="form-select form-select-lg" id="Rooms" name="Rooms" required>
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <option value="@i" selected="@(i == Model.Rooms)">@i @(i == 1 ? "комната" : (i < 5 ? "комнаты" : "комнат"))</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Контактные данные -->
+                        <h4 class="mb-3">Контактные данные</h4>
+
+                        <div class="mb-3">
+                            <label for="ContactName" class="form-label fw-semibold">
+                                <i class="fas fa-user me-2"></i>Ваше имя <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control form-control-lg" id="ContactName"
+                                   name="ContactName" value="@Model.ContactName" required maxlength="300">
+                            <div class="invalid-feedback">Имя должно содержать только буквы (2-300 символов)</div>
+                            <small class="text-muted">Только буквы, пробелы и дефисы. Без цифр.</small>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="ContactEmail" class="form-label fw-semibold">
+                                    <i class="fas fa-envelope me-2"></i>Email <span class="text-danger">*</span>
+                                </label>
+                                <input type="email" class="form-control form-control-lg" id="ContactEmail"
+                                       name="ContactEmail" value="@Model.ContactEmail" required maxlength="255">
+                                <div class="form-text">На этот email придет подтверждение</div>
+                                <div class="invalid-feedback">Введите корректный email</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="ContactPhone" class="form-label fw-semibold">
+                                    <i class="fas fa-phone me-2"></i>Телефон <span class="text-danger">*</span>
+                                </label>
+                                <input type="tel" class="form-control form-control-lg" id="ContactPhone"
+                                       name="ContactPhone" value="@Model.ContactPhone" required placeholder="+7 (999) 123-45-67">
+                                <div class="invalid-feedback">Номер телефона должен содержать 11 цифр</div>
+                            </div>
+                        </div>
+
+                        <!-- Особые пожелания -->
+                        <div class="mb-4">
+                            <label for="SpecialRequests" class="form-label fw-semibold">
+                                <i class="fas fa-comment me-2"></i>Особые пожелания (необязательно)
+                            </label>
+                            <textarea class="form-control" id="SpecialRequests" name="SpecialRequests"
+                                      rows="3" placeholder="Ранний заезд, поздний выезд, специальные требования..." maxlength="200"></textarea>
+                            <div class="invalid-feedback">Максимум 200 символов</div>
+                            <small class="text-muted"><span id="charCount">0</span>/200 символов</small>
+                        </div>
+
+                        <!-- Согласие -->
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="AgreeToTerms"
+                                       name="AgreeToTerms" value="true" required>
+                                <label class="form-check-label" for="AgreeToTerms">
+                                    Я согласен с <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">условиями бронирования</a> и
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#cancellationModal">правилами отмены</a> <span class="text-danger">*</span>
+                                </label>
+                                <div class="invalid-feedback">Необходимо согласие с условиями</div>
+                            </div>
+                        </div>
+
+                        <!-- Итоговая стоимость -->
+                        <div class="alert alert-success border-0 rounded-lg mb-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Итоговая стоимость:</h6>
+                                    <p class="mb-0 small text-muted">
+                                        @Model.PricePerNight.ToString("N0") ₽ × <span id="nightsCount">@Model.Nights</span> ночей × @Model.Rooms комн.
+                                    </p>
+                                </div>
+                                <span class="fw-bold fs-3 text-success" id="totalPrice">
+                                    @((Model.PricePerNight * Model.Nights * Model.Rooms).ToString("N0")) ₽
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Кнопки -->
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <a href="javascript:history.back()" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>Назад
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg" id="submitBtn">
+                                <i class="fas fa-check me-2"></i>Подтвердить бронирование
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .page-header-section {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 25px 30px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .page-header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(to bottom, #0379D9, #40B624);
+        }
+
+    .page-header-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #0379D9, #40B624);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 4px 15px rgba(3, 121, 217, 0.2);
+        flex-shrink: 0;
+    }
+
+    .page-title {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 800;
+        font-size: 2.5rem;
+        color: #0379D9;
+        margin: 0 0 8px 0;
+        line-height: 1.2;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        font-size: 1.1rem;
+        margin: 0;
+        max-width: 600px;
+    }
+
+    .section-subtitle {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        font-size: 1.3rem;
+        color: #334155;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-control.is-invalid {
+        border-color: #dc3545 !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+
+    .form-check-input.is-invalid {
+        border-color: #dc3545;
+    }
+
+    /* Мобильная адаптация шапки */
+    @@media (max-width: 768px) {
+        .page-header-section
+
+    {
+        flex-direction: row !important;
+        text-align: left !important;
+        padding: 20px 25px !important;
+        gap: 20px !important;
+        flex-wrap: nowrap !important;
+    }
+
+    .page-header-section::before {
+        width: 6px !important;
+        height: 100% !important;
+        top: 0 !important;
+        left: 0 !important;
+        background: linear-gradient(to bottom, #0379D9, #40B624) !important;
+    }
+
+    .page-header-icon {
+        width: 65px !important;
+        height: 65px !important;
+        flex-shrink: 0 !important;
+    }
+
+        .page-header-icon i {
+            font-size: 1.8rem !important;
+        }
+
+    .page-header-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .page-title {
+        font-size: 1.5rem !important;
+        margin-bottom: 5px !important;
+        text-align: left !important;
+        word-break: break-word;
+    }
+
+    .page-subtitle {
+        font-size: 0.85rem !important;
+        text-align: left !important;
+        word-break: break-word;
+        max-width: 100%;
+    }
+
+    }
+
+    @@media (max-width: 576px) {
+        .page-header-section
+
+    {
+        padding: 15px 20px !important;
+        gap: 15px !important;
+    }
+
+    .page-header-icon {
+        width: 55px !important;
+        height: 55px !important;
+    }
+
+        .page-header-icon i {
+            font-size: 1.5rem !important;
+        }
+
+    .page-title {
+        font-size: 1.3rem !important;
+    }
+
+    .page-subtitle {
+        font-size: 0.75rem !important;
+    }
+
+    }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // ================= ВАЛИДАЦИЯ ИМЕНИ =================
+                    function validateName(name) {
+            const value = name ? name.trim() : '';
+            if (value.length === 0) {
+                return { isValid: false, message: 'Введите ваше имя' };
+            }
+            if (value.length > 300) {
+                return { isValid: false, message: 'Имя не должно превышать 300 символов' };
+            }
+            if (/\d/.test(value)) {
+                return { isValid: false, message: 'Имя не может содержать цифры' };
+            }
+            if (!/^[a-zA-Zа-яА-ЯёЁ\s\-]+$/.test(value)) {
+                return { isValid: false, message: 'Имя может содержать только буквы, пробелы и дефисы' };
+            }
+            return { isValid: true, message: '' };
+        }
+
+            // ================= ВАЛИДАЦИЯ EMAIL =================
+                    function validateEmail(email) {
+            const value = email ? email.trim() : '';
+            if (value.length === 0) {
+                return { isValid: false, message: 'Введите email' };
+            }
+            if (value.length > 255) {
+                return { isValid: false, message: 'Email не должен превышать 255 символов' };
+            }
+            const emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+            if (!emailRegex.test(value)) {
+                return { isValid: false, message: 'Введите корректный email адрес' };
+            }
+            return { isValid: true, message: '' };
+        }
+
+            // ================= СЧЕТЧИК СИМВОЛОВ ДЛЯ ОСОБЫХ ПОЖЕЛАНИЙ =================
+            function updateCharCount() {
+                const length = $('#SpecialRequests').val().length;
+                $('#charCount').text(length);
+                if (length > 200) {
+                    $('#charCount').css('color', '#dc3545');
+                } else {
+                    $('#charCount').css('color', '#6c757d');
+                }
+            }
+
+            $('#SpecialRequests').on('input', updateCharCount);
+            updateCharCount();
+
+            // ================= ВАЛИДАЦИЯ ПРИ ВВОДЕ =================
+            $('#ContactName').on('input', function() {
+                const result = validateName($(this).val());
+                if (!result.isValid) {
+                    $(this).addClass('is-invalid');
+                    $(this).siblings('.invalid-feedback').text(result.message);
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+
+            $('#ContactEmail').on('input', function() {
+                const emailResult = validateEmail($(this).val());
+                if (!emailResult.isValid) {
+                    $(this).addClass('is-invalid');
+                    $(this).siblings('.invalid-feedback').text(emailResult.message);
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+
+            // ================= РАБОТА С ДАТАМИ =================
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const formatDateForInput = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            const tomorrow = new Date(today);
+            tomorrow.setDate(today.getDate() + 1);
+
+            $('#CheckInDate').attr('min', formatDateForInput(today));
+            $('#CheckOutDate').attr('min', formatDateForInput(tomorrow));
+
+            function updateMinCheckOut() {
+                const checkIn = new Date($('#CheckInDate').val());
+                if (checkIn && !isNaN(checkIn.getTime())) {
+                    const nextDay = new Date(checkIn);
+                    nextDay.setDate(checkIn.getDate() + 1);
+                    $('#CheckOutDate').attr('min', formatDateForInput(nextDay));
+                }
+            }
+
+            function updateMaxCheckIn() {
+                const checkOut = new Date($('#CheckOutDate').val());
+                if (checkOut && !isNaN(checkOut.getTime())) {
+                    const prevDay = new Date(checkOut);
+                    prevDay.setDate(checkOut.getDate() - 1);
+                    $('#CheckInDate').attr('max', formatDateForInput(prevDay));
+                }
+            }
+
+            function validateDates() {
+                const checkIn = new Date($('#CheckInDate').val());
+                const checkOut = new Date($('#CheckOutDate').val());
+
+                if (checkIn && checkOut && !isNaN(checkIn.getTime()) && !isNaN(checkOut.getTime())) {
+                    if (checkOut <= checkIn) {
+                        $('#CheckOutDate').addClass('is-invalid');
+                        showMessage('warning', 'Дата выезда должна быть позже даты заезда');
+                        return false;
+                    } else {
+                        $('#CheckOutDate').removeClass('is-invalid');
+                        $('#CheckInDate').removeClass('is-invalid');
+                        return true;
+                    }
+                }
+                return true;
+            }
+
+            $('#CheckInDate').on('change', function() {
+                updateMinCheckOut();
+                validateDates();
+                updateTotal();
+            });
+
+            $('#CheckOutDate').on('change', function() {
+                updateMaxCheckIn();
+                if (validateDates()) {
+                    updateTotal();
+                }
+            });
+
+            // ================= МАСКА ДЛЯ ТЕЛЕФОНА =================
+            $('#ContactPhone').on('input', function() {
+                let digits = this.value.replace(/\D/g, '');
+                if (digits.length > 11) {
+                    digits = digits.substring(0, 11);
+                }
+                if (digits.length > 0) {
+                    let formatted = '';
+                    if (digits.length >= 1) formatted = '+' + digits.substring(0, 1);
+                    if (digits.length >= 2) formatted = '+' + digits.substring(0, 1) + ' (' + digits.substring(1, 2);
+                    if (digits.length >= 3) formatted = '+' + digits.substring(0, 1) + ' (' + digits.substring(1, 3);
+                    if (digits.length >= 4) formatted = '+' + digits.substring(0, 1) + ' (' + digits.substring(1, 4);
+                    if (digits.length >= 5) formatted = '+' + digits.substring(0, 1) + ' (' + digits.substring(1, 4) + ') ' + digits.substring(4, 5);
+                    if (digits.length >= 6) formatted = '+' + digits.substring(0, 1) + ' (' + digits.substring(1, 4) + ') ' + digits.substring(4, 6);
+                    if (digits.length >= 7) formatted = '+' + digits.substring(0, 1) + ' (' + digits.substring(1, 4) + ') ' + digits.substring(4, 7);
+                    if (digits.length >= 8) formatted = '+' + digits.substring(0, 1) + ' (' + digits.substring(1, 4) + ') ' + digits.substring(4, 8);
+                    if (digits.length >= 9) formatted = '+' + digits.substring(0, 1) + ' (' + digits.substring(1, 4) + ') ' + digits.substring(4, 9);
+                    if (digits.length >= 10) formatted = '+' + digits.substring(0, 1) + ' (' + digits.substring(1, 4) + ') ' + digits.substring(4, 10);
+                    if (digits.length >= 11) formatted = '+' + digits.substring(0, 1) + ' (' + digits.substring(1, 4) + ') ' + digits.substring(4, 7) + '-' + digits.substring(7, 9) + '-' + digits.substring(9, 11);
+                    this.value = formatted;
+                } else {
+                    this.value = '';
+                }
+                $(this).removeClass('is-invalid');
+            });
+
+            // ================= РАСЧЕТ СТОИМОСТИ =================
+            function updateTotal() {
+                const checkIn = new Date($('#CheckInDate').val());
+                const checkOut = new Date($('#CheckOutDate').val());
+
+                if (checkIn && checkOut && !isNaN(checkIn.getTime()) && !isNaN(checkOut.getTime()) && checkOut > checkIn) {
+                    const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+                    const pricePerNight = parseFloat($('#PricePerNight').val());
+                    const rooms = parseInt($('#Rooms').val());
+
+                    $('#nightsCount').text(nights);
+                    const total = pricePerNight * nights * rooms;
+                    $('#totalPrice').text(total.toLocaleString('ru-RU') + ' ₽');
+                }
+            }
+
+            $('#Rooms').change(updateTotal);
+            updateMinCheckOut();
+            updateTotal();
+
+            // ================= ОТПРАВКА ФОРМЫ =================
+            $('#bookingForm').submit(function(e) {
+                e.preventDefault();
+                let hasError = false;
+
+                // Проверка имени
+                const nameResult = validateName($('#ContactName').val());
+                if (!nameResult.isValid) {
+                    $('#ContactName').addClass('is-invalid');
+                    $('#ContactName').siblings('.invalid-feedback').text(nameResult.message);
+                    showMessage('warning', nameResult.message);
+                    hasError = true;
+                } else {
+                    $('#ContactName').removeClass('is-invalid');
+                }
+
+                // Проверка особых пожеланий
+                const specialRequests = $('#SpecialRequests').val();
+                if (specialRequests.length > 200) {
+                    $('#SpecialRequests').addClass('is-invalid');
+                    showMessage('warning', 'Особые пожелания не должны превышать 200 символов');
+                    hasError = true;
+                } else {
+                    $('#SpecialRequests').removeClass('is-invalid');
+                }
+
+                // Проверка email
+                const emailResult = validateEmail($('#ContactEmail').val());
+                if (!emailResult.isValid) {
+                    $('#ContactEmail').addClass('is-invalid');
+                    showMessage('warning', emailResult.message);
+                    hasError = true;
+                } else {
+                    $('#ContactEmail').removeClass('is-invalid');
+                }
+
+                // Проверка телефона
+                const phoneDigits = $('#ContactPhone').val().replace(/\D/g, '');
+                if (phoneDigits.length !== 11) {
+                    $('#ContactPhone').addClass('is-invalid');
+                    showMessage('warning', 'Номер телефона должен содержать ровно 11 цифр');
+                    hasError = true;
+                } else {
+                    $('#ContactPhone').removeClass('is-invalid');
+                }
+
+                // Проверка согласия
+                if (!$('#AgreeToTerms').is(':checked')) {
+                    $('#AgreeToTerms').addClass('is-invalid');
+                    showMessage('warning', 'Необходимо согласиться с условиями бронирования');
+                    hasError = true;
+                } else {
+                    $('#AgreeToTerms').removeClass('is-invalid');
+                }
+
+                // Проверка дат
+                if (!validateDates()) {
+                    hasError = true;
+                }
+
+                if (hasError) {
+                    return;
+                }
+
+                const $btn = $('#submitBtn');
+                $btn.html('<span class="spinner-border spinner-border-sm me-2"></span>Оформление...');
+                $btn.prop('disabled', true);
+
+                const formData = {
+                    HotelId: $('#HotelId').val(),
+                    HotelName: $('#HotelName').val(),
+                    HotelAddress: $('#HotelAddress').val(),
+                    HotelPhone: $('#HotelPhone').val(),
+                    HotelWebsite: $('#HotelWebsite').val(),
+                    HotelLatitude: parseFloat($('#HotelLatitude').val()),
+                    HotelLongitude: parseFloat($('#HotelLongitude').val()),
+                    AccommodationType: $('#AccommodationType').val(),
+                    Stars: $('#Stars').val() ? parseInt($('#Stars').val()) : null,
+                    PricePerNight: parseFloat($('#PricePerNight').val()),
+                    CheckInDate: $('#CheckInDate').val(),
+                    CheckOutDate: $('#CheckOutDate').val(),
+                    Guests: parseInt($('#Guests').val()),
+                    Rooms: parseInt($('#Rooms').val()),
+                    ContactName: $('#ContactName').val().trim(),
+                    ContactEmail: $('#ContactEmail').val().trim(),
+                    ContactPhone: '+' + phoneDigits,
+                    SpecialRequests: $('#SpecialRequests').val(),
+                    AgreeToTerms: $('#AgreeToTerms').is(':checked')
+                };
+
+                $.ajax({
+                    url: '@Url.Action("ProcessBooking")',
+                    type: 'POST',
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    data: JSON.stringify(formData),
+                    contentType: 'application/json',
+                    success: function(response) {
+                        if (response.success) {
+                            showMessage('success', 'Бронирование успешно оформлено! Перенаправляем...');
+                            setTimeout(function() {
+                                window.location.href = response.redirectUrl;
+                            }, 2000);
+                        } else {
+                            showMessage('danger', response.message || 'Ошибка при бронировании');
+                            $btn.html('<i class="fas fa-check me-2"></i>Подтвердить бронирование');
+                            $btn.prop('disabled', false);
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Error:', xhr);
+                        let errorMsg = 'Ошибка сервера';
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            errorMsg = response.message || errorMsg;
+                        } catch(e) {}
+                        showMessage('danger', errorMsg);
+                        $btn.html('<i class="fas fa-check me-2"></i>Подтвердить бронирование');
+                        $btn.prop('disabled', false);
+                    }
+                });
+            });
+
+            function showMessage(type, text) {
+                $('.alert-fixed').remove();
+                const alertClass = type === 'success' ? 'alert-success' :
+                                  type === 'danger' ? 'alert-danger' : 'alert-warning';
+                const icon = type === 'success' ? 'fa-check-circle' :
+                            type === 'danger' ? 'fa-exclamation-circle' : 'fa-exclamation-triangle';
+                const html = `
+                    <div class="alert ${alertClass} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3 shadow-lg rounded-pill px-4"
+                         role="alert" style="z-index: 9999; min-width: 300px;">
+                        <i class="fas ${icon} me-2"></i>${text}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>`;
+                $('body').append(html);
+                setTimeout(function() { $('.alert').fadeOut('slow', function() { $(this).remove(); }); }, 5000);
+            }
+        });
+    </script>
+}
+
+<!-- Модальное окно с условиями бронирования -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-0" style="background: linear-gradient(135deg, #0379D9, #40B624);">
+                <h5 class="modal-title text-white">
+                    <i class="fas fa-file-contract me-2"></i>Условия бронирования отеля
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="terms-content">
+                    <h6 class="fw-bold text-primary mb-3">1. Общие положения</h6>
+                    <p class="small text-muted mb-3">1.1. Бронирование номера в отеле осуществляется в соответствии с настоящими условиями.</p>
+                    <p class="small text-muted mb-3">1.2. Оформляя бронирование, вы подтверждаете свое согласие с настоящими условиями.</p>
+                    <h6 class="fw-bold text-primary mb-3 mt-4">2. Подтверждение бронирования</h6>
+                    <p class="small text-muted mb-3">2.1. После успешного бронирования на указанный email приходит подтверждение.</p>
+                    <p class="small text-muted mb-3">2.2. Рекомендуется распечатать подтверждение или сохранить его на мобильном устройстве.</p>
+                    <h6 class="fw-bold text-primary mb-3 mt-4">3. Заезд и выезд</h6>
+                    <p class="small text-muted mb-3">3.1. Стандартное время заезда (check-in): 14:00.</p>
+                    <p class="small text-muted mb-3">3.2. Стандартное время выезда (check-out): 12:00.</p>
+                    <p class="small text-muted mb-3">3.3. Ранний заезд или поздний выезд возможны по предварительной договоренности.</p>
+                    <h6 class="fw-bold text-primary mb-3 mt-4">4. Документы при заселении</h6>
+                    <p class="small text-muted mb-3">4.1. При заселении необходимо предъявить документ, удостоверяющий личность.</p>
+                    <p class="small text-muted mb-3">4.2. Для иностранных граждан может потребоваться загранпаспорт и миграционная карта.</p>
+                    <h6 class="fw-bold text-primary mb-3 mt-4">5. Оплата</h6>
+                    <p class="small text-muted mb-3">5.1. Оплата производится онлайн при бронировании.</p>
+                    <p class="small text-muted mb-3">5.2. В некоторых отелях может взиматься туристический налог при заселении.</p>
+                </div>
+            </div>
+            <div class="modal-footer border-0 justify-content-center">
+                <button type="button" class="btn btn-primary btn-lg px-5" data-bs-dismiss="modal">
+                    <i class="fas fa-check me-2"></i>Принимаю
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно с правилами отмены -->
+<div class="modal fade" id="cancellationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-0" style="background: linear-gradient(135deg, #0379D9, #40B624);">
+                <h5 class="modal-title text-white">
+                    <i class="fas fa-ban me-2"></i>Правила отмены бронирования
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="cancellation-content">
+                    <h6 class="fw-bold text-primary mb-3">1. Бесплатная отмена</h6>
+                    <p class="small text-muted mb-3">1.1. Бесплатная отмена бронирования возможна за 7 дней до даты заезда.</p>
+                    <p class="small text-muted mb-3">1.2. При отмене за 7-14 дней до заезда возвращается 50% стоимости.</p>
+                    <p class="small text-muted mb-3">1.3. При отмене менее чем за 7 дней до заезда средства не возвращаются.</p>
+                    <h6 class="fw-bold text-primary mb-3 mt-4">2. Невозвратные тарифы</h6>
+                    <p class="small text-muted mb-3">2.1. Бронирования по специальным акциям могут быть невозвратными.</p>
+                    <p class="small text-muted mb-3">2.2. Информация о возможности возврата указана в условиях конкретного предложения.</p>
+                    <h6 class="fw-bold text-primary mb-3 mt-4">3. Порядок отмены</h6>
+                    <p class="small text-muted mb-3">3.1. Для отмены бронирования необходимо обратиться в службу поддержки.</p>
+                    <p class="small text-muted mb-3">3.2. Срок рассмотрения запроса на отмену - до 3 рабочих дней.</p>
+                    <p class="small text-muted mb-3">3.3. Возврат средств осуществляется на карту в течение 5-10 рабочих дней.</p>
+                    <h6 class="fw-bold text-primary mb-3 mt-4">4. Форс-мажор</h6>
+                    <p class="small text-muted mb-3">4.1. В случае невозможности заезда по уважительным причинам (болезнь, отмена рейса) рассматривается индивидуально.</p>
+                    <p class="small text-muted mb-3">4.2. Необходимо предоставить подтверждающие документы.</p>
+                </div>
+            </div>
+            <div class="modal-footer border-0 justify-content-center">
+                <button type="button" class="btn btn-primary btn-lg px-5" data-bs-dismiss="modal">
+                    <i class="fas fa-check me-2"></i>Принимаю
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

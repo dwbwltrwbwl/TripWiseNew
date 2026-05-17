@@ -1,0 +1,269 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Админ панель</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    @* Рендерим секцию Styles из дочерних представлений *@
+    @await RenderSectionAsync("Styles", required: false)
+
+    <style>
+        :root {
+            --sidebar-width: 250px;
+            --header-height: 60px;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #4a5f7a;
+            text-align: center;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+            .sidebar-menu li {
+                border-bottom: 1px solid #4a5f7a;
+            }
+
+            .sidebar-menu a {
+                color: #bdc3c7;
+                text-decoration: none;
+                padding: 1rem 1.5rem;
+                display: block;
+                transition: all 0.3s ease;
+            }
+
+                .sidebar-menu a:hover,
+                .sidebar-menu a.active {
+                    background: #34495e;
+                    color: white;
+                    border-left: 4px solid #0379D9;
+                }
+
+            .sidebar-menu i {
+                width: 20px;
+                margin-right: 10px;
+            }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+        }
+
+        .admin-header {
+            background: white;
+            height: var(--header-height);
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+        }
+
+        .admin-body {
+            padding: 2rem;
+        }
+
+        /* Cards */
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border-left: 4px solid #0379D9;
+        }
+
+            .stat-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Tables */
+        .admin-table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .table th {
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            font-weight: 600;
+            padding: 1rem;
+        }
+
+        .table td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+
+        .badge-success {
+            background: #28a745;
+        }
+
+        .badge-warning {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .badge-danger {
+            background: #dc3545;
+        }
+
+        .badge-primary {
+            background: #0379D9;
+        }
+
+        .badge-secondary {
+            background: #6c757d;
+        }
+
+        .badge-info {
+            background: #17a2b8;
+        }
+
+        /* Для таблицы пользователей */
+        .avatar-circle-sm {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0379D9, #40B624);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+            .search-box i {
+                position: absolute;
+                left: 15px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #6c757d;
+            }
+
+            .search-box input {
+                padding-left: 40px;
+            }
+
+        .table-hover tbody tr:hover {
+            background-color: #f0f7ff;
+        }
+
+        .pagination .page-link {
+            color: #0379D9;
+        }
+
+        .pagination .active .page-link {
+            background: #0379D9;
+            border-color: #0379D9;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-lock me-2"></i>Админ
+                </h4>
+                <small class="text-muted">Вместе В Путь</small>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li><a href="/Admin/Dashboard" class="@(ViewContext.RouteData.Values["action"].ToString() == "Dashboard" ? "active" : "")"><i class="fas fa-tachometer-alt"></i> Дашборд</a></li>
+                <li><a href="/Admin/Users" class="@(ViewContext.RouteData.Values["action"].ToString() == "Users" ? "active" : "")"><i class="fas fa-users"></i> Пользователи</a></li>
+                <li><a href="/Admin/Analytics" class="@(ViewContext.RouteData.Values["action"].ToString() == "Analytics" ? "active" : "")"><i class="fas fa-chart-bar"></i> Аналитика</a></li>
+                <li><a href="/Admin/ManageReviews" class="@(ViewContext.RouteData.Values["action"].ToString() == "ManageReviews" ? "active" : "")"><i class="fas fa-star me-2"></i> Отзывы</a></li>
+                <li><a href="/" target="_blank"><i class="fas fa-globe"></i> На сайт</a></li>
+                <li><a href="/Admin/Logout"><i class="fas fa-sign-out-alt"></i> Выход</a></li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="admin-header">
+                <h5 class="mb-0">@ViewData["Title"]</h5>
+                <div class="d-flex align-items-center">
+                    <span class="me-3">Администратор</span>
+                    <a href="/Admin/Logout" class="btn btn-outline-danger btn-sm">
+                        <i class="fas fa-sign-out-alt me-1"></i> Выйти
+                    </a>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="admin-body">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

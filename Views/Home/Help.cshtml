@@ -1,0 +1,802 @@
+﻿<div class="mobile-header-spacer d-block d-lg-none" style="height: 70px;"></div>
+
+@{
+    ViewData["Title"] = "Помощь";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Заголовок страницы в стиле сайта -->
+            <div class="page-header-section mb-5">
+                <div class="page-header-icon">
+                    <i class="fas fa-question-circle text-white"></i>
+                </div>
+                <div class="page-header-content">
+                    <h1 class="page-title">
+                        Помощь
+                    </h1>
+                    <p class="page-subtitle">Ответы на вопросы и инструкции по использованию сервиса</p>
+                </div>
+            </div>
+
+            <!-- Быстрые ссылки -->
+            <div class="card border-0 shadow-sm mb-5">
+                <div class="card-body p-4">
+                    <h3 class="section-subtitle mb-4">
+                        <i class="fas fa-bolt text-primary me-2"></i>
+                        Быстрые разделы
+                    </h3>
+                    <div class="row g-3">
+                        <div class="col-md-3 col-sm-6">
+                            <a href="#booking" class="help-category d-flex flex-column align-items-center text-decoration-none p-3 border rounded">
+                                <div class="help-icon mb-2">
+                                    <i class="fas fa-ticket-alt fa-2x"></i>
+                                </div>
+                                <h6 class="fw-semibold text-center mb-0">Бронирование</h6>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="#payment" class="help-category d-flex flex-column align-items-center text-decoration-none p-3 border rounded">
+                                <div class="help-icon mb-2">
+                                    <i class="fas fa-credit-card fa-2x"></i>
+                                </div>
+                                <h6 class="fw-semibold text-center mb-0">Оплата</h6>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="#cancellation" class="help-category d-flex flex-column align-items-center text-decoration-none p-3 border rounded">
+                                <div class="help-icon mb-2">
+                                    <i class="fas fa-undo fa-2x"></i>
+                                </div>
+                                <h6 class="fw-semibold text-center mb-0">Отмена и возврат</h6>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="#account" class="help-category d-flex flex-column align-items-center text-decoration-none p-3 border rounded">
+                                <div class="help-icon mb-2">
+                                    <i class="fas fa-user fa-2x"></i>
+                                </div>
+                                <h6 class="fw-semibold text-center mb-0">Аккаунт</h6>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="#hotels" class="help-category d-flex flex-column align-items-center text-decoration-none p-3 border rounded">
+                                <div class="help-icon mb-2">
+                                    <i class="fas fa-hotel fa-2x"></i>
+                                </div>
+                                <h6 class="fw-semibold text-center mb-0">Отели</h6>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="#documents" class="help-category d-flex flex-column align-items-center text-decoration-none p-3 border rounded">
+                                <div class="help-icon mb-2">
+                                    <i class="fas fa-file-alt fa-2x"></i>
+                                </div>
+                                <h6 class="fw-semibold text-center mb-0">Документы</h6>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="#technical" class="help-category d-flex flex-column align-items-center text-decoration-none p-3 border rounded">
+                                <div class="help-icon mb-2">
+                                    <i class="fas fa-cog fa-2x"></i>
+                                </div>
+                                <h6 class="fw-semibold text-center mb-0">Техподдержка</h6>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="#safety" class="help-category d-flex flex-column align-items-center text-decoration-none p-3 border rounded">
+                                <div class="help-icon mb-2">
+                                    <i class="fas fa-shield-alt fa-2x"></i>
+                                </div>
+                                <h6 class="fw-semibold text-center mb-0">Безопасность</h6>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ разделы -->
+            <!-- Бронирование -->
+            <div class="card border-0 shadow-sm mb-4" id="booking">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-ticket-alt text-primary me-2"></i>
+                        Бронирование
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="accordion" id="bookingAccordion">
+                        <div class="accordion-item border-0 mb-2">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#booking1">
+                                    Как забронировать билет?
+                                </button>
+                            </h2>
+                            <div id="booking1" class="accordion-collapse collapse" data-bs-parent="#bookingAccordion">
+                                <div class="accordion-body">
+                                    <ol>
+                                        <li>Выберите направление и даты в форме поиска</li>
+                                        <li>Выберите подходящий рейс/поезд из списка</li>
+                                        <li>Заполните данные пассажиров</li>
+                                        <li>Оплатите бронирование</li>
+                                        <li>Получите билет на email</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border-0 mb-2">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#booking2">
+                                    Нужна ли регистрация для бронирования?
+                                </button>
+                            </h2>
+                            <div id="booking2" class="accordion-collapse collapse" data-bs-parent="#bookingAccordion">
+                                <div class="accordion-body">
+                                    Да, для бронирования билетов и отелей требуется регистрация. Это необходимо для сохранения ваших данных и истории заказов.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border-0 mb-2">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#booking3">
+                                    Можно ли забронировать билет за другого человека?
+                                </button>
+                            </h2>
+                            <div id="booking3" class="accordion-collapse collapse" data-bs-parent="#bookingAccordion">
+                                <div class="accordion-body">
+                                    Да, вы можете бронировать билеты для других людей. При заполнении данных пассажира укажите его точные ФИО и паспортные данные.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Оплата -->
+            <div class="card border-0 shadow-sm mb-4" id="payment">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-credit-card text-primary me-2"></i>
+                        Оплата
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="accordion" id="paymentAccordion">
+                        <div class="accordion-item border-0 mb-2">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#payment1">
+                                    Какие способы оплаты доступны?
+                                </button>
+                            </h2>
+                            <div id="payment1" class="accordion-collapse collapse" data-bs-parent="#paymentAccordion">
+                                <div class="accordion-body">
+                                    Мы принимаем: банковские карты (Мир), электронные кошельки (ЮMoney), интернет-банкинг (Сбербанк, Тинькофф).
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border-0 mb-2">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#payment2">
+                                    Безопасна ли оплата на сайте?
+                                </button>
+                            </h2>
+                            <div id="payment2" class="accordion-collapse collapse" data-bs-parent="#paymentAccordion">
+                                <div class="accordion-body">
+                                    Да, все платежи защищены SSL-шифрованием. Мы не храним данные вашей карты. Обработка платежей происходит через защищенные платежные шлюзы.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border-0 mb-2">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#payment3">
+                                    Что делать, если оплата не прошла?
+                                </button>
+                            </h2>
+                            <div id="payment3" class="accordion-collapse collapse" data-bs-parent="#paymentAccordion">
+                                <div class="accordion-body">
+                                    <ul>
+                                        <li>Проверьте баланс карты</li>
+                                        <li>Убедитесь, что карта поддерживает онлайн-платежи</li>
+                                        <li>Проверьте правильность введенных данных</li>
+                                        <li>Попробуйте другой способ оплаты</li>
+                                        <li>Обратитесь в банк-эмитент карты</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Отмена и возврат -->
+            <div class="card border-0 shadow-sm mb-4" id="cancellation">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-undo text-primary me-2"></i>
+                        Отмена и возврат
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="accordion" id="cancellationAccordion">
+                        <div class="accordion-item border-0 mb-2">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#cancellation1">
+                                    Как отменить бронирование?
+                                </button>
+                            </h2>
+                            <div id="cancellation1" class="accordion-collapse collapse" data-bs-parent="#cancellationAccordion">
+                                <div class="accordion-body">
+                                    Отменить бронирование можно в личном кабинете в разделе "Мои заказы" или обратившись в службу поддержки. Сроки и условия возврата зависят от тарифа.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border-0 mb-2">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#cancellation2">
+                                    Вернут ли мне деньги при отмене?
+                                </button>
+                            </h2>
+                            <div id="cancellation2" class="accordion-collapse collapse" data-bs-parent="#cancellationAccordion">
+                                <div class="accordion-body">
+                                    Возврат зависит от типа билета и времени отмены. Невозвратные тарифы не подлежат возврату. Возвратные тарифы возвращаются за вычетом штрафа.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Аккаунт -->
+            <div class="card border-0 shadow-sm mb-4" id="account">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-user text-primary me-2"></i>
+                        Аккаунт
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="accordion" id="accountAccordion">
+                        <div class="accordion-item border-0 mb-2">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#account1">
+                                    Как зарегистрироваться?
+                                </button>
+                            </h2>
+                            <div id="account1" class="accordion-collapse collapse" data-bs-parent="#accountAccordion">
+                                <div class="accordion-body">
+                                    Нажмите на кнопку "Войти" в правом верхнем углу, затем выберите "Регистрация". Заполните поля формы (ФИО, email, пароль) и подтвердите регистрацию по ссылке в письме.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border-0 mb-2">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#account2">
+                                    Что делать, если забыл пароль?
+                                </button>
+                            </h2>
+                            <div id="account2" class="accordion-collapse collapse" data-bs-parent="#accountAccordion">
+                                <div class="accordion-body">
+                                    На странице входа нажмите "Забыли пароль?". Введите email, указанный при регистрации. На почту придет ссылка для восстановления пароля.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border-0 mb-2">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#account3">
+                                    Как изменить личные данные?
+                                </button>
+                            </h2>
+                            <div id="account3" class="accordion-collapse collapse" data-bs-parent="#accountAccordion">
+                                <div class="accordion-body">
+                                    Войдите в личный кабинет, перейдите в раздел "Настройки профиля". Там вы сможете изменить личную информацию и контактные данные.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Документы -->
+            <div class="card border-0 shadow-sm mb-4" id="documents">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-file-alt text-primary me-2"></i>
+                        Документы
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="accordion" id="documentsAccordion">
+                        <div class="accordion-item border-0 mb-2">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#documents1">
+                                    Где найти электронный билет?
+                                </button>
+                            </h2>
+                            <div id="documents1" class="accordion-collapse collapse" data-bs-parent="#documentsAccordion">
+                                <div class="accordion-body">
+                                    Электронный билет приходит на указанную при бронировании электронную почту. Также вы можете скачать его в личном кабинете в разделе "Мои заказы".
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Безопасность -->
+            <div class="card border-0 shadow-sm mb-4" id="safety">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-shield-alt text-primary me-2"></i>
+                        Безопасность
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="accordion" id="safetyAccordion">
+                        <div class="accordion-item border-0 mb-2">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#safety1">
+                                    Как защищены мои личные данные?
+                                </button>
+                            </h2>
+                            <div id="safety1" class="accordion-collapse collapse" data-bs-parent="#safetyAccordion">
+                                <div class="accordion-body">
+                                    Мы используем SSL-шифрование для защиты данных. Ваша личная информация хранится в зашифрованном виде и не передается третьим лицам без вашего согласия. Подробнее в <a asp-controller="Home" asp-action="Privacy">Политике конфиденциальности</a>.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border-0 mb-2">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#safety2">
+                                    Как защитить свой аккаунт?
+                                </button>
+                            </h2>
+                            <div id="safety2" class="accordion-collapse collapse" data-bs-parent="#safetyAccordion">
+                                <div class="accordion-body">
+                                    <ul>
+                                        <li>Используйте сложный пароль (не менее 8 символов с цифрами и буквами)</li>
+                                        <li>Не сообщайте пароль третьим лицам</li>
+                                        <li>Не используйте один пароль на разных сайтах</li>
+                                        <li>Выходите из аккаунта на общедоступных устройствах</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Отели -->
+            <div class="card border-0 shadow-sm mb-4" id="hotels">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-hotel text-primary me-2"></i>
+                        Отели
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="accordion" id="hotelsAccordion">
+                        <div class="accordion-item border-0 mb-2">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#hotels1">
+                                    Как забронировать отель?
+                                </button>
+                            </h2>
+                            <div id="hotels1" class="accordion-collapse collapse" data-bs-parent="#hotelsAccordion">
+                                <div class="accordion-body">
+                                    Выберите город, даты заезда и выезда, количество гостей. Система покажет доступные отели с ценами. После выбора отеля заполните данные гостей и произведите оплату.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Техподдержка -->
+            <div class="card border-0 shadow-sm mb-4" id="technical">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-cog text-primary me-2"></i>
+                        Техподдержка
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="accordion" id="technicalAccordion">
+                        <div class="accordion-item border-0 mb-2">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#technical1">
+                                    Как связаться со службой поддержки?
+                                </button>
+                            </h2>
+                            <div id="technical1" class="accordion-collapse collapse" data-bs-parent="#technicalAccordion">
+                                <div class="accordion-body">
+                                    Вы можете написать нам через форму обратной связи, позвонить по телефону или написать на email. Контакты указаны ниже.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Контакты поддержки -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-life-ring text-primary me-2"></i>
+                        Нужна помощь?
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center p-3 border rounded h-100">
+                                <i class="fas fa-phone fa-2x text-primary mb-2"></i>
+                                <h6 class="fw-semibold mb-2">Телефон</h6>
+                                <p class="text-muted mb-1">8 (800) 123-45-67</p>
+                                <p class="text-muted small">Бесплатно по России</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center p-3 border rounded h-100">
+                                <i class="fas fa-envelope fa-2x text-primary mb-2"></i>
+                                <h6 class="fw-semibold mb-2">Email</h6>
+                                <p class="text-muted mb-1">tripwise@yandex.ru</p>
+                                <p class="text-muted small">Ответ в течение 24 часов</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center p-3 border rounded h-100">
+                                <i class="fas fa-clock fa-2x text-primary mb-2"></i>
+                                <h6 class="fw-semibold mb-2">Часы работы</h6>
+                                <p class="text-muted mb-1">Круглосуточно</p>
+                                <p class="text-muted small">7 дней в неделю</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="help-buttons">
+                        <a asp-controller="Home" asp-action="Contact" class="btn btn-primary">
+                            <i class="fas fa-envelope me-2"></i>Написать сообщение
+                        </a>
+                        <a href="tel:+78001234567" class="btn btn-outline-primary">
+                            <i class="fas fa-phone me-2"></i>Позвонить
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Стили для заголовка страницы (унифицированные) */
+    .page-header-section {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 25px 30px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .page-header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(to bottom, #0379D9, #40B624);
+        }
+
+    .page-header-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #0379D9, #40B624);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 4px 15px rgba(3, 121, 217, 0.2);
+        flex-shrink: 0;
+    }
+
+        .page-header-icon i {
+            color: white !important;
+        }
+
+    .page-header-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .page-title {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 800;
+        font-size: 2.5rem;
+        color: #0379D9;
+        margin: 0 0 8px 0;
+        line-height: 1.2;
+        word-break: break-word;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        font-size: 1.1rem;
+        margin: 0;
+        line-height: 1.4;
+        word-break: break-word;
+    }
+
+    .section-subtitle {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        font-size: 1.3rem;
+        color: #334155;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    /* Стили для карточек помощи */
+    .help-category {
+        transition: all 0.3s ease;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+    }
+
+        .help-category:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border-color: #0379D9;
+            text-decoration: none;
+        }
+
+    .help-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .help-icon i {
+            color: #0379D9;
+        }
+
+    /* Стили для карточек */
+    .card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+        .card:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+    /* Стили для аккордеона */
+    .accordion-button {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        border-radius: 12px !important;
+        border: 1px solid #e2e8f0;
+        background-color: white;
+        color: #334155;
+        padding: 16px 20px;
+    }
+
+        .accordion-button:not(.collapsed) {
+            background-color: #f0f7ff;
+            color: #0379D9;
+            border-color: #0379D9;
+            box-shadow: none;
+        }
+
+        .accordion-button:focus {
+            box-shadow: 0 0 0 0.2rem rgba(3, 121, 217, 0.25);
+            border-color: #0379D9;
+        }
+
+        .accordion-button::after {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%230379D9'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+        }
+
+    .accordion-body {
+        padding: 20px;
+        background-color: white;
+        border-radius: 0 0 12px 12px;
+    }
+
+    /* Блок кнопок помощи */
+    .help-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+
+    /* Кнопки */
+    .btn {
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        font-family: 'Nunito', sans-serif;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .btn-primary {
+        background: #0379D9;
+        border: none;
+        box-shadow: 0 4px 12px rgba(3, 121, 217, 0.2);
+        padding: 12px 24px;
+        color: white;
+    }
+
+        .btn-primary i {
+            color: white !important;
+        }
+        .btn-primary:hover {
+            background: #0356a8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(3, 121, 217, 0.3);
+            color: white;
+        }
+
+    .btn-outline-primary {
+        border: 2px solid #0379D9;
+        color: #0379D9;
+        background: white;
+        padding: 12px 24px;
+    }
+
+        .btn-outline-primary:hover {
+            background: #f0f7ff;
+            border-color: #0356a8;
+            color: #0356a8;
+        }
+
+        .btn-primary i,
+        .btn-outline-primary i {
+            color: inherit;
+        }
+
+    /* Все иконки в одном цвете */
+    .fa-ticket-alt,
+    .fa-credit-card,
+    .fa-undo,
+    .fa-user,
+    .fa-hotel,
+    .fa-file-alt,
+    .fa-cog,
+    .fa-shield-alt,
+    .fa-life-ring,
+    .fa-phone,
+    .fa-envelope,
+    .fa-clock,
+    .fa-bolt,
+    .fa-question-circle {
+        color: #0379D9 !important;
+    }
+
+    /* Адаптивность как на других страницах */
+    @@media (max-width: 768px) {
+        .page-header-section
+
+    {
+        padding: 20px;
+        gap: 15px;
+    }
+
+    .page-header-section::before {
+        width: 100%;
+        height: 6px;
+        top: 0;
+        left: 0;
+        background: linear-gradient(to right, #0379D9, #40B624);
+    }
+
+    .page-header-icon {
+        width: 55px;
+        height: 55px;
+        font-size: 1.5rem;
+    }
+
+    .page-title {
+        font-size: 1.6rem;
+        margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.2rem;
+    }
+
+    .help-icon {
+        width: 50px;
+        height: 50px;
+    }
+
+    .accordion-button {
+        padding: 12px 16px;
+        font-size: 0.95rem;
+    }
+
+    .help-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+        .help-buttons .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+    }
+
+    @@media (max-width: 576px) {
+        .page-header-section
+
+    {
+        padding: 15px;
+        gap: 12px;
+    }
+
+    .page-header-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.3rem;
+    }
+
+    .page-title {
+        font-size: 1.4rem;
+    }
+
+    .page-subtitle {
+        font-size: 0.85rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.1rem;
+    }
+
+    }
+</style>
+
+<script>
+    // Плавная прокрутка к якорям
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            const targetId = this.getAttribute('href');
+            if (targetId !== '#') {
+                e.preventDefault();
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        });
+    });
+</script>

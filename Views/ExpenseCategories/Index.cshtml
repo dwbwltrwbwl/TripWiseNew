@@ -1,0 +1,35 @@
+﻿@model IEnumerable<TripWise.Models.ExpenseCategory>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.ExpenseCategoryName)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.ExpenseCategoryName)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.IdExpenseCategory">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.IdExpenseCategory">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.IdExpenseCategory">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

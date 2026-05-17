@@ -1,0 +1,264 @@
+﻿@{
+    ViewData["Title"] = "Дашборд";
+    Layout = "_AdminLayout";
+}
+
+@model TripWise.Models.ViewModels.AdminDashboardViewModel
+
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="stat-card">
+            <div class="card-icon text-primary">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-number">@Model.TotalUsers.ToString("N0")</div>
+            <div class="stat-label">Пользователей</div>
+            <div class="stat-change text-success">
+                <i class="fas fa-arrow-up"></i> +@Model.NewUsersToday сегодня
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card">
+            <div class="card-icon text-success">
+                <i class="fas fa-ticket-alt"></i>
+            </div>
+            <div class="stat-number">@Model.TotalBookings.ToString("N0")</div>
+            <div class="stat-label">Броней</div>
+            <div class="stat-change text-info">
+                <i class="fas fa-plane me-1"></i>@Model.FlightBookings |
+                <i class="fas fa-train me-1"></i>@Model.TrainBookings |
+                <i class="fas fa-hotel me-1"></i>@Model.HotelBookings
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card">
+            <div class="card-icon text-warning">
+                <i class="fas fa-ruble-sign"></i>
+            </div>
+            <div class="stat-number">@Model.TotalRevenue.ToString("N0") ₽</div>
+            <div class="stat-label">Оборот</div>
+            <div class="stat-change text-muted small">
+                Авиа: @Model.FlightRevenue.ToString("N0") ₽
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card">
+            <div class="card-icon text-info">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="stat-number">@Model.AverageRating.ToString("0.0")/5</div>
+            <div class="stat-label">Рейтинг</div>
+            <div class="stat-change text-warning">
+                @for (int i = 0; i < Math.Floor(Model.AverageRating); i++)
+                {
+                    <i class="fas fa-star"></i>
+                }
+                @if (Model.AverageRating - Math.Floor(Model.AverageRating) >= 0.5)
+                {
+                    <i class="fas fa-star-half-alt"></i>
+                }
+                (@Model.TotalReviews отзывов)
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Активность за неделю -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="admin-table">
+            <div class="p-3 border-bottom">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Активность за неделю</h5>
+            </div>
+            <div class="p-3">
+                <canvas id="activityChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Последние бронирования -->
+<div class="row">
+    <div class="col-12">
+        <div class="admin-table">
+            <div class="p-3 border-bottom">
+                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Последние бронирования</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Пользователь</th>
+                            <th>Тип</th>
+                            <th>Направление</th>
+                            <th>Сумма</th>
+                            <th>Статус</th>
+                            <th>Дата</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var booking in Model.RecentBookings)
+                        {
+                            <tr>
+                                <td>#@booking.Id</td>
+                                <td>@booking.UserName</td>
+                                <td>
+                                    @if (booking.Type == "flight")
+                                    {
+                                        <i class="fas fa-plane text-primary me-1"></i>
+                                        <span>Авиа</span>
+                                    }
+                                    else if (booking.Type == "train")
+                                    {
+                                        <i class="fas fa-train text-success me-1"></i>
+                                        <span>ЖД</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-hotel text-warning me-1"></i>
+                                        <span>Отель</span>
+                                    }
+                                </td>
+                                <td>@booking.Route</td>
+                                <td>@booking.Price.ToString("N0") ₽</td>
+                                <td>
+                                    @if (booking.Status == "confirmed")
+                                    {
+                                        <span class="badge bg-success">Оплачено</span>
+                                    }
+                                    else if (booking.Status == "pending")
+                                    {
+                                        <span class="badge bg-warning">Ожидание</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@booking.Status</span>
+                                    }
+                                </td>
+                                <td>@booking.CreatedAt.ToString("dd.MM.yyyy")</td>
+                            </tr>
+                        }
+                        @if (!Model.RecentBookings.Any())
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    <i class="fas fa-info-circle me-2"></i>Нет бронирований
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s;
+            height: 100%;
+        }
+
+            .stat-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            }
+
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        .stat-change {
+            font-size: 0.75rem;
+        }
+
+        .admin-table {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .badge.bg-success {
+            background: #40B624 !important;
+        }
+
+        .badge.bg-warning {
+            background: #ffc107 !important;
+            color: #333;
+        }
+
+        .table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+}
+
+@section Scripts {
+    <script>
+        // График активности
+        const ctx = document.getElementById('activityChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.ChartLabels)),
+                datasets: [{
+                    label: 'Новые пользователи',
+                    data: @Html.Raw(Json.Serialize(Model.NewUsersData)),
+                    borderColor: '#0379D9',
+                    backgroundColor: 'rgba(3, 121, 217, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: 'Бронирования',
+                    data: @Html.Raw(Json.Serialize(Model.BookingsData)),
+                    borderColor: '#40B624',
+                    backgroundColor: 'rgba(64, 182, 36, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}

@@ -1,0 +1,1631 @@
+﻿<div class="mobile-header-spacer d-block d-lg-none" style="height: 70px;"></div>
+
+@{
+    ViewData["Title"] = "Отели";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+
+            <!-- HEADER -->
+            <div class="page-header-section mb-4">
+                <div class="page-header-icon">
+                    <i class="fas fa-hotel text-white"></i>
+                </div>
+                <div class="page-header-content">
+                    <h1 class="page-title">Поиск отелей на карте</h1>
+                    <p class="page-subtitle">Найдите жилье, используя открытые данные</p>
+                </div>
+            </div>
+
+            <!-- FORM -->
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+
+                    <form id="hotelSearchForm" class="hotel-form">
+
+                        <!-- ГОРОД -->
+                        <div class="form-block">
+                            <label>Город или район *</label>
+                            <div class="input-custom">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <input type="text" id="destination" placeholder="Введите город (например: Москва, Санкт-Петербург, Сочи)" autocomplete="off">
+                                <button type="button" class="location-btn" id="useMyLocation" title="Использовать мое местоположение">
+                                    <i class="fas fa-location-arrow"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- РАДИУС -->
+                        <div class="form-block">
+                            <label>Радиус поиска</label>
+                            <div class="input-custom">
+                                <i class="fas fa-ruler"></i>
+                                <select id="searchRadius">
+                                    <option value="1">1 км</option>
+                                    <option value="2">2 км</option>
+                                    <option value="5">5 км</option>
+                                    <option value="10" selected>10 км</option>
+                                    <option value="20">20 км</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- ТИП ЖИЛЬЯ -->
+                        <div class="form-block">
+                            <label>Тип жилья</label>
+                            <div class="input-custom">
+                                <i class="fas fa-bed"></i>
+                                <select id="accommodationType">
+                                    <option value="all">Все типы</option>
+                                    <option value="hotel">Отели</option>
+                                    <option value="hostel">Хостелы</option>
+                                    <option value="guest_house">Гостевые дома</option>
+                                    <option value="apartment">Апартаменты</option>
+                                    <option value="motel">Мотели</option>
+                                    <option value="camp_site">Кемпинги</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- МИНИМАЛЬНЫЙ РЕЙТИНГ -->
+                        <div class="form-block">
+                            <label>Минимальный рейтинг</label>
+                            <div class="input-custom">
+                                <i class="fas fa-star"></i>
+                                <select id="minRating">
+                                    <option value="0">Любой</option>
+                                    <option value="3">3+ звезды</option>
+                                    <option value="4">4+ звезды</option>
+                                    <option value="5">5 звезд</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- BUTTON -->
+                        <button type="submit" class="search-btn" id="searchButton">
+                            <i class="fas fa-search me-2"></i>Искать на карте
+                        </button>
+
+                    </form>
+
+                </div>
+            </div>
+
+            <!-- Карта и результаты -->
+            <div class="row mt-4">
+                <!-- Левая колонка: Карта -->
+                <div class="col-12 col-lg-8 mb-4 mb-lg-0">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="fas fa-map me-2"></i>Карта отелей
+                            </h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="map" style="height: 400px; width: 100%; border-radius: 8px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Правая колонка: Список отелей -->
+                <div class="col-12 col-lg-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="fas fa-list me-2"></i>Найденные отели
+                                <span id="hotelCount" class="badge bg-primary ms-2">0</span>
+                            </h5>
+                        </div>
+                        <div class="card-body p-0 hotel-list-container">
+                            <div id="hotelsList" class="hotel-list">
+                                <div class="text-center text-muted py-5">
+                                    <i class="fas fa-search fa-2x mb-3"></i>
+                                    <p>Введите город для поиска отелей</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для авторизации -->
+<div class="modal fade" id="authModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-primary">
+                    <i class="fas fa-lock me-2"></i>Требуется авторизация
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="fas fa-hotel text-primary mb-3" style="font-size: 3rem;"></i>
+                <h4 class="mb-3">Войдите в аккаунт</h4>
+                <p class="text-muted mb-4">
+                    Для сохранения отелей в избранное необходимо авторизоваться.<br>
+                    Сохраняйте понравившиеся варианты и отслеживайте изменения цен.
+                </p>
+                <div class="d-grid gap-2">
+                    <a href="/Account/Login" class="btn btn-primary btn-lg">
+                        <i class="fas fa-sign-in-alt me-2"></i>Войти
+                    </a>
+                    <a href="/Account/Register" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>Зарегистрироваться
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer border-0 justify-content-center">
+                <small class="text-muted">После авторизации вы сможете сохранять отели</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <style>
+        /* HEADER */
+        .page-header-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 25px 30px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .page-header-section::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 6px;
+                height: 100%;
+                background: linear-gradient(to bottom, #0379D9, #40B624);
+            }
+
+        .page-header-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #0379D9, #40B624);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            box-shadow: 0 4px 15px rgba(3, 121, 217, 0.2);
+            flex-shrink: 0;
+        }
+
+            .page-header-icon i {
+                color: white !important;
+            }
+
+        .page-header-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .page-title {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 800;
+            font-size: 2.5rem;
+            color: #0379D9;
+            margin: 0 0 8px 0;
+            line-height: 1.2;
+            word-break: break-word;
+        }
+
+        .page-subtitle {
+            color: #64748b;
+            font-size: 1.1rem;
+            margin: 0;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        /* FORM */
+        .hotel-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .form-block {
+            width: 100%;
+        }
+
+            .form-block label {
+                font-weight: 600;
+                margin-bottom: 8px;
+                display: block;
+                font-size: 0.9rem;
+                color: #334155;
+            }
+
+        /* КАСТОМНЫЙ INPUT */
+        .input-custom {
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            padding: 0 16px;
+            height: 52px;
+            transition: all 0.3s ease;
+        }
+
+            .input-custom:focus-within {
+                border-color: #0379D9;
+                box-shadow: 0 0 0 3px rgba(3, 121, 217, 0.1);
+            }
+
+            .input-custom i {
+                margin-right: 12px;
+                color: #333333 !important;
+                font-size: 1.1rem;
+                width: 20px;
+            }
+
+            .input-custom input,
+            .input-custom select {
+                border: none;
+                background: transparent;
+                width: 100%;
+                height: 100%;
+                outline: none;
+                font-size: 1rem;
+                font-family: 'Nunito', sans-serif;
+                color: #1a1a1a;
+            }
+
+            .input-custom select {
+                cursor: pointer;
+            }
+
+            .input-custom input::placeholder {
+                color: #999;
+            }
+
+        .location-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+            color: #666;
+        }
+
+            .location-btn:hover {
+                background: #f1f5f9;
+                transform: scale(1.05);
+            }
+
+        /* BUTTON */
+        .search-btn {
+            height: 56px;
+            border-radius: 12px;
+            background: #0379D9;
+            color: white;
+            border: none;
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+            .search-btn i {
+                color: white;
+            }
+
+            .search-btn:hover {
+                background: #0356a8;
+                transform: translateY(-2px);
+            }
+
+        /* Карта и список */
+        #map {
+            border-radius: 8px;
+            z-index: 1;
+            height: 450px;
+        }
+
+        .hotel-list-container {
+            height: 450px;
+            overflow-y: auto;
+        }
+
+        .hotel-list {
+            padding: 1rem;
+        }
+
+        .hotel-item {
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            position: relative;
+            margin-bottom: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            background: white;
+            border: 1px solid #e2e8f0;
+        }
+
+            .hotel-item:hover {
+                background-color: #f8f9fa;
+                border-left-color: #0379D9;
+            }
+
+            .hotel-item.active {
+                background-color: #e7f1ff;
+                border-left-color: #0379D9;
+            }
+
+        /* Кнопка избранного */
+        .hotel-favorite-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 8px;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            z-index: 2;
+        }
+
+            .hotel-favorite-btn:hover {
+                background: #f1f5f9;
+                transform: scale(1.1);
+            }
+
+            .hotel-favorite-btn i {
+                transition: all 0.2s ease;
+                font-size: 1.2rem;
+            }
+
+            .hotel-favorite-btn:hover i {
+                color: #dc3545 !important;
+            }
+
+            .hotel-favorite-btn.favorited i {
+                color: #dc3545 !important;
+            }
+
+        /* Уведомления */
+        .notification-alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 280px;
+            max-width: 350px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @@keyframes slideIn {
+            from
+
+        {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        }
+
+        /* DESKTOP - 992px и выше */
+        @@media (min-width: 992px) {
+            .hotel-form
+
+        {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 16px;
+            align-items: flex-end;
+        }
+
+        .hotel-form .form-block:first-child {
+            grid-column: span 2;
+        }
+
+        .hotel-form .search-btn {
+            margin-top: 28px;
+            height: 52px;
+        }
+
+        }
+
+        /* МОБИЛЬНАЯ АДАПТАЦИЯ - до 768px */
+        @@media (max-width: 768px) {
+            .page-header-section
+
+        {
+            padding: 20px;
+            gap: 15px;
+        }
+
+        .page-header-section::before {
+            width: 100%;
+            height: 6px;
+            top: 0;
+            left: 0;
+            background: linear-gradient(to right, #0379D9, #40B624);
+        }
+
+        .page-header-icon {
+            width: 55px;
+            height: 55px;
+            font-size: 1.5rem;
+        }
+
+        .page-title {
+            font-size: 1.6rem;
+            margin-bottom: 4px;
+        }
+
+        .page-subtitle {
+            font-size: 0.95rem;
+        }
+
+        .input-custom {
+            height: 52px;
+        }
+
+            .input-custom input,
+            .input-custom select {
+                font-size: 1rem;
+            }
+
+        .search-btn {
+            height: 54px;
+            font-size: 1rem;
+        }
+
+        #map {
+            height: 350px;
+        }
+
+        .hotel-list-container {
+            height: 350px;
+        }
+
+        }
+
+        @@media (max-width: 576px) {
+            .page-header-section
+
+        {
+            padding: 15px;
+            gap: 12px;
+        }
+
+        .page-header-icon {
+            width: 48px;
+            height: 48px;
+            font-size: 1.3rem;
+        }
+
+        .page-title {
+            font-size: 1.4rem;
+        }
+
+        .page-subtitle {
+            font-size: 0.85rem;
+        }
+
+        .input-custom {
+            height: 48px;
+            padding: 0 14px;
+        }
+
+            .input-custom i {
+                font-size: 1rem;
+            }
+
+            .input-custom input,
+            .input-custom select {
+                font-size: 0.95rem;
+            }
+
+        .search-btn {
+            height: 50px;
+            font-size: 0.95rem;
+        }
+
+        #map {
+            height: 300px;
+        }
+
+        .hotel-list-container {
+            height: 300px;
+        }
+
+        .hotel-item {
+            padding: 10px;
+        }
+
+        }
+
+        /* Автокомплит */
+        .ui-autocomplete {
+            max-height: 250px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            font-family: 'Nunito', sans-serif;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            border: 1px solid #e2e8f0;
+        }
+
+            .ui-autocomplete .ui-menu-item {
+                padding: 10px 15px;
+                border-bottom: 1px solid #f0f0f0;
+            }
+
+                .ui-autocomplete .ui-menu-item:last-child {
+                    border-bottom: none;
+                }
+
+            .ui-autocomplete .ui-state-active {
+                background-color: #0379D9;
+                color: white;
+                border: none;
+                margin: 0;
+            }
+
+        /* Маркеры на карте */
+        .hotel-marker {
+            cursor: pointer;
+        }
+
+        .leaflet-popup-content {
+            font-family: 'Nunito', sans-serif;
+            min-width: 200px;
+        }
+
+        .osm-badge {
+            font-size: 0.7rem;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 2px 6px;
+        }
+    </style>
+}
+
+@section Scripts {
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+    <script>
+        // ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
+        let map;
+        let markers = [];
+        let currentHotels = [];
+        let geocoder;
+        let isUserAuthenticated = false;
+        let userId = null;
+        let favoriteHotels = new Set();
+
+        // ==================== ФУНКЦИИ АВТОРИЗАЦИИ ====================
+        async function checkAuthStatus() {
+            try {
+                const response = await fetch('/Account/GetAuthStatus', {
+                    credentials: 'include',
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    isUserAuthenticated = data.isAuthenticated;
+                    userId = data.userId;
+                    console.log('Статус авторизации:', isUserAuthenticated, 'User ID:', userId);
+
+                    if (isUserAuthenticated) {
+                        await loadFavoriteHotels();
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка проверки авторизации:', error);
+                isUserAuthenticated = false;
+                userId = null;
+            }
+        }
+
+        // ==================== ФУНКЦИИ ИЗБРАННОГО ====================
+        async function loadFavoriteHotels() {
+            try {
+                console.log('Загрузка избранных отелей...');
+                const response = await fetch('/api/favorites/hotel/list', {
+                    credentials: 'include',
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.favorites) {
+                        favoriteHotels = new Set(data.favorites);
+                        console.log('Загружено избранных отелей:', Array.from(favoriteHotels));
+                        updateAllHotelFavoriteButtons();
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки избранных отелей:', error);
+            }
+        }
+
+        async function toggleHotelFavorite(hotelId, hotelData) {
+            if (!isUserAuthenticated) {
+                showAuthModal();
+                return;
+            }
+
+            const button = document.querySelector(`[data-hotel-id="${CSS.escape(hotelId)}"] .hotel-favorite-btn`);
+            if (button) {
+                button.style.pointerEvents = 'none';
+                button.style.opacity = '0.6';
+            }
+
+            try {
+                const isCurrentlyFavorite = favoriteHotels.has(hotelId);
+                const url = isCurrentlyFavorite ? '/api/favorites/hotel/remove' : '/api/favorites/hotel/add';
+
+                console.log('Отправка запроса:', url, hotelData);
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(isCurrentlyFavorite ?
+                        { hotelId: hotelId } :
+                        hotelData
+                    )
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    if (isCurrentlyFavorite) {
+                        favoriteHotels.delete(hotelId);
+                        showNotification('Отель удален из избранного', 'success');
+                    } else {
+                        favoriteHotels.add(hotelId);
+                        showNotification('Отель добавлен в избранное!', 'success');
+                    }
+                    updateHotelFavoriteButton(hotelId);
+                } else {
+                    showNotification(result.message || 'Ошибка при сохранении', 'danger');
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showNotification('Ошибка при сохранении отеля', 'danger');
+            } finally {
+                if (button) {
+                    button.style.pointerEvents = '';
+                    button.style.opacity = '';
+                }
+            }
+        }
+
+        function updateHotelFavoriteButton(hotelId) {
+            const buttons = document.querySelectorAll(`[data-hotel-id="${CSS.escape(hotelId)}"] .hotel-favorite-btn`);
+            const isFavorite = favoriteHotels.has(hotelId);
+
+            buttons.forEach(button => {
+                const icon = button.querySelector('i');
+                if (icon) {
+                    if (isFavorite) {
+                        icon.className = 'fas fa-heart text-danger';
+                        button.title = 'Удалить из избранного';
+                        button.classList.add('favorited');
+                    } else {
+                        icon.className = 'far fa-heart text-muted';
+                        button.title = 'Добавить в избранное';
+                        button.classList.remove('favorited');
+                    }
+                }
+            });
+        }
+
+        function updateAllHotelFavoriteButtons() {
+            const hotelItems = document.querySelectorAll('[data-hotel-id]');
+            hotelItems.forEach(item => {
+                const hotelId = item.getAttribute('data-hotel-id');
+                if (hotelId) {
+                    updateHotelFavoriteButton(hotelId);
+                }
+            });
+        }
+
+        function toggleHotelFavoriteFromList(hotelId, event) {
+            event.stopPropagation();
+            const hotel = currentHotels.find(h => h.id.toString() === hotelId.toString());
+            if (!hotel) return;
+
+            const hotelData = {
+                hotelId: hotel.id.toString(),
+                hotelName: hotel.name,
+                hotelAddress: hotel.address,
+                latitude: hotel.lat,
+                longitude: hotel.lon,
+                accommodationType: hotel.accommodationType,
+                stars: hotel.stars,
+                phone: hotel.phone !== 'Не указан' ? hotel.phone : null,
+                website: hotel.website,
+                pricePerNight: hotel.tags?.price || hotel.tags?.charge || getFixedPrice(hotel.accommodationType, hotel.stars),
+                tags: hotel.tags
+            };
+
+            toggleHotelFavorite(hotelId.toString(), hotelData);
+        }
+
+        function showAuthModal() {
+            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                const modalElement = document.getElementById('authModal');
+                if (modalElement) {
+                    const modal = new bootstrap.Modal(modalElement);
+                    modal.show();
+                }
+            } else {
+                window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            const oldNotifications = document.querySelectorAll('.notification-alert');
+            oldNotifications.forEach(notification => notification.remove());
+
+            const notification = document.createElement('div');
+            notification.className = `notification-alert alert alert-${type} alert-dismissible fade show position-fixed`;
+            notification.style.cssText = `
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+            `;
+
+            notification.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'} me-2"></i>
+                    <div>${message}</div>
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                if (notification.parentElement) notification.remove();
+            }, 5000);
+        }
+
+        // ==================== ФУНКЦИИ ДЛЯ АВТОДОПОЛНЕНИЯ ====================
+        function setupCityAutocomplete() {
+            if (typeof jQuery === 'undefined') {
+                console.error('jQuery не загружен!');
+                return;
+            }
+
+            if ($("#destination").length === 0) {
+                console.error('Элемент destination не найден');
+                return;
+            }
+
+            $("#destination").autocomplete({
+                source: function(request, response) {
+                    $.ajax({
+                        url: "https://nominatim.openstreetmap.org/search",
+                        dataType: "json",
+                        data: {
+                            q: request.term,
+                            format: "json",
+                            limit: 10,
+                            addressdetails: 1,
+                            "accept-language": "ru",
+                            featureType: "city"
+                        },
+                        success: function(data) {
+                            response($.map(data, function(item) {
+                                let displayName = item.display_name;
+                                if (displayName.length > 60) {
+                                    displayName = displayName.substring(0, 60) + '...';
+                                }
+
+                                return {
+                                    label: displayName,
+                                    value: item.display_name,
+                                    lat: item.lat,
+                                    lon: item.lon
+                                };
+                            }));
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Ошибка автодополнения:', error);
+                        }
+                    });
+                },
+                minLength: 2,
+                delay: 300,
+                select: function(event, ui) {
+                    console.log('Выбран город:', ui.item);
+
+                    document.getElementById('destination').value = ui.item.value;
+                    map.setView([ui.item.lat, ui.item.lon], 13);
+
+                    setTimeout(() => searchHotelsFromMap(parseFloat(ui.item.lat), parseFloat(ui.item.lon)), 500);
+                }
+            });
+        }
+
+        // ==================== ИНИЦИАЛИЗАЦИЯ КАРТЫ ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM загружен, инициализация...');
+
+            initializeMap();
+            setupEventListeners();
+            setupCityAutocomplete();
+            checkAuthStatus();
+
+            setTimeout(() => {
+                checkForAccommodationTypeFromStorage();
+            }, 500);
+        });
+
+        function initializeMap() {
+            map = L.map('map').setView([55.7558, 37.6173], 5);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
+            }).addTo(map);
+
+            geocoder = L.Control.geocoder({
+                defaultMarkGeocode: false,
+                placeholder: 'Поиск города...',
+                errorMessage: 'Ничего не найдено'
+            }).on('markgeocode', function(e) {
+                const center = e.geocode.center;
+                map.setView(center, 13);
+
+                document.getElementById('destination').value = e.geocode.name;
+
+                setTimeout(() => searchHotelsFromMap(center.lat, center.lng), 500);
+            }).addTo(map);
+
+            console.log('Карта инициализирована');
+        }
+
+        // ==================== ОБРАБОТЧИКИ СОБЫТИЙ ====================
+        function setupEventListeners() {
+            const form = document.getElementById('hotelSearchForm');
+            const searchButton = document.getElementById('searchButton');
+            const useMyLocationBtn = document.getElementById('useMyLocation');
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                handleSearch();
+            });
+
+            searchButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                handleSearch();
+            });
+
+            useMyLocationBtn.addEventListener('click', function() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        async position => {
+                            const lat = position.coords.latitude;
+                            const lng = position.coords.longitude;
+
+                            const originalHTML = useMyLocationBtn.innerHTML;
+                            useMyLocationBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                            useMyLocationBtn.disabled = true;
+
+                            try {
+                                const response = await fetch(
+                                    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=ru&zoom=10`
+                                );
+
+                                if (!response.ok) throw new Error('Ошибка обратного геокодирования');
+
+                                const data = await response.json();
+
+                                let cityName = 'Неизвестный город';
+                                if (data.address) {
+                                    cityName = data.address.city ||
+                                              data.address.town ||
+                                              data.address.village ||
+                                              data.address.municipality ||
+                                              data.address.county ||
+                                              'Неизвестный город';
+                                }
+
+                                document.getElementById('destination').value = cityName;
+                                map.setView([lat, lng], 13);
+                                searchHotelsFromMap(lat, lng);
+                            } catch (error) {
+                                console.error('Ошибка при определении города:', error);
+                                alert('Не удалось определить ваш город. Поиск будет выполнен по текущим координатам.');
+
+                                document.getElementById('destination').value = 'Текущее местоположение';
+                                map.setView([lat, lng], 13);
+                                searchHotelsFromMap(lat, lng);
+                            } finally {
+                                useMyLocationBtn.innerHTML = originalHTML;
+                                useMyLocationBtn.disabled = false;
+                            }
+                        },
+                        error => {
+                            alert('Не удалось получить местоположение: ' + error.message);
+                        }
+                    );
+                } else {
+                    alert('Геолокация не поддерживается вашим браузером');
+                }
+            });
+        }
+
+        // ==================== ПОИСК ====================
+        async function handleSearch() {
+            const destination = document.getElementById('destination').value.trim();
+            const searchButton = document.getElementById('searchButton');
+
+            if (!destination) {
+                alert('Пожалуйста, введите город для поиска');
+                return;
+            }
+
+            const originalHTML = searchButton.innerHTML;
+            searchButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Поиск...';
+            searchButton.disabled = true;
+
+            try {
+                const location = await geocodeCity(destination);
+
+                if (!location) {
+                    throw new Error('Город не найден');
+                }
+
+                map.setView([location.lat, location.lon], 13);
+                await searchHotelsFromMap(location.lat, location.lon);
+
+            } catch (error) {
+                console.error('Ошибка поиска:', error);
+                alert('Ошибка при поиске города: ' + error.message);
+            } finally {
+                searchButton.innerHTML = originalHTML;
+                searchButton.disabled = false;
+            }
+        }
+
+        async function geocodeCity(cityName) {
+            try {
+                const response = await fetch(
+                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cityName)}&limit=1&accept-language=ru`
+                );
+
+                if (!response.ok) throw new Error('Ошибка геокодирования');
+
+                const data = await response.json();
+
+                if (data && data.length > 0) {
+                    return {
+                        lat: parseFloat(data[0].lat),
+                        lon: parseFloat(data[0].lon),
+                        display_name: data[0].display_name
+                    };
+                }
+                return null;
+            } catch (error) {
+                console.error('Ошибка геокодирования:', error);
+                return null;
+            }
+        }
+
+        async function searchHotelsFromMap(lat, lng) {
+            const radius = document.getElementById('searchRadius').value * 1000;
+            const type = document.getElementById('accommodationType').value;
+
+            showLoading();
+
+            try {
+                let query = `
+                    [out:json][timeout:30];
+                    (
+                        node["tourism"="hotel"](around:${radius},${lat},${lng});
+                        node["tourism"="hostel"](around:${radius},${lat},${lng});
+                        node["tourism"="guest_house"](around:${radius},${lat},${lng});
+                        node["tourism"="apartment"](around:${radius},${lat},${lng});
+                        node["tourism"="motel"](around:${radius},${lat},${lng});
+                        node["tourism"="camp_site"](around:${radius},${lat},${lng});
+                        node["building"="hotel"](around:${radius},${lat},${lng});
+                    );
+                    out body;
+                    >;
+                    out skel qt;
+                `;
+
+                if (type !== 'all') {
+                    query = `
+                        [out:json][timeout:30];
+                        node["tourism"="${type}"](around:${radius},${lat},${lng});
+                        out body;
+                        >;
+                        out skel qt;
+                    `;
+                }
+
+                const response = await fetch('https://overpass-api.de/api/interpreter', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `data=${encodeURIComponent(query)}`
+                });
+
+                if (!response.ok) throw new Error('Ошибка Overpass API');
+
+                const data = await response.json();
+                processOSMData(data.elements, lat, lng);
+
+            } catch (error) {
+                console.error('Ошибка поиска отелей:', error);
+                showError('Не удалось загрузить данные. Попробуйте позже.');
+            }
+        }
+
+        // ==================== ОБРАБОТКА ДАННЫХ ====================
+        function processOSMData(elements, centerLat, centerLng) {
+            clearMarkers();
+            currentHotels = [];
+
+            const hotels = [];
+
+            elements.forEach(element => {
+                if (element.tags && element.tags.name) {
+                    const hotel = {
+                        id: element.id,
+                        type: 'node',
+                        name: element.tags.name,
+                        lat: element.lat,
+                        lon: element.lon,
+                        tags: element.tags,
+                        distance: calculateDistance(centerLat, centerLng, element.lat, element.lon)
+                    };
+
+                    hotel.address = element.tags['addr:street'] ?
+                        `${element.tags['addr:street']} ${element.tags['addr:housenumber'] || ''}`.trim() :
+                        'Адрес не указан';
+
+                    hotel.phone = element.tags.phone || element.tags['contact:phone'] || 'Не указан';
+                    hotel.website = element.tags.website || element.tags['contact:website'] || null;
+                    hotel.stars = element.tags.stars ? parseInt(element.tags.stars) : null;
+                    hotel.description = element.tags.description || null;
+                    hotel.accommodationType = getAccommodationType(element.tags);
+
+                    hotels.push(hotel);
+                }
+            });
+
+            hotels.sort((a, b) => a.distance - b.distance);
+
+            const filteredHotels = hotels.filter(hotel => {
+                if (!hotel.stars) return true;
+                return hotel.stars >= parseInt(document.getElementById('minRating').value);
+            });
+
+            currentHotels = filteredHotels;
+            displayHotelsList(filteredHotels);
+            addMarkersToMap(filteredHotels);
+
+            document.getElementById('hotelCount').textContent = filteredHotels.length;
+
+            if (filteredHotels.length === 0) {
+                showNoResults();
+            }
+        }
+
+        function getAccommodationType(tags) {
+            if (tags.tourism === 'hotel') return 'Отель';
+            if (tags.tourism === 'hostel') return 'Хостел';
+            if (tags.tourism === 'guest_house') return 'Гостевой дом';
+            if (tags.tourism === 'apartment') return 'Апартаменты';
+            if (tags.tourism === 'motel') return 'Мотель';
+            if (tags.tourism === 'camp_site') return 'Кемпинг';
+            if (tags.building === 'hotel') return 'Отель';
+            return 'Другое';
+        }
+
+        // ==================== ОТОБРАЖЕНИЕ СПИСКА ====================
+        function displayHotelsList(hotels) {
+            const container = document.getElementById('hotelsList');
+
+            if (hotels.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-bed fa-2x mb-3"></i>
+                        <p>Отелей не найдено в этой области</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const hotelsHTML = hotels.map((hotel, index) => {
+                const price = hotel.tags['price'] || hotel.tags['charge'] || getFixedPrice(hotel.accommodationType, hotel.stars);
+                const isFavorite = favoriteHotels.has(hotel.id.toString());
+
+                return `
+                <div class="hotel-item"
+                     data-hotel-id="${hotel.id}"
+                     style="cursor: pointer; position: relative;">
+                    <button class="hotel-favorite-btn"
+                            onclick="toggleHotelFavoriteFromList('${hotel.id}', event)"
+                            title="${isUserAuthenticated ? (isFavorite ? 'Удалить из избранного' : 'Добавить в избранное') : 'Войдите для сохранения'}">
+                        <i class="${isFavorite ? 'fas fa-heart text-danger' : 'far fa-heart text-muted'}"></i>
+                    </button>
+                    <div onclick="focusHotel(${index})">
+                        <h6 class="mb-1">${escapeHtml(hotel.name)}</h6>
+                        <p class="small text-muted mb-1">
+                            <i class="fas fa-map-marker-alt me-1"></i>${escapeHtml(hotel.address)}
+                        </p>
+                        <p class="small text-muted mb-1">
+                            <i class="fas fa-bed me-1"></i>${hotel.accommodationType}
+                            ${hotel.stars ? `<span class="ms-2"><i class="fas fa-star text-warning"></i> ${hotel.stars}</span>` : ''}
+                        </p>
+                        <p class="small text-muted mb-1">
+                            <i class="fas fa-phone me-1"></i>${escapeHtml(hotel.phone)}
+                        </p>
+                        <p class="small text-muted mb-0">
+                            <i class="fas fa-ruler me-1"></i>${hotel.distance.toFixed(1)} км от центра
+                        </p>
+                        <p class="fw-bold text-primary mt-2 mb-0">
+                            от ${price.toLocaleString('ru-RU')} ₽ / ночь
+                        </p>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-3">
+                        ${hotel.website ? `
+                            <a href="${hotel.website}" target="_blank" class="btn btn-sm btn-outline-primary flex-grow-1">
+                                <i class="fas fa-external-link-alt me-1"></i>Сайт
+                            </a>
+                        ` : ''}
+                                <button class="btn btn-sm btn-success flex-grow-1" onclick="${isUserAuthenticated ? `bookHotel(${index})` : 'showAuthModal()'}">
+            <i class="fas fa-calendar-check me-1"></i>${isUserAuthenticated ? 'Забронировать' : 'Войдите, чтобы забронировать'}
+        </button>
+                    </div>
+
+                    <div class="mt-2">
+                        <span class="badge osm-badge">OSM ID: ${hotel.id}</span>
+                    </div>
+                </div>
+            `}).join('');
+
+            container.innerHTML = hotelsHTML;
+
+            if (isUserAuthenticated) {
+                setTimeout(() => {
+                    updateAllHotelFavoriteButtons();
+                }, 100);
+            }
+        }
+
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+                function getFixedPrice(type, stars) {
+            // Фиксированные цены в зависимости от типа и звездности
+            const prices = {
+                'Отель': {
+                    5: 15000,
+                    4: 10000,
+                    3: 7000,
+                    2: 4500,
+                    1: 3000,
+                    'default': 5000
+                },
+                'Хостел': {
+                    3: 1500,
+                    2: 1200,
+                    1: 800,
+                    'default': 1000
+                },
+                'Гостевой дом': {
+                    5: 8000,
+                    4: 6000,
+                    3: 4000,
+                    2: 2500,
+                    1: 1800,
+                    'default': 3000
+                },
+                'Апартаменты': {
+                    5: 12000,
+                    4: 8000,
+                    3: 5000,
+                    2: 3500,
+                    1: 2500,
+                    'default': 4000
+                },
+                'Мотель': {
+                    3: 3500,
+                    2: 2500,
+                    1: 1800,
+                    'default': 2500
+                },
+                'Кемпинг': {
+                    3: 1500,
+                    2: 1000,
+                    1: 600,
+                    'default': 800
+                },
+                'Другое': {
+                    'default': 3500
+                }
+            };
+
+            const typePrices = prices[type] || prices['Другое'];
+
+            if (stars && typePrices[stars]) {
+                return typePrices[stars];
+            }
+
+            return typePrices['default'] || 3500;
+        }
+
+        // Функция для получения цены (заменяет generateRandomPrice)
+        function getHotelPrice(hotel) {
+            return getFixedPrice(hotel.accommodationType, hotel.stars);
+        }
+
+        // ==================== БРОНИРОВАНИЕ ====================
+                function bookHotel(index) {
+            if (!currentHotels[index]) return;
+
+            // Проверка авторизации
+            if (!isUserAuthenticated) {
+                showAuthModal();
+                return;
+            }
+
+            const hotel = currentHotels[index];
+            const pricePerNight = hotel.tags['price'] || hotel.tags['charge'] || getFixedPrice(hotel.accommodationType, hotel.stars);
+
+            const params = new URLSearchParams({
+                HotelId: hotel.id.toString(),
+                HotelName: hotel.name,
+                HotelAddress: hotel.address,
+                HotelPhone: hotel.phone !== 'Не указан' ? hotel.phone : '',
+                HotelWebsite: hotel.website || '',
+                HotelLatitude: hotel.lat,
+                HotelLongitude: hotel.lon,
+                AccommodationType: hotel.accommodationType,
+                Stars: hotel.stars || '',
+                PricePerNight: pricePerNight,
+                CheckInDate: getTomorrowDate(),
+                CheckOutDate: getDayAfterTomorrowDate(),
+                Guests: 2,
+                Rooms: 1
+            });
+
+            const url = `/HotelBooking/Book?${params.toString()}`;
+            console.log('Переход к бронированию:', url);
+
+            window.location.href = url;
+        }
+
+                function bookHotelFromPopup(hotel) {
+            // Проверка авторизации
+            if (!isUserAuthenticated) {
+                showAuthModal();
+                return;
+            }
+
+            const pricePerNight = hotel.tags?.price || hotel.tags?.charge || getFixedPrice(hotel.accommodationType, hotel.stars);
+
+            const params = new URLSearchParams({
+                HotelId: hotel.id.toString(),
+                HotelName: hotel.name,
+                HotelAddress: hotel.address,
+                HotelPhone: hotel.phone !== 'Не указан' ? hotel.phone : '',
+                HotelWebsite: hotel.website || '',
+                HotelLatitude: hotel.lat,
+                HotelLongitude: hotel.lon,
+                AccommodationType: hotel.accommodationType,
+                Stars: hotel.stars || '',
+                PricePerNight: pricePerNight,
+                CheckInDate: getTomorrowDate(),
+                CheckOutDate: getDayAfterTomorrowDate(),
+                Guests: 2,
+                Rooms: 1
+            });
+
+            window.location.href = `/HotelBooking/Book?${params.toString()}`;
+        }
+
+        function getTomorrowDate() {
+            const date = new Date();
+            date.setDate(date.getDate() + 1);
+            return date.toISOString().split('T')[0];
+        }
+
+        function getDayAfterTomorrowDate() {
+            const date = new Date();
+            date.setDate(date.getDate() + 3);
+            return date.toISOString().split('T')[0];
+        }
+
+        // ==================== МАРКЕРЫ НА КАРТЕ ====================
+        function addMarkersToMap(hotels) {
+            hotels.forEach((hotel, index) => {
+                const icon = L.divIcon({
+                    html: `<div style="
+                        background-color: ${getColorByType(hotel.accommodationType)};
+                        width: 24px;
+                        height: 24px;
+                        border-radius: 50%;
+                        border: 2px solid white;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: white;
+                        font-size: 12px;
+                    ">
+                        <i class="fas ${getIconByType(hotel.accommodationType)}"></i>
+                    </div>`,
+                    className: 'hotel-marker',
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                });
+
+                const marker = L.marker([hotel.lat, hotel.lon], { icon })
+                    .addTo(map)
+                    .bindPopup(createPopupContent(hotel))
+                    .on('click', () => {
+                        focusHotel(index);
+                    });
+
+                markers.push(marker);
+            });
+        }
+
+        function createPopupContent(hotel) {
+            const price = hotel.tags['price'] || hotel.tags['charge'] || getFixedPrice(hotel.accommodationType, hotel.stars);
+
+            return `
+                <div style="font-family: 'Nunito', sans-serif; min-width: 200px;">
+                    <h6 class="mb-1">${escapeHtml(hotel.name)}</h6>
+                    <p class="small mb-1"><strong>Тип:</strong> ${hotel.accommodationType}</p>
+                    <p class="small mb-1"><strong>Адрес:</strong> ${escapeHtml(hotel.address)}</p>
+                    ${hotel.phone !== 'Не указан' ? `<p class="small mb-1"><strong>Телефон:</strong> ${escapeHtml(hotel.phone)}</p>` : ''}
+                    ${hotel.stars ? `<p class="small mb-1"><strong>Звезд:</strong> ${'★'.repeat(hotel.stars)}</p>` : ''}
+                    <p class="small mb-2"><strong>Расстояние:</strong> ${hotel.distance.toFixed(1)} км</p>
+                    <p class="fw-bold text-primary mb-2">от ${price.toLocaleString('ru-RU')} ₽ / ночь</p>
+
+                    <div class="d-grid gap-2">
+                        ${hotel.website ? `
+                            <a href="${hotel.website}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-external-link-alt me-1"></i>Сайт отеля
+                            </a>
+                        ` : ''}
+                        <button class="btn btn-sm btn-success" onclick="bookHotelFromPopup(${JSON.stringify(hotel).replace(/"/g, '&quot;')})">
+                            <i class="fas fa-calendar-check me-1"></i>Забронировать
+                        </button>
+                    </div>
+
+                    <div class="mt-2 text-center">
+                        <small class="text-muted">Данные из OpenStreetMap</small>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getColorByType(type) {
+            const colors = {
+                'Отель': '#0379D9',
+                'Хостел': '#28a745',
+                'Гостевой дом': '#ffc107',
+                'Апартаменты': '#17a2b8',
+                'Мотель': '#dc3545',
+                'Кемпинг': '#6f42c1',
+                'Другое': '#6c757d'
+            };
+            return colors[type] || '#0379D9';
+        }
+
+        function getIconByType(type) {
+            const icons = {
+                'Отель': 'fa-hotel',
+                'Хостел': 'fa-bed',
+                'Гостевой дом': 'fa-home',
+                'Апартаменты': 'fa-building',
+                'Мотель': 'fa-car',
+                'Кемпинг': 'fa-campground',
+                'Другое': 'fa-map-marker-alt'
+            };
+            return icons[type] || 'fa-map-marker-alt';
+        }
+
+        // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
+        function focusHotel(index) {
+            if (!currentHotels[index]) return;
+
+            const hotel = currentHotels[index];
+
+            map.setView([hotel.lat, hotel.lon], 16);
+            markers[index].openPopup();
+
+            document.querySelectorAll('.hotel-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-hotel-id="${hotel.id}"]`).classList.add('active');
+
+            const element = document.querySelector(`[data-hotel-id="${hotel.id}"]`);
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function clearMarkers() {
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a =
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+
+        function showLoading() {
+            const container = document.getElementById('hotelsList');
+            container.innerHTML = `
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
+                    </div>
+                    <p>Поиск отелей...</p>
+                </div>
+            `;
+        }
+
+        function showNoResults() {
+            const container = document.getElementById('hotelsList');
+            container.innerHTML = `
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-bed fa-2x mb-3"></i>
+                    <p>Отелей не найдено в выбранной области</p>
+                    <p class="small">Попробуйте увеличить радиус поиска или выбрать другой город</p>
+                </div>
+            `;
+        }
+
+        function showError(message) {
+            const container = document.getElementById('hotelsList');
+            container.innerHTML = `
+                <div class="text-center text-danger py-5">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                    <p>${escapeHtml(message)}</p>
+                    <button class="btn btn-sm btn-outline-primary mt-2" onclick="retrySearch()">
+                        <i class="fas fa-redo me-1"></i>Попробовать снова
+                    </button>
+                </div>
+            `;
+        }
+
+        function checkForAccommodationTypeFromStorage() {
+            const autoSearch = sessionStorage.getItem('autoSearchHotels');
+            const accommodationType = sessionStorage.getItem('selectedAccommodationType');
+            const accommodationName = sessionStorage.getItem('selectedAccommodationName');
+            const selectedCity = sessionStorage.getItem('selectedCity');
+
+            console.log('Проверка storage:', { autoSearch, accommodationType, accommodationName, selectedCity });
+
+            if (autoSearch === 'true') {
+                if (selectedCity) {
+                    const destinationInput = document.getElementById('destination');
+                    if (destinationInput) {
+                        destinationInput.value = selectedCity;
+                        console.log('Установлен город:', selectedCity);
+                    }
+                    sessionStorage.removeItem('selectedCity');
+                }
+
+                if (accommodationType) {
+                    const typeSelect = document.getElementById('accommodationType');
+                    if (typeSelect) {
+                        console.log('Найден select, устанавливаем значение:', accommodationType);
+                        typeSelect.value = accommodationType;
+                        const changeEvent = new Event('change', { bubbles: true });
+                        typeSelect.dispatchEvent(changeEvent);
+                        showNotification(`Выбран тип: ${accommodationName || getTypeDisplayName(accommodationType)}`, 'info');
+                    }
+                }
+
+                sessionStorage.removeItem('autoSearchHotels');
+                sessionStorage.removeItem('selectedAccommodationType');
+                sessionStorage.removeItem('selectedAccommodationName');
+
+                const destination = document.getElementById('destination');
+                if (destination && destination.value.trim() && typeof handleSearch === 'function') {
+                    setTimeout(() => {
+                        handleSearch();
+                        showNotification(`Поиск отелей в городе: ${destination.value}`, 'info');
+                    }, 500);
+                }
+            }
+        }
+
+        function getTypeDisplayName(type) {
+            const names = {
+                'hotel': 'Отели',
+                'apartment': 'Апартаменты',
+                'guest_house': 'Гостевые дома',
+                'camp_site': 'Кемпинги',
+                'hostel': 'Хостелы',
+                'motel': 'Мотели',
+                'all': 'Все типы'
+            };
+            return names[type] || type;
+        }
+
+        function retrySearch() {
+            const bounds = map.getBounds();
+            const center = bounds.getCenter();
+            searchHotelsFromMap(center.lat, center.lng);
+        }
+
+        // Экспортируем функции
+        window.focusHotel = focusHotel;
+        window.retrySearch = retrySearch;
+        window.bookHotel = bookHotel;
+        window.bookHotelFromPopup = bookHotelFromPopup;
+        window.toggleHotelFavoriteFromList = toggleHotelFavoriteFromList;
+    </script>
+}

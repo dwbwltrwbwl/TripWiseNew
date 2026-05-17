@@ -1,0 +1,759 @@
+﻿<div class="mobile-header-spacer d-block d-lg-none" style="height: 70px;"></div>
+
+@{
+    ViewData["Title"] = "Контакты";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Заголовок страницы в стиле сайта -->
+            <div class="page-header-section mb-5">
+                <div class="page-header-icon">
+                    <i class="fas fa-envelope text-white"></i>
+                </div>
+                <div class="page-header-content">
+                    <h1 class="page-title">
+                        Контакты
+                    </h1>
+                    <p class="page-subtitle">Свяжитесь с нами любым удобным способом</p>
+                </div>
+            </div>
+
+            <!-- Контактная информация -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white border-0 py-3">
+                            <h3 class="section-subtitle mb-0">
+                                <i class="fas fa-headset text-primary me-2"></i>
+                                Свяжитесь с нами
+                            </h3>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <div class="contact-card d-flex align-items-start p-3 border rounded">
+                                        <div class="contact-icon me-3">
+                                            <i class="fas fa-phone-alt fa-2x"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="fw-semibold mb-1">Телефон</h6>
+                                            <p class="mb-1">+7 (800) 123-45-67</p>
+                                            <small class="text-muted">Бесплатно по России</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="contact-card d-flex align-items-start p-3 border rounded">
+                                        <div class="contact-icon me-3">
+                                            <i class="fas fa-envelope fa-2x"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="fw-semibold mb-1">Email</h6>
+                                            <p class="mb-1">tripwise@yandex.ru</p>
+                                            <small class="text-muted">Основная поддержка</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="contact-card d-flex align-items-start p-3 border rounded">
+                                        <div class="contact-icon me-3">
+                                            <i class="fas fa-clock fa-2x"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="fw-semibold mb-1">Время работы</h6>
+                                            <p class="mb-1">Круглосуточно</p>
+                                            <small class="text-muted">7 дней в неделю</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Экстренные контакты -->
+                            <div class="alert alert-warning mt-4 border-0 rounded-lg">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-exclamation-triangle fa-2x text-warning me-3"></i>
+                                    <div>
+                                        <h5 class="alert-heading mb-2">Экстренная связь</h5>
+                                        <p class="mb-1">Для срочных вопросов (отмена рейса, проблемы в поездке):</p>
+                                        <p class="mb-0 fw-bold fs-5">+7 (495) 123-45-67</p>
+                                        <small class="text-muted">(круглосуточно)</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Форма обратной связи -->
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white border-0 py-3">
+                            <h3 class="section-subtitle mb-0">
+                                <i class="fas fa-comment-dots text-primary me-2"></i>
+                                Обратная связь
+                            </h3>
+                        </div>
+                        <div class="card-body p-4">
+                            <form id="contactForm">
+                                @Html.AntiForgeryToken()
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Имя <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control form-control-lg" id="contactName" 
+                                           maxlength="100" placeholder="Введите ваше имя" required>
+                                    <div class="form-text small text-muted">От 2 до 100 символов, только буквы</div>
+                                    <div class="invalid-feedback" id="nameError"></div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
+                                    <input type="email" class="form-control form-control-lg" id="contactEmail" 
+                                           maxlength="255" placeholder="example@domain.com" required>
+                                    <div class="form-text small text-muted">Введите корректный email адрес</div>
+                                    <div class="invalid-feedback" id="emailError"></div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Тема</label>
+                                    <select class="form-select form-select-lg" id="contactSubject">
+                                        <option value="Общий вопрос">Общий вопрос</option>
+                                        <option value="Проблема с бронированием">Проблема с бронированием</option>
+                                        <option value="Возврат средств">Возврат средств</option>
+                                        <option value="Техническая проблема">Техническая проблема</option>
+                                        <option value="Сотрудничество">Сотрудничество</option>
+                                        <option value="Отзыв о работе сервиса">Отзыв о работе сервиса</option>
+                                    </select>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold">Сообщение <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" rows="5" id="contactMessage" 
+                                              maxlength="2000" placeholder="Опишите ваш вопрос..." required></textarea>
+                                    <div class="form-text small text-muted">
+                                        Минимум 10 символов, максимум 2000. Осталось: <span id="charCount">2000</span>
+                                    </div>
+                                    <div class="invalid-feedback" id="messageError"></div>
+                                </div>
+                                <div id="formMessage" class="mb-3" style="display: none;"></div>
+                                <button type="submit" class="btn btn-primary btn-lg w-100" id="submitBtn">
+                                    Отправить сообщение
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ по контактам -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-question-circle text-primary me-2"></i>
+                        Частые вопросы
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="accordion" id="contactFaqAccordion">
+                        <div class="accordion-item border-0 mb-2">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#contactFaq1">
+                                    Как быстро вы отвечаете на письма?
+                                </button>
+                            </h2>
+                            <div id="contactFaq1" class="accordion-collapse collapse" data-bs-parent="#contactFaqAccordion">
+                                <div class="accordion-body">
+                                    Мы стараемся отвечать на все письма в течение 1-2 рабочих дней. На экстренные вопросы отвечаем в течение 2-4 часов.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border-0 mb-2">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#contactFaq2">
+                                    Могу ли я посетить офис компании?
+                                </button>
+                            </h2>
+                            <div id="contactFaq2" class="accordion-collapse collapse" data-bs-parent="#contactFaqAccordion">
+                                <div class="accordion-body">
+                                    В настоящее время мы работаем полностью удаленно. Все вопросы решаются онлайн через email или телефон. Это позволяет нам оперативнее реагировать на запросы и быть доступными 24/7.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border-0 mb-2">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#contactFaq3">
+                                    Работаете ли вы в выходные дни?
+                                </button>
+                            </h2>
+                            <div id="contactFaq3" class="accordion-collapse collapse" data-bs-parent="#contactFaqAccordion">
+                                <div class="accordion-body">
+                                    Наша служба поддержки работает 7 дней в неделю, круглосуточно. Вы можете написать нам в любое время, и мы обязательно ответим.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Стили для заголовка страницы (унифицированные) */
+    .page-header-section {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 25px 30px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .page-header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(to bottom, #0379D9, #40B624);
+        }
+
+    .page-header-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #0379D9, #40B624);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 4px 15px rgba(3, 121, 217, 0.2);
+        flex-shrink: 0;
+    }
+
+        .page-header-icon i {
+            color: white !important;
+        }
+
+    .page-header-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .page-title {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 800;
+        font-size: 2.5rem;
+        color: #0379D9;
+        margin: 0 0 8px 0;
+        line-height: 1.2;
+        word-break: break-word;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        font-size: 1.1rem;
+        margin: 0;
+        line-height: 1.4;
+        word-break: break-word;
+    }
+
+    .section-subtitle {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        font-size: 1.3rem;
+        color: #334155;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    /* Стили для карточек контактов */
+    .contact-card {
+        transition: all 0.3s ease;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        height: 100%;
+    }
+
+        .contact-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            border-color: #0379D9;
+        }
+
+    .contact-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+        .contact-icon i {
+            color: #0379D9 !important;
+        }
+
+    /* Стили для карточек */
+    .card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+        .card:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+    /* Стили для аккордеона */
+    .accordion-button {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        border-radius: 12px !important;
+        border: 1px solid #e2e8f0;
+        background-color: white;
+        color: #334155;
+        padding: 16px 20px;
+    }
+
+        .accordion-button:not(.collapsed) {
+            background-color: #f0f7ff;
+            color: #0379D9;
+            border-color: #0379D9;
+            box-shadow: none;
+        }
+
+        .accordion-button:focus {
+            box-shadow: 0 0 0 0.2rem rgba(3, 121, 217, 0.25);
+            border-color: #0379D9;
+        }
+
+        .accordion-button::after {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%230379D9'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+        }
+
+    .accordion-body {
+        padding: 20px;
+        background-color: white;
+        border-radius: 0 0 12px 12px;
+    }
+
+    /* Стили для формы */
+    .form-control, .form-select {
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        padding: 12px 16px;
+        font-family: 'Nunito', sans-serif;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #0379D9;
+            box-shadow: 0 0 0 0.2rem rgba(3, 121, 217, 0.25);
+        }
+
+        .form-control.is-valid {
+            border-color: #198754;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 0.75rem 0.75rem;
+            padding-right: 2.25rem;
+        }
+
+        .form-control.is-invalid {
+            border-color: #dc3545;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 0.75rem 0.75rem;
+            padding-right: 2.25rem;
+        }
+
+    .form-control-lg {
+        padding: 14px 18px;
+        font-size: 1rem;
+    }
+
+    .form-text {
+        margin-top: 5px;
+        font-size: 0.8rem;
+    }
+
+    /* Кнопки */
+    .btn {
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        font-family: 'Nunito', sans-serif;
+    }
+
+    .btn-primary {
+        background: #0379D9;
+        border: none;
+        box-shadow: 0 4px 12px rgba(3, 121, 217, 0.2);
+        padding: 14px 20px;
+        font-size: 1.1rem;
+    }
+
+        .btn-primary:hover {
+            background: #0356a8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(3, 121, 217, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background: #6c757d;
+            transform: none;
+            cursor: not-allowed;
+        }
+
+        .btn-primary i {
+            color: white !important;
+        }
+
+    .btn-lg {
+        padding: 16px 24px;
+        font-size: 1.2rem;
+    }
+
+    /* Стили для алерта */
+    .alert-warning {
+        background-color: #fff9db;
+        border: 1px solid #ffec99;
+        border-radius: 12px;
+        color: #5c4400;
+    }
+
+    .alert-success {
+        background-color: #d1e7dd;
+        border-color: #badbcc;
+        color: #0f5132;
+        border-radius: 12px;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        border-color: #f5c2c7;
+        color: #842029;
+        border-radius: 12px;
+    }
+
+    /* Все иконки в одном цвете */
+    .fa-headset,
+    .fa-phone-alt,
+    .fa-envelope,
+    .fa-clock,
+    .fa-comment-dots,
+    .fa-question-circle,
+    .fa-exclamation-triangle {
+        color: #0379D9 !important;
+    }
+
+    @@@@media (max-width: 768px) {
+        .page-header-section {
+            padding: 20px;
+            gap: 15px;
+        }
+
+        .page-header-section::before {
+            width: 100%;
+            height: 6px;
+            top: 0;
+            left: 0;
+            background: linear-gradient(to right, #0379D9, #40B624);
+        }
+
+        .page-header-icon {
+            width: 55px;
+            height: 55px;
+            font-size: 1.5rem;
+        }
+
+        .page-title {
+            font-size: 1.6rem;
+            margin-bottom: 4px;
+        }
+
+        .page-subtitle {
+            font-size: 0.95rem;
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+        }
+
+        .contact-icon {
+            width: 45px;
+            height: 45px;
+        }
+
+        .accordion-button {
+            padding: 12px 16px;
+            font-size: 0.95rem;
+        }
+    }
+
+    @@@@media (max-width: 576px) {
+        .page-header-section {
+            padding: 15px;
+            gap: 12px;
+        }
+
+        .page-header-icon {
+            width: 48px;
+            height: 48px;
+            font-size: 1.3rem;
+        }
+
+        .page-title {
+            font-size: 1.4rem;
+        }
+
+        .page-subtitle {
+            font-size: 0.85rem;
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+        }
+
+        .contact-icon {
+            width: 40px;
+            height: 40px;
+        }
+
+            .contact-icon i {
+                font-size: 1.2rem !important;
+            }
+    }
+</style>
+
+<script>
+    // Элементы формы
+    const nameInput = document.getElementById('contactName');
+    const emailInput = document.getElementById('contactEmail');
+    const messageInput = document.getElementById('contactMessage');
+    const charCountSpan = document.getElementById('charCount');
+    const submitBtn = document.getElementById('submitBtn');
+    const form = document.getElementById('contactForm');
+
+    // Инициализация счетчика символов
+    if (messageInput && charCountSpan) {
+        const maxLength = 2000;
+        charCountSpan.textContent = maxLength;
+        
+        messageInput.addEventListener('input', function() {
+            const remaining = maxLength - this.value.length;
+            charCountSpan.textContent = remaining;
+            
+            if (this.value.length > 0 && this.value.length < 10) {
+                charCountSpan.style.color = '#dc3545';
+            } else if (remaining < 100) {
+                charCountSpan.style.color = '#ffc107';
+            } else {
+                charCountSpan.style.color = '#6c757d';
+            }
+        });
+    }
+
+    // Валидация имени в реальном времени
+    if (nameInput) {
+        nameInput.addEventListener('input', function() {
+            validateName();
+        });
+        nameInput.addEventListener('blur', function() {
+            validateName();
+        });
+    }
+
+    // Валидация email в реальном времени
+    if (emailInput) {
+        emailInput.addEventListener('input', function() {
+            validateEmail();
+        });
+        emailInput.addEventListener('blur', function() {
+            validateEmail();
+        });
+    }
+
+    // Валидация сообщения в реальном времени
+    if (messageInput) {
+        messageInput.addEventListener('input', function() {
+            validateMessage();
+        });
+        messageInput.addEventListener('blur', function() {
+            validateMessage();
+        });
+    }
+
+    function validateName() {
+        const name = nameInput.value.trim();
+        const nameError = document.getElementById('nameError');
+        
+        if (name.length === 0) {
+            nameInput.classList.add('is-invalid');
+            nameInput.classList.remove('is-valid');
+            nameError.textContent = 'Имя обязательно для заполнения';
+            return false;
+        } else if (name.length < 2) {
+            nameInput.classList.add('is-invalid');
+            nameInput.classList.remove('is-valid');
+            nameError.textContent = 'Имя должно содержать минимум 2 символа';
+            return false;
+        } else if (name.length > 100) {
+            nameInput.classList.add('is-invalid');
+            nameInput.classList.remove('is-valid');
+            nameError.textContent = 'Имя не может превышать 100 символов';
+            return false;
+        } else if (!/^[а-яА-ЯёЁa-zA-Z\s\-]+$/.test(name)) {
+            nameInput.classList.add('is-invalid');
+            nameInput.classList.remove('is-valid');
+            nameError.textContent = 'Имя может содержать только буквы, пробелы и дефисы';
+            return false;
+        } else {
+            nameInput.classList.remove('is-invalid');
+            nameInput.classList.add('is-valid');
+            nameError.textContent = '';
+            return true;
+        }
+    }
+
+    function validateEmail() {
+        const email = emailInput.value.trim();
+        const emailError = document.getElementById('emailError');
+        const emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+        
+        if (email.length === 0) {
+            emailInput.classList.add('is-invalid');
+            emailInput.classList.remove('is-valid');
+            emailError.textContent = 'Email обязателен для заполнения';
+            return false;
+        } else if (email.length > 255) {
+            emailInput.classList.add('is-invalid');
+            emailInput.classList.remove('is-valid');
+            emailError.textContent = 'Email не может превышать 255 символов';
+            return false;
+        } else if (!emailRegex.test(email)) {
+            emailInput.classList.add('is-invalid');
+            emailInput.classList.remove('is-valid');
+            emailError.textContent = 'Введите корректный email адрес (example@domain.com)';
+            return false;
+        } else {
+            emailInput.classList.remove('is-invalid');
+            emailInput.classList.add('is-valid');
+            emailError.textContent = '';
+            return true;
+        }
+    }
+
+    function validateMessage() {
+        const message = messageInput.value.trim();
+        const messageError = document.getElementById('messageError');
+        
+        if (message.length === 0) {
+            messageInput.classList.add('is-invalid');
+            messageInput.classList.remove('is-valid');
+            messageError.textContent = 'Сообщение обязательно для заполнения';
+            return false;
+        } else if (message.length < 10) {
+            messageInput.classList.add('is-invalid');
+            messageInput.classList.remove('is-valid');
+            messageError.textContent = 'Сообщение должно содержать минимум 10 символов';
+            return false;
+        } else if (message.length > 2000) {
+            messageInput.classList.add('is-invalid');
+            messageInput.classList.remove('is-valid');
+            messageError.textContent = 'Сообщение не может превышать 2000 символов';
+            return false;
+        } else {
+            messageInput.classList.remove('is-invalid');
+            messageInput.classList.add('is-valid');
+            messageError.textContent = '';
+            return true;
+        }
+    }
+
+    // Валидация перед отправкой
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const isNameValid = validateName();
+            const isEmailValid = validateEmail();
+            const isMessageValid = validateMessage();
+
+            if (!isNameValid || !isEmailValid || !isMessageValid) {
+                showMessage('Пожалуйста, исправьте ошибки в форме', 'danger');
+                return;
+            }
+
+            const name = nameInput.value.trim();
+            const email = emailInput.value.trim();
+            const subject = document.getElementById('contactSubject').value;
+            const message = messageInput.value.trim();
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Отправка...';
+
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+                const response = await fetch('/Home/SendContactMessage', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        email: email,
+                        subject: subject,
+                        message: message
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage('Сообщение успешно отправлено! Мы свяжемся с вами в ближайшее время.', 'success');
+                    form.reset();
+                    nameInput.classList.remove('is-valid', 'is-invalid');
+                    emailInput.classList.remove('is-valid', 'is-invalid');
+                    messageInput.classList.remove('is-valid', 'is-invalid');
+                    if (charCountSpan) {
+                        charCountSpan.textContent = '2000';
+                        charCountSpan.style.color = '#6c757d';
+                    }
+                } else {
+                    showMessage(data.message || 'Ошибка при отправке сообщения. Попробуйте позже.', 'danger');
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+                showMessage('Произошла ошибка при отправке. Попробуйте позже или напишите нам напрямую на tripwise@yandex.ru', 'danger');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Отправить сообщение';
+            }
+        });
+    }
+
+    function showMessage(text, type) {
+        const formMessage = document.getElementById('formMessage');
+        formMessage.className = 'alert alert-' + type + ' mb-3';
+        formMessage.innerHTML = text;
+        formMessage.style.display = 'block';
+
+        setTimeout(function() {
+            formMessage.style.display = 'none';
+        }, 5000);
+    }
+</script>

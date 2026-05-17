@@ -1,0 +1,716 @@
+﻿@model TripWise.Models.ViewModels.AnalyticsViewModel
+@{
+    ViewData["Title"] = "Аналитика";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid px-4">
+    <!-- Заголовок -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h1 class="h3 mb-2 text-gray-800">
+                <i class="fas fa-chart-line me-2"></i>Аналитика проекта
+            </h1>
+            <p class="text-muted">Актуальные данные на @DateTime.Now.ToString("dd.MM.yyyy HH:mm")</p>
+        </div>
+        <div>
+            <button class="btn btn-outline-primary btn-sm" onclick="location.reload()">
+                <i class="fas fa-sync-alt me-1"></i>Обновить
+            </button>
+        </div>
+    </div>
+
+    <!-- Основные метрики -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="text-muted small">Пользователи</div>
+                        <div class="stat-number">@Model.TotalUsers.ToString("N0")</div>
+                        <div class="text-success small">
+                            <i class="fas fa-arrow-up me-1"></i>+@Model.NewUsersToday сегодня
+                        </div>
+                    </div>
+                    <div class="card-icon text-primary">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <small class="text-muted">Новых за неделю: @Model.NewUsersWeek</small>
+                    <br />
+                    <small class="text-muted">Новых за месяц: @Model.NewUsersMonth</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="text-muted small">Бронирования</div>
+                        <div class="stat-number">@((Model.TotalFlightBookings + Model.TotalTrainBookings + Model.TotalHotelBookings).ToString("N0"))</div>
+                        <div class="d-flex small flex-wrap gap-2">
+                            <span class="text-primary"><i class="fas fa-plane me-1"></i>Авиа: @Model.TotalFlightBookings</span>
+                            <span class="text-success"><i class="fas fa-train me-1"></i>ЖД: @Model.TotalTrainBookings</span>
+                            <span class="text-warning"><i class="fas fa-hotel me-1"></i>Отели: @Model.TotalHotelBookings</span>
+                        </div>
+                    </div>
+                    <div class="card-icon text-success">
+                        <i class="fas fa-ticket-alt"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="text-muted small">Оборот</div>
+                        <div class="stat-number">@Model.TotalRevenue.ToString("N0") ₽</div>
+                        <div class="d-flex small flex-wrap gap-2">
+                            <span class="text-primary"><i class="fas fa-plane me-1"></i>@Model.FlightRevenue.ToString("N0") ₽</span>
+                            <span class="text-success"><i class="fas fa-train me-1"></i>@Model.TrainRevenue.ToString("N0") ₽</span>
+                            <span class="text-warning"><i class="fas fa-hotel me-1"></i>@Model.HotelRevenue.ToString("N0") ₽</span>
+                        </div>
+                    </div>
+                    <div class="card-icon text-warning">
+                        <i class="fas fa-ruble-sign"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="text-muted small">Средний рейтинг</div>
+                        <div class="stat-number">@Model.AverageRating.ToString("F1")/5</div>
+                        <div class="text-warning small">
+                            @Html.Raw(GetStarsHtml(Model.AverageRating))
+                        </div>
+                    </div>
+                    <div class="card-icon text-info">
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <small class="text-muted">Всего отзывов: @Model.TotalReviews</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Дополнительная статистика (новые блоки) -->
+    <div class="row mb-4">
+        <!-- Статистика оплат -->
+        <div class="col-xl-4 col-md-6 col-sm-12 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-2">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-credit-card me-2"></i>Статус оплаты
+                    </h6>
+                </div>
+                <div class="card-body py-2">
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between mb-1 small">
+                            <span>Оплачено</span>
+                            <span class="fw-bold text-success" id="paidCount">--</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" id="paidProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between mb-1 small">
+                            <span>Ожидает оплаты</span>
+                            <span class="fw-bold text-warning" id="pendingCount">--</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-warning" id="pendingProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between mb-1 small">
+                            <span>Отменено</span>
+                            <span class="fw-bold text-danger" id="cancelledCount">--</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-danger" id="cancelledProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Топ-5 пользователей по тратам -->
+        <div class="col-xl-4 col-md-6 col-sm-12 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-2">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-crown me-2"></i>Топ пользователей
+                    </h6>
+                </div>
+                <div class="card-body py-2" id="topUsersList" style="max-height: 200px; overflow-y: auto; padding: 0.5rem;">
+                    <div class="text-center py-2">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                        <p class="mt-1 text-muted small">Загрузка...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Самый популярный тип жилья -->
+        <div class="col-xl-4 col-md-6 col-sm-12 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-2">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-bed me-2"></i>Типы жилья
+                    </h6>
+                </div>
+                <div class="card-body py-2" id="hotelTypesList" style="max-height: 200px; overflow-y: auto; padding: 0.5rem;">
+                    <div class="text-center py-2">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                        <p class="mt-1 text-muted small">Загрузка...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Графики -->
+    <div class="row mb-4">
+        @if (Model.UserActivity != null && Model.UserActivity.Any(a => a.Value > 0))
+        {
+            <div class="col-xl-8 col-lg-7 mb-4">
+                <div class="card shadow">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-chart-area me-2"></i>Активность (новые пользователи + бронирования)
+                        </h6>
+                    </div>
+                    <div class="card-body" style="height: 350px;">
+                        <canvas id="userActivityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Распределение по категориям -->
+        @if (Model.TotalFlightBookings > 0 || Model.TotalTrainBookings > 0 || Model.TotalHotelBookings > 0)
+        {
+            var chartWidth = (Model.UserActivity != null && Model.UserActivity.Any(a => a.Value > 0)) ? "col-xl-4 col-lg-5" : "col-xl-6 offset-xl-3";
+            <div class="@chartWidth mb-4">
+                <div class="card shadow">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-chart-pie me-2"></i>Бронирования по типам
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center">
+                            <canvas id="bookingPieChart" style="max-width: 300px; max-height: 300px; margin: 0 auto;"></canvas>
+                        </div>
+                        <div class="mt-4">
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <div class="text-primary fw-bold fs-4">@Model.TotalFlightBookings</div>
+                                    <small class="text-muted">Авиабилеты</small>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-success fw-bold fs-4">@Model.TotalTrainBookings</div>
+                                    <small class="text-muted">ЖД билеты</small>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-warning fw-bold fs-4">@Model.TotalHotelBookings</div>
+                                    <small class="text-muted">Отели</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Доход по месяцам -->
+    @if (Model.MonthlyRevenue != null && Model.MonthlyRevenue.Any(m => m.Amount > 0))
+    {
+        <div class="row mb-4">
+            <div class="col-xl-12 mb-4">
+                <div class="card shadow">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-chart-bar me-2"></i>Доход по месяцам (тыс. ₽)
+                        </h6>
+                    </div>
+                    <div class="card-body" style="height: 350px;">
+                        <canvas id="monthlyRevenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Популярные направления -->
+    @if (Model.PopularDestinations != null && Model.PopularDestinations.Any())
+    {
+        <div class="row mb-4">
+            <div class="col-xl-12 mb-4">
+                <div class="card shadow">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-map-marker-alt me-2"></i>Популярные направления
+                        </h6>
+                    </div>
+                    <div class="card-body" style="max-height: 350px; overflow-y: auto;">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Направление</th>
+                                        <th>Тип</th>
+                                        <th>Бронирований</th>
+                                        <th>Популярность</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var dest in Model.PopularDestinations)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <i class="fas @dest.Icon text-@dest.Color me-2"></i>
+                                                @dest.Route
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-@dest.Color">@dest.Type</span>
+                                            </td>
+                                            <td>@dest.Count</td>
+                                            <td style="width: 30%;">
+                                                <div class="progress" style="height: 20px;">
+                                                    <div class="progress-bar bg-@dest.Color"
+                                                         style="width: @dest.Percentage%">
+                                                        @dest.Percentage%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Дополнительная статистика -->
+    <div class="row">
+        <!-- Активные пользователи -->
+        @if (Model.ActiveUsersToday > 0 || Model.ActiveUsersWeek > 0 || Model.ActiveUsersMonth > 0)
+        {
+            <div class="col-xl-4 mb-4">
+                <div class="card shadow">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-user-clock me-2"></i>Активные пользователи
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-around text-center">
+                            <div>
+                                <div class="h2 mb-1 text-primary">@Model.ActiveUsersToday</div>
+                                <small class="text-muted">Сегодня</small>
+                            </div>
+                            <div>
+                                <div class="h2 mb-1 text-success">@Model.ActiveUsersWeek</div>
+                                <small class="text-muted">Эта неделя</small>
+                            </div>
+                            <div>
+                                <div class="h2 mb-1 text-warning">@Model.ActiveUsersMonth</div>
+                                <small class="text-muted">Этот месяц</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Новые пользователи -->
+        <div class="col-xl-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-user-plus me-2"></i>Новые регистрации
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-around text-center">
+                        <div>
+                            <div class="h2 mb-1 text-primary">@Model.NewUsersToday</div>
+                            <small class="text-muted">Сегодня</small>
+                        </div>
+                        <div>
+                            <div class="h2 mb-1 text-success">@Model.NewUsersWeek</div>
+                            <small class="text-muted">Эта неделя</small>
+                        </div>
+                        <div>
+                            <div class="h2 mb-1 text-warning">@Model.NewUsersMonth</div>
+                            <small class="text-muted">Этот месяц</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Последние отзывы -->
+        @if (Model.RecentReviews != null && Model.RecentReviews.Any())
+        {
+            <div class="col-xl-4 mb-4">
+                <div class="card shadow">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-star me-2"></i>Последние отзывы
+                        </h6>
+                    </div>
+                    <div class="card-body" style="max-height: 250px; overflow-y: auto;">
+                        <div class="small">
+                            @foreach (var review in Model.RecentReviews)
+                            {
+                                <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                                    <div>
+                                        <span class="fw-bold">@review.UserName</span>
+                                        <div class="text-warning">
+                                            @Html.Raw(review.RatingStars)
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">@review.CreatedAt.ToString("dd.MM.yyyy")</small>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Загружаем дополнительную статистику
+        loadPaymentStats();
+        loadTopUsers();
+        loadHotelTypes();
+
+        var hasActivityData = @Html.Raw(Json.Serialize(Model.UserActivity != null && Model.UserActivity.Any(a => a.Value > 0)));
+        var hasBookingData = @Html.Raw(Json.Serialize((Model.TotalFlightBookings + Model.TotalTrainBookings + Model.TotalHotelBookings) > 0));
+        var hasMonthlyData = @Html.Raw(Json.Serialize(Model.MonthlyRevenue != null && Model.MonthlyRevenue.Any(m => m.Amount > 0)));
+
+        // График активности
+        if (hasActivityData) {
+            var activityLabels = [@Html.Raw(string.Join(", ", Model.UserActivity.Select(a => $"'{a.Label}'")))];
+            var activityData = [@string.Join(", ", Model.UserActivity.Select(a => a.Value))];
+            new Chart(document.getElementById('userActivityChart'), {
+                type: 'line',
+                data: {
+                    labels: activityLabels,
+                    datasets: [{ label: 'Активность', data: activityData, borderColor: '#0379D9', backgroundColor: 'rgba(3, 121, 217, 0.1)', fill: true, tension: 0.4 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        // Круговая диаграмма
+        if (hasBookingData) {
+            new Chart(document.getElementById('bookingPieChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Авиабилеты', 'ЖД билеты', 'Отели'],
+                    datasets: [{ data: [@Model.TotalFlightBookings, @Model.TotalTrainBookings, @Model.TotalHotelBookings], backgroundColor: ['#0379D9', '#28a745', '#ffc107'], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } }, cutout: '65%' }
+            });
+        }
+
+        // Доход по месяцам
+        if (hasMonthlyData) {
+            var monthlyLabels = [@Html.Raw(string.Join(", ", Model.MonthlyRevenue.Select(m => $"'{m.Label}'")))];
+            var monthlyData = [@string.Join(", ", Model.MonthlyRevenue.Select(m => m.Amount?.ToString("F0") ?? "0"))];
+            new Chart(document.getElementById('monthlyRevenueChart'), {
+                type: 'bar',
+                data: { labels: monthlyLabels, datasets: [{ label: 'Доход (тыс. ₽)', data: monthlyData, backgroundColor: '#0379D9' }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+    });
+
+    // Загрузка статистики оплат
+    async function loadPaymentStats() {
+        try {
+            const response = await fetch('/Admin/GetPaymentStats', { credentials: 'include' });
+            if (!response.ok) throw new Error('Ошибка загрузки статусов оплаты');
+            const data = await response.json();
+
+            const total = data.paid + data.pending + data.cancelled;
+            if (total > 0) {
+                document.getElementById('paidCount').innerText = data.paid;
+                document.getElementById('pendingCount').innerText = data.pending;
+                document.getElementById('cancelledCount').innerText = data.cancelled;
+                document.getElementById('paidProgress').style.width = (data.paid / total * 100) + '%';
+                document.getElementById('pendingProgress').style.width = (data.pending / total * 100) + '%';
+                document.getElementById('cancelledProgress').style.width = (data.cancelled / total * 100) + '%';
+            } else {
+                document.getElementById('paidCount').innerText = '0';
+                document.getElementById('pendingCount').innerText = '0';
+                document.getElementById('cancelledCount').innerText = '0';
+                document.getElementById('paidProgress').style.width = '0%';
+                document.getElementById('pendingProgress').style.width = '0%';
+                document.getElementById('cancelledProgress').style.width = '0%';
+            }
+        } catch(e) {
+            console.error('loadPaymentStats error:', e);
+            document.getElementById('paidCount').innerText = 'Ошибка';
+            document.getElementById('pendingCount').innerText = 'Ошибка';
+            document.getElementById('cancelledCount').innerText = 'Ошибка';
+        }
+    }
+
+    // Загрузка топ-5 пользователей по тратам
+    async function loadTopUsers() {
+        try {
+            const response = await fetch('/Admin/GetTopUsers', { credentials: 'include' });
+            if (!response.ok) throw new Error('Ошибка загрузки топ-пользователей');
+            const data = await response.json();
+            const container = document.getElementById('topUsersList');
+            if (data.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted py-2 small"><i class="fas fa-user-slash fa-2x mb-1"></i><p class="mb-0">Нет данных</p></div>';
+                return;
+            }
+            let html = '';
+            data.forEach((user, index) => {
+                let shortName = user.userName && user.userName.length > 20 ? user.userName.substring(0, 20) + '...' : (user.userName || 'Аноним');
+                html += `<div class="d-flex justify-content-between align-items-center py-1 border-bottom">
+                            <div class="small">
+                                <span class="badge bg-primary rounded-pill me-2" style="font-size: 0.7rem;">${index + 1}</span>
+                                <strong class="small">${escapeHtml(shortName)}</strong>
+                            </div>
+                            <span class="fw-bold text-success small">${user.totalSpent.toLocaleString('ru-RU')} ₽</span>
+                        </div>`;
+            });
+            container.innerHTML = html;
+        } catch(e) {
+            console.error('loadTopUsers error:', e);
+            document.getElementById('topUsersList').innerHTML = '<div class="text-center text-danger py-2 small"><i class="fas fa-exclamation-triangle fa-2x mb-1"></i><p class="mb-0">Ошибка загрузки</p></div>';
+        }
+    }
+
+    // Загрузка типов жилья
+    async function loadHotelTypes() {
+        try {
+            const response = await fetch('/Admin/GetHotelTypes', { credentials: 'include' });
+            if (!response.ok) throw new Error('Ошибка загрузки типов жилья');
+            const data = await response.json();
+            const container = document.getElementById('hotelTypesList');
+            if (data.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted py-2 small"><i class="fas fa-hotel fa-2x mb-1"></i><p class="mb-0">Нет данных</p></div>';
+                return;
+            }
+            let html = '';
+            data.forEach(type => {
+                html += `<div class="d-flex justify-content-between align-items-center py-1 border-bottom">
+                            <span class="small">${escapeHtml(type.type)}</span>
+                            <span class="badge bg-primary rounded-pill" style="font-size: 0.7rem;">${type.count}</span>
+                        </div>`;
+            });
+            container.innerHTML = html;
+        } catch(e) {
+            console.error('loadHotelTypes error:', e);
+            document.getElementById('hotelTypesList').innerHTML = '<div class="text-center text-danger py-2 small"><i class="fas fa-exclamation-triangle fa-2x mb-1"></i><p class="mb-0">Ошибка загрузки</p></div>';
+        }
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        return text.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+</script>
+
+@functions {
+    public string GetStarsHtml(double rating)
+    {
+        var fullStars = (int)Math.Floor(rating);
+        var hasHalfStar = (rating - fullStars) >= 0.5;
+        var stars = "";
+        for (int i = 1; i <= 5; i++)
+        {
+            if (i <= fullStars) stars += "<i class='fas fa-star text-warning'></i>";
+            else if (hasHalfStar && i == fullStars + 1) stars += "<i class='fas fa-star-half-alt text-warning'></i>";
+            else stars += "<i class='far fa-star text-warning'></i>";
+        }
+        return stars;
+    }
+}
+
+<style>
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.25rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        border-left: 4px solid #0379D9;
+        height: 100%;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+    .stat-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin: 0.5rem 0;
+    }
+
+    .card-icon {
+        font-size: 2rem;
+        opacity: 0.7;
+    }
+
+    .card {
+        border-radius: 12px;
+        border: none;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .card-header {
+        background: white;
+        border-bottom: 1px solid #e9ecef;
+        padding: 1rem 1.5rem;
+    }
+
+    .card-body {
+        padding: 1.25rem;
+    }
+
+    .progress {
+        border-radius: 10px;
+        background-color: #e9ecef;
+    }
+
+    .h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    .fs-4 {
+        font-size: 1.3rem;
+    }
+
+    canvas {
+        max-height: 280px;
+        width: 100% !important;
+    }
+
+    /* Предотвращение горизонтальной прокрутки */
+    body {
+        overflow-x: hidden;
+        width: 100%;
+    }
+
+    .container-fluid {
+        overflow-x: hidden;
+        padding-right: 15px;
+        padding-left: 15px;
+    }
+
+    .row {
+        margin-right: 0;
+        margin-left: 0;
+    }
+
+    [class*="col-"] {
+        padding-right: 10px;
+        padding-left: 10px;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 0;
+    }
+
+    .card {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .card-body {
+        overflow-x: auto;
+    }
+
+    .stat-card {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Адаптация для маленьких экранов */
+    @@media (max-width: 768px) {
+        .container-fluid {
+            padding-right: 10px;
+            padding-left: 10px;
+        }
+
+        .row > [class*="col-"] {
+            padding-right: 5px;
+            padding-left: 5px;
+        }
+
+        .stat-number {
+            font-size: 1.2rem;
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+        }
+
+        .stat-card {
+            padding: 0.75rem;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .container-fluid {
+            padding-right: 8px;
+            padding-left: 8px;
+        }
+
+        .row > [class*="col-"] {
+            padding-right: 4px;
+            padding-left: 4px;
+        }
+
+        .table-responsive table {
+            min-width: 500px;
+        }
+
+        .stat-number {
+            font-size: 1rem;
+        }
+
+        .card-body {
+            padding: 0.75rem;
+        }
+    }
+</style>

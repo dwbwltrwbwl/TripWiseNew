@@ -1,0 +1,913 @@
+﻿@{
+    ViewData["Title"] = "Группы";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Заголовок страницы с выделением -->
+            <div class="page-header-section mb-5">
+                <div class="page-header-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div>
+                    <h1 class="page-title">
+                        Группы путешественников
+                    </h1>
+                    <p class="page-subtitle">Создавайте группы для совместных путешествий и приглашайте друзей</p>
+                </div>
+            </div>
+
+            @if (Context.Session.GetInt32("UserId") == null)
+            {
+                <!-- Секция для неавторизованных пользователей -->
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-5 text-center">
+                                <div class="mb-4">
+                                    <i class="fas fa-users text-primary" style="font-size: 4rem;"></i>
+                                </div>
+                                <h3 class="fw-bold mb-3">Войдите в аккаунт</h3>
+                                <p class="text-muted mb-4">
+                                    Чтобы создавать группы и участвовать в совместных поездках, войдите в свой аккаунт или зарегистрируйтесь.
+                                </p>
+                                <div class="d-flex flex-column flex-md-row justify-content-center gap-3">
+                                    <a asp-controller="Account" asp-action="Login" class="btn btn-primary btn-lg px-5">
+                                        <i class="fas fa-sign-in-alt me-2"></i>Войти
+                                    </a>
+                                    <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary btn-lg px-5">
+                                        <i class="fas fa-user-plus me-2"></i>Зарегистрироваться
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- Основной контент для авторизованных пользователей -->
+                <div class="row">
+                    <div class="col-12">
+                        <!-- Заголовок и кнопка создания -->
+                        <div class="d-flex justify-content-between align-items-center mb-5">
+                            <div>
+                                <!-- Оставлено пустое пространство -->
+                            </div>
+                            <button class="btn btn-primary btn-lg px-4" data-bs-toggle="modal" data-bs-target="#createGroupModal">
+                                <i class="fas fa-plus me-2"></i>Новая группа
+                            </button>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <!-- Мои группы -->
+                                <div class="mb-5">
+                                    <div class="d-flex justify-content-between align-items-center mb-4">
+                                        <h3 class="section-subtitle">
+                                            <i class="fas fa-users text-primary me-2"></i>
+                                            Мои группы
+                                        </h3>
+                                        <div class="filter-sort-dropdown">
+                                            <div class="dropdown">
+                                                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                    <i class="fas fa-filter me-1"></i> Фильтр и сортировка
+                                                </button>
+                                                <div class="dropdown-menu dropdown-menu-end p-4" style="min-width: 350px;">
+                                                    <h6 class="dropdown-header fw-bold border-bottom pb-2 mb-3">Фильтр групп</h6>
+                                                    <div class="mb-4">
+                                                        <label class="form-label small fw-semibold mb-3 text-dark">Статус группы</label>
+                                                        <div class="d-flex flex-column gap-3 ps-3">
+                                                            <div class="form-check d-flex align-items-center">
+                                                                <input class="form-check-input me-3" type="checkbox" id="filter-active-groups" style="width: 20px; height: 20px;" checked>
+                                                                <label class="form-check-label flex-grow-1" for="filter-active-groups">
+                                                                    Активные группы
+                                                                </label>
+                                                            </div>
+                                                            <div class="form-check d-flex align-items-center">
+                                                                <input class="form-check-input me-3" type="checkbox" id="filter-planned-groups" style="width: 20px; height: 20px;">
+                                                                <label class="form-check-label flex-grow-1" for="filter-planned-groups">
+                                                                    Группы в планировании
+                                                                </label>
+                                                            </div>
+                                                            <div class="form-check d-flex align-items-center">
+                                                                <input class="form-check-input me-3" type="checkbox" id="filter-archived-groups" style="width: 20px; height: 20px;">
+                                                                <label class="form-check-label flex-grow-1" for="filter-archived-groups">
+                                                                    Архивные группы
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-4">
+                                                        <label class="form-label small fw-semibold mb-3 text-dark">Сортировка</label>
+                                                        <select class="form-select">
+                                                            <option selected>По дате создания (сначала новые)</option>
+                                                            <option>По дате создания (сначала старые)</option>
+                                                            <option>По названию (А-Я)</option>
+                                                            <option>По названию (Я-А)</option>
+                                                            <option>По количеству участников</option>
+                                                            <option>По активности</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-4">
+                                        <!-- Группа 1 -->
+                                        <div class="col-lg-6">
+                                            <div class="group-card">
+                                                <div class="group-card-header">
+                                                    <div class="group-badge bg-success">Активна</div>
+                                                    <div class="group-actions">
+                                                        <button class="btn-action"><i class="fas fa-ellipsis-v"></i></button>
+                                                    </div>
+                                                </div>
+                                                <div class="group-card-body">
+                                                    <div class="d-flex align-items-start mb-3">
+                                                        <div class="group-icon">
+                                                            <i class="fas fa-umbrella-beach"></i>
+                                                        </div>
+                                                        <div class="ms-3">
+                                                            <h4 class="group-title">Отдых в Крыму</h4>
+                                                            <p class="group-description">
+                                                                Планируем поездку в Крым на лето
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="group-details">
+                                                        <div class="group-members mb-3">
+                                                            <label class="form-label small fw-semibold mb-2 text-dark">Участники:</label>
+                                                            <div class="avatar-group">
+                                                                <img src="https://ui-avatars.com/api/?name=Иван+И&background=0379D9&color=fff" class="rounded-circle" alt="Иван">
+                                                                <img src="https://ui-avatars.com/api/?name=Мария+С&background=40B624&color=fff" class="rounded-circle" alt="Мария">
+                                                                <img src="https://ui-avatars.com/api/?name=Алексей+П&background=FF6B6B&color=fff" class="rounded-circle" alt="Алексей">
+                                                                <img src="https://ui-avatars.com/api/?name=Елена+К&background=FFA726&color=fff" class="rounded-circle" alt="Елена">
+                                                                <span class="avatar-count">+1</span>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="group-info">
+                                                            <div class="info-item">
+                                                                <i class="fas fa-calendar text-primary"></i>
+                                                                <span>15-25 июля 2024</span>
+                                                            </div>
+                                                            <div class="info-item">
+                                                                <i class="fas fa-map-marker-alt text-primary"></i>
+                                                                <span>Крым, Россия</span>
+                                                            </div>
+                                                            <div class="info-item">
+                                                                <i class="fas fa-users text-primary"></i>
+                                                                <span>5 участников</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="group-card-footer">
+                                                    <button class="btn btn-outline-primary">
+                                                        <i class="fas fa-door-open me-2"></i>Открыть
+                                                    </button>
+                                                    <button class="btn btn-outline-secondary">
+                                                        <i class="fas fa-user-plus me-2"></i>Пригласить
+                                                    </button>
+                                                    <button class="btn btn-primary">
+                                                        <i class="fas fa-edit me-2"></i>Редактировать
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Группа 2 -->
+                                        <div class="col-lg-6">
+                                            <div class="group-card">
+                                                <div class="group-card-header">
+                                                    <div class="group-badge bg-warning">Планируется</div>
+                                                    <div class="group-actions">
+                                                        <button class="btn-action"><i class="fas fa-ellipsis-v"></i></button>
+                                                    </div>
+                                                </div>
+                                                <div class="group-card-body">
+                                                    <div class="d-flex align-items-start mb-3">
+                                                        <div class="group-icon">
+                                                            <i class="fas fa-skiing"></i>
+                                                        </div>
+                                                        <div class="ms-3">
+                                                            <h4 class="group-title">Горные лыжи</h4>
+                                                            <p class="group-description">
+                                                                Зимний отдых в горах Сочи
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="group-details">
+                                                        <div class="group-members mb-3">
+                                                            <label class="form-label small fw-semibold mb-2 text-dark">Участники:</label>
+                                                            <div class="avatar-group">
+                                                                <img src="https://ui-avatars.com/api/?name=Сергей+М&background=0379D9&color=fff" class="rounded-circle" alt="Сергей">
+                                                                <img src="https://ui-avatars.com/api/?name=Анна+Л&background=40B624&color=fff" class="rounded-circle" alt="Анна">
+                                                                <span class="avatar-count">+1</span>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="group-info">
+                                                            <div class="info-item">
+                                                                <i class="fas fa-calendar text-primary"></i>
+                                                                <span>15-22 января 2024</span>
+                                                            </div>
+                                                            <div class="info-item">
+                                                                <i class="fas fa-map-marker-alt text-primary"></i>
+                                                                <span>Сочи, Россия</span>
+                                                            </div>
+                                                            <div class="info-item">
+                                                                <i class="fas fa-users text-primary"></i>
+                                                                <span>3 участника</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="group-card-footer">
+                                                    <button class="btn btn-outline-primary">
+                                                        <i class="fas fa-door-open me-2"></i>Открыть
+                                                    </button>
+                                                    <button class="btn btn-outline-secondary">
+                                                        <i class="fas fa-user-plus me-2"></i>Пригласить
+                                                    </button>
+                                                    <button class="btn btn-primary">
+                                                        <i class="fas fa-edit me-2"></i>Редактировать
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Модальное окно создания группы -->
+                <div class="modal fade" id="createGroupModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header border-0">
+                                <h5 class="modal-title fw-bold">
+                                    <i class="fas fa-users text-primary me-2"></i>
+                                    Создать новую группу
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="createGroupForm">
+                                    <div class="row mb-4">
+                                        <div class="col-md-6">
+                                            <div class="form-floating mb-3">
+                                                <input type="text" class="form-control" id="groupName" placeholder="Название группы" required>
+                                                <label for="groupName">Название группы</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <select class="form-select" id="groupType" required>
+                                                    <option value="" selected disabled>Выберите тип</option>
+                                                    <option value="vacation">Отпуск</option>
+                                                    <option value="business">Бизнес-поездка</option>
+                                                    <option value="family">Семейный отдых</option>
+                                                    <option value="friends">С друзьями</option>
+                                                    <option value="adventure">Приключение</option>
+                                                </select>
+                                                <label for="groupType">Тип группы</label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-floating mb-3">
+                                        <input type="text" class="form-control" id="destination" placeholder="Куда планируем?" required>
+                                        <label for="destination">Направление</label>
+                                    </div>
+
+                                    <div class="form-floating mb-3">
+                                        <textarea class="form-control" id="description" placeholder="Описание группы" style="height: 100px;"></textarea>
+                                        <label for="description">Описание группы</label>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input type="date" class="form-control" id="startDate" required>
+                                                <label for="startDate">Дата начала</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input type="date" class="form-control" id="endDate" required>
+                                                <label for="endDate">Дата окончания</label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label fw-semibold mb-2">Пригласить друзей</label>
+                                        <input type="text" class="form-control" placeholder="Начните вводить имя или email">
+                                        <div class="mt-2">
+                                            <span class="badge bg-primary me-2 mb-2">Иван Петров</span>
+                                            <span class="badge bg-primary me-2 mb-2">Мария Сидорова</span>
+                                            <span class="badge bg-secondary me-2 mb-2">+ Добавить</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-check form-switch mb-4">
+                                        <input class="form-check-input" type="checkbox" id="isPrivate" checked>
+                                        <label class="form-check-label" for="isPrivate">
+                                            Закрытая группа (только по приглашению)
+                                        </label>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer border-0">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                                <button type="button" class="btn btn-primary px-4">
+                                    <i class="fas fa-check me-2"></i>Создать группу
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Стили для выделения раздела "Группы" */
+    .page-header-section {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 25px 30px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .page-header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(to bottom, #0379D9, #40B624);
+        }
+
+    .page-header-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #0379D9, #40B624);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 4px 15px rgba(3, 121, 217, 0.2);
+        flex-shrink: 0;
+    }
+
+    .page-title {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 800;
+        font-size: 2.5rem;
+        color: #0379D9;
+        margin: 0 0 8px 0;
+        line-height: 1.2;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        font-size: 1.1rem;
+        margin: 0;
+        max-width: 600px;
+    }
+
+    .section-subtitle {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        font-size: 1.5rem;
+        color: #334155;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    /* Исправления для одинаковой ширины кнопок - расширена ширина */
+    .d-flex.justify-content-between.align-items-center.mb-5 .btn-primary,
+    .filter-sort-dropdown .btn-outline-secondary {
+        min-width: 240px;
+        width: 240px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        white-space: nowrap;
+        text-align: center;
+    }
+
+    /* Стили для кнопки "Новая группа" */
+    .d-flex.justify-content-between.align-items-center.mb-5 .btn-primary {
+        padding: 12px 24px;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(3, 121, 217, 0.2);
+        transition: all 0.3s ease;
+    }
+
+        .d-flex.justify-content-between.align-items-center.mb-5 .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(3, 121, 217, 0.3);
+        }
+
+    /* Улучшенные кнопки фильтра и сортировки с увеличенным окном */
+    .filter-sort-dropdown .btn-outline-secondary {
+        border-radius: 10px;
+        padding: 12px 20px;
+        font-weight: 600;
+        border: 2px solid #dee2e6;
+        background: white;
+        color: #6c757d;
+        transition: all 0.2s ease;
+        font-size: 1rem;
+        letter-spacing: 0.3px;
+    }
+
+        .filter-sort-dropdown .btn-outline-secondary:hover {
+            background: #f8f9fa;
+            border-color: #adb5bd;
+            color: #495057;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-sort-dropdown .btn-outline-secondary:focus {
+            box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.25);
+        }
+
+        /* Увеличенные иконки в кнопках */
+        .filter-sort-dropdown .btn-outline-secondary i,
+        .d-flex.justify-content-between.align-items-center.mb-5 .btn-primary i {
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+    .filter-sort-dropdown .dropdown-menu {
+        border-radius: 16px;
+        border: 1px solid #dee2e6;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+        margin-top: 10px;
+        padding: 25px !important;
+        min-width: 350px !important;
+        max-width: 350px;
+    }
+
+    .filter-sort-dropdown .dropdown-header {
+        font-size: 1.1rem;
+        color: #1e293b;
+        padding: 0;
+        border-bottom: 2px solid #e2e8f0;
+        margin-bottom: 25px;
+        padding-bottom: 12px;
+    }
+
+    .filter-sort-dropdown .form-label {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 15px;
+        display: block;
+    }
+
+    .filter-sort-dropdown .form-check {
+        margin: 0;
+        padding: 10px 0;
+        display: flex;
+        align-items: center;
+        min-height: 36px;
+    }
+
+    .filter-sort-dropdown .form-check-input {
+        width: 22px !important;
+        height: 22px !important;
+        margin-right: 15px !important;
+        margin-top: 0 !important;
+        border-radius: 5px;
+        border: 2px solid #cbd5e1;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
+
+        .filter-sort-dropdown .form-check-input:checked {
+            background-color: #0379D9;
+            border-color: #0379D9;
+        }
+
+        .filter-sort-dropdown .form-check-input:focus {
+            box-shadow: 0 0 0 0.25rem rgba(3, 121, 217, 0.25);
+        }
+
+    .filter-sort-dropdown .form-check-label {
+        font-size: 1rem;
+        color: #475569;
+        cursor: pointer;
+        user-select: none;
+        flex: 1;
+        line-height: 1.4;
+    }
+
+    /* Исправлен отступ чекбоксов от левого края */
+    .filter-sort-dropdown .d-flex.flex-column.gap-3.ps-3 {
+        gap: 12px !important;
+        padding-left: 20px !important;
+    }
+
+    .filter-sort-dropdown .form-select {
+        font-size: 0.95rem;
+        padding: 12px 16px;
+        border-radius: 10px;
+        border: 1px solid #cbd5e1;
+        height: 48px;
+        width: 100%;
+    }
+
+        .filter-sort-dropdown .form-select:focus {
+            border-color: #0379D9;
+            box-shadow: 0 0 0 0.25rem rgba(3, 121, 217, 0.25);
+        }
+
+    /* Стили для карточек групп */
+    .group-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+        height: 100%;
+        margin-bottom: 20px;
+    }
+
+        .group-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+            border-color: #0379D9;
+        }
+
+    .group-card-header {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .group-badge {
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: white;
+    }
+
+    .group-actions .btn-action {
+        background: none;
+        border: none;
+        color: #6c757d;
+        font-size: 1.2rem;
+        padding: 5px;
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+
+        .group-actions .btn-action:hover {
+            color: #0379D9;
+        }
+
+    .group-card-body {
+        padding: 25px;
+    }
+
+    .group-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #0379D9, #40B624);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .group-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin: 0 0 5px 0;
+        color: #333;
+        font-family: 'Nunito', sans-serif;
+    }
+
+    .group-description {
+        color: #6c757d;
+        margin: 0;
+        font-size: 0.95rem;
+    }
+
+    .group-details {
+        margin-top: 20px;
+    }
+
+    .group-members label {
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .avatar-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+        .avatar-group img {
+            width: 38px;
+            height: 38px;
+            border: 3px solid white;
+            margin-left: -10px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+            .avatar-group img:first-child {
+                margin-left: 0;
+            }
+
+    .avatar-count {
+        background: #f8f9fa;
+        border: 3px solid white;
+        border-radius: 50%;
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #6c757d;
+        margin-left: -10px;
+    }
+
+    .group-info {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #555;
+        font-size: 0.9rem;
+    }
+
+        .info-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+    .group-card-footer {
+        padding: 15px 20px;
+        background: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+        display: flex;
+        gap: 10px;
+    }
+
+        .group-card-footer .btn {
+            flex: 1;
+            padding: 8px 10px;
+            font-size: 0.85rem;
+            min-width: 0;
+            white-space: nowrap;
+        }
+
+    /* Модальное окно */
+    .modal-content {
+        border-radius: 16px;
+        border: none;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+
+    .modal-header {
+        padding: 1.5rem 1.5rem 0.5rem;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        padding: 1rem 1.5rem 1.5rem;
+    }
+
+    .form-floating > .form-control,
+    .form-floating > .form-select {
+        height: calc(3.5rem + 2px);
+        padding: 1rem 0.75rem;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+
+    .form-floating > label {
+        padding: 1rem 0.75rem;
+        color: #6c757d;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #0379D9;
+        box-shadow: 0 0 0 0.2rem rgba(3, 121, 217, 0.25);
+    }
+
+    .form-switch .form-check-input {
+        width: 2.5em;
+        height: 1.25em;
+        margin-right: 0.5rem;
+    }
+
+    /* Адаптивность */
+    @@media (min-width: 992px) {
+        .d-flex.justify-content-between.align-items-center.mb-5 .btn-primary,
+        .filter-sort-dropdown .btn-outline-secondary {
+            min-width: 250px;
+            width: 250px;
+        }
+
+        .group-card-footer .btn {
+            font-size: 0.9rem;
+            padding: 10px 12px;
+        }
+    }
+
+    @@media (max-width: 992px) and (min-width: 768px) {
+        .d-flex.justify-content-between.align-items-center.mb-5 .btn-primary,
+        .filter-sort-dropdown .btn-outline-secondary {
+            min-width: 220px;
+            width: 220px;
+            padding: 10px 16px;
+            font-size: 0.95rem;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .page-header-section {
+            flex-direction: column;
+            text-align: center;
+            padding: 20px;
+            gap: 15px;
+        }
+
+            .page-header-section::before {
+                width: 100%;
+                height: 6px;
+                top: 0;
+                left: 0;
+                background: linear-gradient(to right, #0379D9, #40B624);
+            }
+
+        .page-header-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 1.75rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+        }
+
+        .d-flex.justify-content-between.align-items-center {
+            flex-direction: row !important;
+            align-items: stretch !important;
+        }
+
+            .d-flex.justify-content-between.align-items-center.mb-5 .btn-primary,
+            .filter-sort-dropdown .btn-outline-secondary {
+                min-width: auto;
+                width: auto;
+                flex: 1;
+                text-align: center;
+                padding: 10px 15px;
+                font-size: 0.92rem;
+                margin: 0 5px;
+            }
+
+        .filter-sort-dropdown {
+            align-self: stretch;
+            width: 100%;
+        }
+
+            .filter-sort-dropdown .btn-outline-secondary {
+                width: 100%;
+                justify-content: center;
+                margin: 0;
+            }
+
+            .filter-sort-dropdown .dropdown-menu {
+                min-width: 100% !important;
+                position: relative !important;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+            }
+
+        .group-card-footer {
+            flex-direction: column;
+        }
+
+            .group-card-footer .btn {
+                width: 100%;
+            }
+
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .page-title {
+            font-size: 1.75rem !important;
+        }
+
+        .card-body {
+            padding: 1.5rem !important;
+        }
+
+        .section-subtitle {
+            font-size: 1.25rem;
+        }
+
+        .d-flex.justify-content-between.align-items-center {
+            flex-direction: column !important;
+            gap: 10px !important;
+        }
+
+            .d-flex.justify-content-between.align-items-center.mb-5 .btn-primary,
+            .filter-sort-dropdown .btn-outline-secondary {
+                width: 100%;
+                justify-content: center;
+                padding: 12px 20px;
+                font-size: 0.95rem;
+                margin: 0;
+            }
+
+        .filter-sort-dropdown .dropdown-menu {
+            padding: 20px !important;
+        }
+
+        .filter-sort-dropdown .d-flex.flex-column.gap-3.ps-3 {
+            padding-left: 15px !important;
+        }
+
+        .group-card-body,
+        .group-card-footer {
+            padding: 20px;
+        }
+    }
+
+    /* Дополнительный медиа-запрос для очень больших экранов */
+    @@media (min-width: 1400px) {
+        .d-flex.justify-content-between.align-items-center.mb-5 .btn-primary,
+        .filter-sort-dropdown .btn-outline-secondary {
+            min-width: 260px;
+            width: 260px;
+        }
+    }
+
+    /* Для средних экранов */
+    @@media (min-width: 1200px) and (max-width: 1399px) {
+        .d-flex.justify-content-between.align-items-center.mb-5 .btn-primary,
+        .filter-sort-dropdown .btn-outline-secondary {
+            min-width: 240px;
+            width: 240px;
+        }
+    }
+</style>

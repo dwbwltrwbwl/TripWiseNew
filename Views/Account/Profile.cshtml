@@ -1,0 +1,725 @@
+﻿@model TripWise.Models.User
+@{
+    ViewData["Title"] = "Мой аккаунт";
+}
+<div class="mobile-header-spacer d-block d-lg-none" style="height: 70px;"></div>
+<div class="container mt-4">
+
+    <!-- Заголовок страницы -->
+    <div class="page-header-section mb-5">
+        <div class="page-header-icon">
+            <i class="fas fa-user-circle text-white"></i>
+        </div>
+        <div class="page-header-content">
+            <h1 class="page-title">Мой аккаунт</h1>
+            <p class="page-subtitle">Управление профилем и настройками</p>
+        </div>
+    </div>
+
+    <!-- Профиль -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body d-flex flex-wrap align-items-center gap-4">
+            <div class="avatar-circle">
+                @if (!string.IsNullOrEmpty(Model.AvatarPath))
+                {
+                    <img src="@Model.AvatarPath?@DateTime.Now.Ticks" class="avatar-image-profile" alt="Avatar"
+                         onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'avatar-initials\'>@(Model.FirstName?.Length > 0 ? Model.FirstName[0].ToString().ToUpper() : "")@(Model.LastName?.Length > 0 ? Model.LastName[0].ToString().ToUpper() : "")</div>'" />
+                }
+                else
+                {
+                    <div class="avatar-initials">
+                        @(Model.FirstName?.Length > 0 ? Model.FirstName[0].ToString().ToUpper() : "")@(Model.LastName?.Length > 0 ? Model.LastName[0].ToString().ToUpper() : "")
+                    </div>
+                }
+            </div>
+
+            <div style="flex: 1; min-width: 0;">
+                <h4 class="fw-bold mb-1">
+                    @Model.LastName @Model.FirstName
+                    @if (!string.IsNullOrEmpty(Model.MiddleName))
+                    {
+                        <text>@Model.MiddleName</text>
+                    }
+                </h4>
+                <div class="text-muted mb-1" style="word-break: break-word; overflow-wrap: break-word;">
+                    <i class="fas fa-envelope me-1"></i>@Model.Email
+                </div>
+                <div class="text-muted small">
+                    Зарегистрирован с @Model.CreatedAt.ToString("yyyy") года
+                </div>
+
+                <div class="mt-3 d-flex flex-wrap gap-2">
+                    <a asp-action="Edit" class="btn btn-primary btn-sm">
+                        <i class="fas fa-edit me-1"></i>Редактировать профиль
+                    </a>
+                    <a asp-action="ChangePassword" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-key me-1"></i>Сменить пароль
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основные показатели -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-0">
+            <h5 class="section-subtitle mb-0">
+                <i class="fas fa-chart-line text-primary me-2"></i>
+                Основные показатели
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row text-center">
+                <div class="col-6 col-md-3 mb-3">
+                    <div class="simple-stat">
+                        <div class="value">@ViewBag.TripCount</div>
+                        <div class="label">Поездок</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 mb-3">
+                    <div class="simple-stat">
+                        <div class="value">@ViewBag.GroupCount</div>
+                        <div class="label">Групп</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 mb-3">
+                    <div class="simple-stat">
+                        <div class="value">@ViewBag.TravelDays</div>
+                        <div class="label">Дней в пути</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 mb-3">
+                    <div class="simple-stat">
+                        <div class="value">@ViewBag.LastExpenses?.Count</div>
+                        <div class="label">Расходов</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Документы (улучшенный блок) -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-0">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <h5 class="section-subtitle mb-0">
+                    <i class="fas fa-folder-open text-primary me-2"></i>
+                    Мои документы
+                </h5>
+                <a asp-action="MyDocuments" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-arrow-right me-1"></i>Все документы
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-7">
+                    <p class="text-muted mb-3">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Храните важные документы для поездок: паспорта, билеты, страховки, бронирования
+                    </p>
+                </div>
+                <div class="col-md-5">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="documents-stats p-3 border rounded-3 bg-light">
+                                <div class="value fs-1 fw-bold text-primary">@(ViewBag.DocumentCount ?? 0)</div>
+                                <div class="label text-muted">Документов</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="documents-stats p-3 border rounded-3 bg-light">
+                                <div class="value fs-1 fw-bold text-primary">@(ViewBag.FolderCount ?? 0)</div>
+                                <div class="label text-muted">Папок</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Последние документы -->
+            @if (ViewBag.RecentDocuments != null && ViewBag.RecentDocuments.Count > 0)
+            {
+                <div class="mt-4">
+                    <h6 class="mb-3 fw-semibold">
+                        Недавно добавленные:
+                    </h6>
+                    <div class="row g-3">
+                        @foreach (var doc in ViewBag.RecentDocuments)
+                        {
+                            <div class="col-md-4">
+                                <div class="recent-doc-item p-3 border rounded-3 bg-white h-100">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="doc-icon">
+                                            <i class="fas fa-file-@(doc.FileType?.ToLower() == "pdf" ? "pdf text-danger" :
+                                                                                                             doc.FileType?.ToLower() == "doc" || doc.FileType?.ToLower() == "docx" ? "word text-primary" :
+                                                                                                             doc.FileType?.ToLower() == "jpg" || doc.FileType?.ToLower() == "png" || doc.FileType?.ToLower() == "jpeg" ? "image text-success" :
+                                                                                                             "alt text-secondary") fa-2x"></i>
+                                </div>
+                                <div class="doc-info flex-grow-1" style="min-width: 0;">
+                                    <div class="doc-name fw-semibold text-truncate" title="@doc.Name">@doc.Name</div>
+                                    <div class="doc-meta small text-muted">@(doc.FileSize / 1024) КБ • @doc.CreatedAt.ToString("dd.MM.yyyy")</div>
+                                    @if (doc.FolderName != null)
+                                            {
+                                                <div class="doc-folder small text-primary">
+                                                    <i class="fas fa-folder me-1"></i>@doc.FolderName
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
+                    <p class="text-muted">Документов пока нет</p>
+                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#quickUploadModal">
+                        <i class="fas fa-upload me-2"></i>Загрузить первый документ
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Модальное окно быстрой загрузки -->
+    <div class="modal fade" id="quickUploadModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title">
+                        <i class="fas fa-upload text-primary me-2"></i>Быстрая загрузка документа
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="quickUploadForm" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Название документа *</label>
+                            <input type="text" class="form-control" name="documentName"
+                                   placeholder="Паспорт, Билет, Страховка и т.д." required maxlength="255">
+                            <small class="text-muted">До 255 символов</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Выберите файл *</label>
+                            <input type="file" class="form-control" name="documentFile"
+                                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.txt" required>
+                            <small class="text-muted">Максимальный размер: 10 МБ</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Папка (опционально)</label>
+                            <select class="form-select" name="folderId" id="quickFolderSelect">
+                                <option value="">Без папки</option>
+                                @if (ViewBag.UserFolders != null)
+                                {
+                                    foreach (var folder in ViewBag.UserFolders)
+                                    {
+                                        <option value="@folder.IdFolder">@folder.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="alert alert-info border-0 rounded-3 small">
+                            <i class="fas fa-info-circle me-1"></i>
+                            После загрузки документ появится в разделе "Мои документы"
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary" onclick="quickUploadDocument()">
+                        <i class="fas fa-upload me-2"></i>Загрузить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Финансы -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-0">
+            <h5 class="section-subtitle mb-0">
+                <i class="fas fa-wallet text-primary me-2"></i>
+                Финансы
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="finance-box p-3 border rounded-3 d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-chart-pie me-2 text-primary"></i>Моя доля расходов</span>
+                        <strong class="text-primary fs-5">@ViewBag.TotalShare ₽</strong>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="finance-box p-3 border rounded-3 d-flex justify-content-between align-items-center bg-light">
+                        <span><i class="fas fa-exclamation-triangle me-2 text-warning"></i>Не оплачено</span>
+                        <strong class="text-danger fs-5">@ViewBag.UnpaidShare ₽</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Последняя активность -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-0">
+            <h5 class="section-subtitle mb-0">
+                <i class="fas fa-history text-primary me-2"></i>
+                Последняя активность
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            @if (ViewBag.LastExpenses != null && ViewBag.LastExpenses.Count > 0)
+            {
+                <div class="list-group list-group-flush">
+                    @foreach (var item in ViewBag.LastExpenses)
+                    {
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-receipt text-secondary me-2"></i>@item.Title</span>
+                            <span class="badge bg-primary rounded-pill">@item.Amount ₽</span>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4">
+                    <i class="fas fa-inbox fa-3x text-muted mb-2"></i>
+                    <p class="text-muted mb-0">Нет активности</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Выход и удаление -->
+    <div class="d-flex flex-wrap gap-3 mb-5">
+        <a asp-action="Logout" class="btn btn-outline-danger">
+            <i class="fas fa-sign-out-alt me-2"></i>Выйти из аккаунта
+        </a>
+        <a asp-action="Delete" class="btn btn-outline-secondary">
+            <i class="fas fa-trash-alt me-2"></i>Удалить аккаунт
+        </a>
+    </div>
+</div>
+
+<style>
+    .page-header-section {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 25px 30px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .page-header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(to bottom, #0379D9, #40B624);
+        }
+
+    .page-header-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #0379D9, #40B624);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 4px 15px rgba(3, 121, 217, 0.2);
+        flex-shrink: 0;
+    }
+
+    .page-header-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .page-title {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 800;
+        font-size: 2.5rem;
+        color: #0379D9;
+        margin: 0 0 8px 0;
+        line-height: 1.2;
+        word-break: break-word;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        font-size: 1.1rem;
+        margin: 0;
+        line-height: 1.4;
+        word-break: break-word;
+        max-width: 600px;
+    }
+
+    .section-subtitle {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        font-size: 1.3rem;
+        color: #334155;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        box-shadow: 0 2px 4px rgba(15, 23, 42, 0.04), 0 12px 24px rgba(15, 23, 42, 0.06);
+        transition: all 0.3s ease;
+    }
+
+        .card:hover {
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08), 0 20px 40px rgba(15, 23, 42, 0.10);
+        }
+
+    .card-header {
+        background-color: white;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 1.25rem 1.5rem;
+    }
+
+    /* Аватар */
+    .avatar-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0379D9, #40B624);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(3, 121, 217, 0.3);
+        flex-shrink: 0;
+    }
+
+    .avatar-image-profile {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .avatar-initials {
+        color: white;
+        font-size: 2rem;
+        font-weight: 700;
+        font-family: 'Nunito', sans-serif;
+        text-transform: uppercase;
+    }
+
+    /* Статистика */
+    .simple-stat {
+        text-align: center;
+        padding: 15px;
+        background: #f8fafc;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+
+        .simple-stat:hover {
+            background: #f0f7ff;
+            transform: translateY(-2px);
+        }
+
+        .simple-stat .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #0379D9;
+        }
+
+        .simple-stat .label {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+    /* Документы */
+    .documents-stats {
+        transition: all 0.3s ease;
+    }
+
+        .documents-stats:hover {
+            transform: translateY(-2px);
+            background: #e8f4fe !important;
+        }
+
+    .recent-doc-item {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+        .recent-doc-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            border-color: #0379D9 !important;
+        }
+
+    .doc-icon {
+        width: 45px;
+        text-align: center;
+    }
+
+    .doc-name {
+        font-size: 0.9rem;
+        line-height: 1.3;
+    }
+
+    .doc-folder {
+        font-size: 0.75rem;
+        margin-top: 4px;
+    }
+
+    /* Финансы */
+    .finance-box {
+        transition: all 0.3s ease;
+    }
+
+        .finance-box:hover {
+            transform: translateY(-2px);
+            border-color: #0379D9 !important;
+        }
+
+    /* Кнопки */
+    .btn {
+        border-radius: 10px;
+        font-weight: 600;
+        padding: 8px 20px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: #0379D9;
+        border: none;
+    }
+
+        .btn-primary:hover {
+            background: #0356a8;
+            transform: translateY(-2px);
+        }
+
+    .btn-outline-primary {
+        border: 1px solid #0379D9;
+        color: #0379D9;
+    }
+
+        .btn-outline-primary:hover {
+            background: #0379D9;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    .btn-outline-danger:hover {
+        transform: translateY(-2px);
+    }
+
+    /* Модальное окно */
+    .modal-content {
+        border-radius: 16px;
+        border: none;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid #e2e8f0;
+        padding: 1.25rem 1.5rem;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #e2e8f0;
+        padding: 1rem 1.5rem;
+    }
+
+    /* Форма */
+    .form-control, .form-select {
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        padding: 10px 14px;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #0379D9;
+            box-shadow: 0 0 0 0.2rem rgba(3, 121, 217, 0.25);
+        }
+
+    /* Адаптивность */
+    @@media (max-width: 768px) {
+        .page-header-section
+
+    {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px;
+        gap: 15px;
+    }
+
+    .page-header-section::before {
+        width: 100%;
+        height: 6px;
+        top: 0;
+        left: 0;
+        background: linear-gradient(to right, #0379D9, #40B624);
+    }
+
+    .page-header-icon {
+        width: 55px;
+        height: 55px;
+        font-size: 1.5rem;
+    }
+
+    .page-title {
+        font-size: 1.6rem;
+    }
+
+    .page-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.2rem;
+    }
+
+    .avatar-circle {
+        width: 65px;
+        height: 65px;
+    }
+
+    .avatar-initials {
+        font-size: 1.5rem;
+    }
+
+    .recent-doc-item {
+        margin-bottom: 10px;
+    }
+
+    }
+
+    @@media (max-width: 576px) {
+        .page-header-section
+
+    {
+        padding: 15px;
+        gap: 12px;
+    }
+
+    .page-header-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.3rem;
+    }
+
+    .page-title {
+        font-size: 1.4rem;
+    }
+
+    .page-subtitle {
+        font-size: 0.85rem;
+    }
+
+    .simple-stat .value {
+        font-size: 1.4rem;
+    }
+
+    .simple-stat .label {
+        font-size: 0.75rem;
+    }
+
+    .finance-box {
+        flex-direction: column;
+        text-align: center;
+        gap: 8px;
+    }
+
+    }
+</style>
+
+<script>
+    function quickUploadDocument() {
+        const form = document.getElementById('quickUploadForm');
+        const formData = new FormData(form);
+        const submitBtn = event?.target;
+
+        const nameInput = document.querySelector('input[name="documentName"]');
+        const fileInput = document.querySelector('input[name="documentFile"]');
+
+        const name = nameInput?.value.trim() || '';
+        const file = fileInput?.files[0];
+
+        if (!name) {
+            showNotification('Введите название документа', 'warning');
+            return;
+        }
+        if (name.length > 255) {
+            showNotification('Название документа не может превышать 255 символов', 'warning');
+            return;
+        }
+        if (!file) {
+            showNotification('Выберите файл для загрузки', 'warning');
+            return;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+            showNotification('Размер файла не должен превышать 10 МБ', 'warning');
+            return;
+        }
+
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Загрузка...';
+
+            fetch('/Documents/QuickUpload', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('quickUploadModal'));
+                    if (modal) modal.hide();
+                    form.reset();
+                    showNotification('Документ успешно загружен', 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showNotification(data.message || 'Ошибка при загрузке', 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Произошла ошибка при загрузке', 'danger');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            });
+        }
+    }
+
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        notification.style.cssText = 'top:20px; right:20px; z-index:9999; min-width:280px; max-width:350px; border-radius:12px;';
+        const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+        notification.innerHTML = `<div class="d-flex align-items-center"><i class="fas ${icon} me-2"></i><div class="flex-grow-1">${message}</div><button type="button" class="btn-close ms-2" data-bs-dismiss="alert"></button></div>`;
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 5000);
+    }
+</script>

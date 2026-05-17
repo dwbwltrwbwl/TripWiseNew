@@ -1,0 +1,641 @@
+﻿@model TripWise.Models.ViewModels.HomeViewModel
+@{
+    ViewData["Title"] = "Главная";
+}
+
+<div class="container-fluid px-0">
+    <section class="hero-section text-white">
+        <div class="container">
+            <div class="row align-items-center py-5">
+                <div class="col-lg-6">
+                    <h1 class="fw-bold mb-4" style="font-size: 2.5rem; font-family: 'Nunito', sans-serif;">Планируйте путешествия вместе</h1>
+                    <p class="lead mb-4">Создавайте маршруты, делитесь идеями и открывайте новые места с друзьями и семьей</p>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <div class="btn btn-light btn-lg fw-medium px-4" style="cursor: default;">
+                            <i class="fas fa-globe me-2"></i>Путешествия по всему миру
+                        </div>
+                        <div class="btn btn-outline-light btn-lg px-4" style="cursor: default;">
+                            <i class="fas fa-clock me-2"></i>Экономьте время на планировании
+                        </div>
+                    </div>
+                </div> 
+                <div class="col-lg-6 text-center">
+                    <div class="hero-image-container">
+                        <img src="https://media.istockphoto.com/id/523259656/tr/foto%C4%9Fraf/adventures-on-the-dolomites-with-dog.jpg?s=612x612&w=0&k=20&c=jMvhRw3c4Avo6G9tAVETljkyfTCLhtbfJ4NvFIlmuSc=" alt="Путешествия" class="hero-image img-fluid">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features-section py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold mb-3">Почему выбирают нас</h2>
+                <p class="text-muted lead">Все инструменты для идеального путешествия в одном месте</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feature-card text-center p-4 h-100">
+                        <div class="feature-icon bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-users fa-2x text-primary"></i>
+                        </div>
+                        <h5 class="fw-bold">Совместное планирование</h5>
+                        <p class="text-muted">Создавайте маршруты вместе с друзьями, обсуждайте идеи и голосуйте за варианты</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card text-center p-4 h-100">
+                        <div class="feature-icon bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-route fa-2x text-success"></i>
+                        </div>
+                        <h5 class="fw-bold">Умные маршруты</h5>
+                        <p class="text-muted">Автоматическое построение оптимальных маршрутов с учетом ваших предпочтений</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card text-center p-4 h-100">
+                        <div class="feature-icon bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-wallet fa-2x text-warning"></i>
+                        </div>
+                        <h5 class="fw-bold">Бюджет и расходы</h5>
+                        <p class="text-muted">Контролируйте общие расходы, делите затраты и следите за бюджетом поездки</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="destinations-section py-5 bg-light">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold mb-0">Популярные направления</h2>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="destination-card card border-0 shadow-sm h-100" style="cursor: pointer;" onclick="redirectToHotelsByCity('Санкт-Петербург')">
+                        <img src="https://cdnstatic.rg.ru/uploads/images/2023/05/31/istock-1478313878_a0d.jpg" class="card-img-top" alt="Санкт-Петербург" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">Санкт-Петербург</h5>
+                            <p class="card-text text-muted">Культурная столица России</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-primary fw-bold">от 2 500₽</span>
+                                <small class="text-muted">/ сутки</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="destination-card card border-0 shadow-sm h-100" style="cursor: pointer;" onclick="redirectToHotelsByCity('Сочи')">
+                        <img src="https://avatars.mds.yandex.net/get-altay/9724410/2a00000189625ec7e494138f47b6a9a20085/XXL_height" class="card-img-top" alt="Сочи" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">Сочи</h5>
+                            <p class="card-text text-muted">Черноморское побережье</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-primary fw-bold">от 1 800₽</span>
+                                <small class="text-muted">/ сутки</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="destination-card card border-0 shadow-sm h-100" style="cursor: pointer;" onclick="redirectToHotelsByCity('Калининград')">
+                        <img src="https://moya-planeta.ru/upload/images/xl/3e/7e/3e7e1e7be444d2a6371a29997d867b280f177f8b.jpg" class="card-img-top" alt="Калининград" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">Калининград</h5>
+                            <p class="card-text text-muted">Европейская Россия</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-primary fw-bold">от 2 200₽</span>
+                                <small class="text-muted">/ сутки</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="destination-card card border-0 shadow-sm h-100" style="cursor: pointer;" onclick="redirectToHotelsByCity('Новосибирск')">
+                        <img src="https://pic.rutubelist.ru/video/2025-05-09/22/bb/22bb152d5adeb08b9f899848e4587eae.jpg"
+                             class="card-img-top"
+                             alt="Новосибирск"
+                             style="height: 200px; object-fit: cover;"
+                             onerror="this.src='https://placehold.co/600x400/228B22/white?text=Новосибирск'">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">Новосибирск</h5>
+                            <p class="card-text text-muted">Столица Сибири</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-primary fw-bold">от 1 500₽</span>
+                                <small class="text-muted">/ сутки</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="destination-card card border-0 shadow-sm h-100" style="cursor: pointer;" onclick="redirectToHotelsByCity('Севастополь')">
+                        <img src="https://i.ytimg.com/vi/3OM7Kupd7AQ/maxresdefault.jpg"
+                             class="card-img-top"
+                             alt="Севастополь"
+                             style="height: 200px; object-fit: cover;"
+                             onerror="this.src='https://placehold.co/600x400/1E90FF/white?text=Севастополь'">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">Севастополь</h5>
+                            <p class="card-text text-muted">Город-герой, черноморское побережье</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-primary fw-bold">от 1 300₽</span>
+                                <small class="text-muted">/ сутки</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="destination-card card border-0 shadow-sm h-100" style="cursor: pointer;" onclick="redirectToHotelsByCity('Казань')">
+                        <img src="https://time-to-travel.ru/upload/iblock/fab/fabb7f59e22d4c44652105cf866a02cd.jpg" class="card-img-top" alt="Казань" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">Казань</h5>
+                            <p class="card-text text-muted">Столица Татарстана</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-primary fw-bold">от 1 800₽</span>
+                                <small class="text-muted">/ сутки</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="destination-card card border-0 shadow-sm h-100" style="cursor: pointer;" onclick="redirectToHotelsByCity('Иркутск')">
+                        <img src="https://cb.rgup.ru/upload/images/news/4646_images/source/01_file_01.jpg"
+                             class="card-img-top"
+                             alt="Иркутск"
+                             style="height: 200px; object-fit: cover;"
+                             onerror="this.src='https://placehold.co/600x400/20B2AA/white?text=Иркутск'">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">Иркутск</h5>
+                            <p class="card-text text-muted">Ворота на Байкал</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-primary fw-bold">от 1 800₽</span>
+                                <small class="text-muted">/ сутки</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="destination-card card border-0 shadow-sm h-100" style="cursor: pointer;" onclick="redirectToHotelsByCity('Великий Новгород')">
+                        <img src="https://media-1.gorbilet.com/43/ac/3b/shutterstock_1105841021_Rq4JoFK.jpg" class="card-img-top" alt="Великий Новгород" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">Великий Новгород</h5>
+                            <p class="card-text text-muted">Древняя Русь</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-primary fw-bold">от 1 900₽</span>
+                                <small class="text-muted">/ сутки</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="destination-card card border-0 shadow-sm h-100" style="cursor: pointer;" onclick="redirectToHotelsByCity('Краснодар')">
+                        <img src="https://img-fotki.yandex.ru/get/99562/30348152.206/0_8fe15_cabfea3b_orig"
+                             class="card-img-top"
+                             alt="Краснодар"
+                             style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">Краснодар</h5>
+                            <p class="card-text text-muted">Южная столица России</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-primary fw-bold">от 1 400₽</span>
+                                <small class="text-muted">/ сутки</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="destination-card card border-0 shadow-sm h-100" style="cursor: pointer;" onclick="redirectToHotelsByCity('Мурманск')">
+                        <img src="https://i.pinimg.com/736x/b5/93/fb/b593fb1b2cc14e948611c8449dcf75c3.jpg" class="card-img-top" alt="Мурманск" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">Мурманск</h5>
+                            <p class="card-text text-muted">Северное сияние</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-primary fw-bold">от 2 500₽</span>
+                                <small class="text-muted">/ сутки</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="destination-card card border-0 shadow-sm h-100" style="cursor: pointer;" onclick="redirectToHotelsByCity('Владивосток')">
+                        <img src="https://cdni.russiatoday.com/rbthmedia/images/2022.07/original/62e4df5a42495f019e6359d7.jpg" class="card-img-top" alt="Владивосток" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">Владивосток</h5>
+                            <p class="card-text text-muted">Тихоокеанские ворота</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-primary fw-bold">от 2 300₽</span>
+                                <small class="text-muted">/ сутки</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="destination-card card border-0 shadow-sm h-100" style="cursor: pointer;" onclick="redirectToHotelsByCity('Екатеринбург')">
+                        <img src="https://img.restoclub.ru/uploads/article/1/e/6/a/1e6a1e4c9b89292189f3b71522f2cd6d_w1656_h1104--big.jpg?v=3" class="card-img-top" alt="Екатеринбург" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">Екатеринбург</h5>
+                            <p class="card-text text-muted">Столица Урала</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-primary fw-bold">от 1 700₽</span>
+                                <small class="text-muted">/ сутки</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="accommodation-section py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold mb-3">Варианты размещения</h2>
+                <p class="text-muted lead">Выберите подходящий тип жилья для вашего путешествия</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="accommodation-card card border-0 shadow-sm h-100 text-center" style="cursor: pointer;" onclick="redirectToHotels('hotel')">
+                        <div class="card-body p-4">
+                            <div class="accommodation-icon bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px;">
+                                <i class="fas fa-hotel fa-2x text-primary"></i>
+                            </div>
+                            <h5 class="fw-bold">Отели</h5>
+                            <p class="text-muted small">Комфортабельные отели с полным обслуживанием</p>
+                            <span class="text-primary fw-bold">от 1 500₽</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="accommodation-card card border-0 shadow-sm h-100 text-center" style="cursor: pointer;" onclick="redirectToHotels('apartment')">
+                        <div class="card-body p-4">
+                            <div class="accommodation-icon bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px;">
+                                <i class="fas fa-home fa-2x text-success"></i>
+                            </div>
+                            <h5 class="fw-bold">Апартаменты</h5>
+                            <p class="text-muted small">Посуточная аренда квартир и апартаментов</p>
+                            <span class="text-primary fw-bold">от 800₽</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="accommodation-card card border-0 shadow-sm h-100 text-center" style="cursor: pointer;" onclick="redirectToHotels('guest_house')">
+                        <div class="card-body p-4">
+                            <div class="accommodation-icon bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px;">
+                                <i class="fas fa-campground fa-2x text-warning"></i>
+                            </div>
+                            <h5 class="fw-bold">Гостевые дома</h5>
+                            <p class="text-muted small">Уютные гостевые дома и мини-отели</p>
+                            <span class="text-primary fw-bold">от 600₽</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="accommodation-card card border-0 shadow-sm h-100 text-center" style="cursor: pointer;" onclick="redirectToHotels('camp_site')">
+                        <div class="card-body p-4">
+                            <div class="accommodation-icon bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px;">
+                                <i class="fas fa-tree fa-2x text-info"></i>
+                            </div>
+                            <h5 class="fw-bold">Загородный отдых</h5>
+                            <p class="text-muted small">Базы отдыха и загородные комплексы</p>
+                            <span class="text-primary fw-bold">от 1 200₽</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="countries-section py-5">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-5">
+                <div class="text-start">
+                    <h2 class="fw-bold mb-3">Популярные страны</h2>
+                    <p class="text-muted lead">Откройте для себя новые культуры и традиции</p>
+                </div>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="country-card card border-0 shadow-sm h-100" style="cursor: pointer;" onclick="redirectToHotelsByCity('Берлин')">
+                        <img src="https://static.life.ru/publications/2023/3/27/1395790201026.4102.jpg" class="card-img-top" alt="Германия" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">Германия</h5>
+                            <p class="card-text text-muted">Замки, пиво и богатая история</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-primary fw-bold">от 3 500₽</span>
+                                <small class="text-muted">/ сутки</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="country-card card border-0 shadow-sm h-100" style="cursor: pointer;" onclick="redirectToHotelsByCity('Рим')">
+                        <img src="https://inyaz.rudn.ru/images/content/files/%D0%9D%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D0%B8/FM9BPj5xqik.jpeg" class="card-img-top" alt="Италия" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">Италия</h5>
+                            <p class="card-text text-muted">Искусство, кухня и архитектура</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-primary fw-bold">от 4 200₽</span>
+                                <small class="text-muted">/ сутки</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="country-card card border-0 shadow-sm h-100" style="cursor: pointer;" onclick="redirectToHotelsByCity('Мадрид')">
+                        <img src="https://pic.rutubelist.ru/video/74/a0/74a03d03d42dce48d71bad7410b88c38.jpg" class="card-img-top" alt="Испания" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">Испания</h5>
+                            <p class="card-text text-muted">Пляжи, фламенко и солнце</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-primary fw-bold">от 3 800₽</span>
+                                <small class="text-muted">/ сутки</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="country-card card border-0 shadow-sm h-100" style="cursor: pointer;" onclick="redirectToHotelsByCity('Париж')">
+                        <img src="https://lang.hse.ru/mirror/pubs/share/412097058" class="card-img-top" alt="Франция" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">Франция</h5>
+                            <p class="card-text text-muted">Мода, вино и романтика</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-primary fw-bold">от 4 500₽</span>
+                                <small class="text-muted">/ сутки</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="country-card card border-0 shadow-sm h-100" style="cursor: pointer;" onclick="redirectToHotelsByCity('Афины')">
+                        <img src="https://i.pinimg.com/736x/a0/9e/43/a09e43e32d4d5c2047b0192325d8d4e5.jpg" class="card-img-top" alt="Греция" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">Греция</h5>
+                            <p class="card-text text-muted">Острова, мифы и античность</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-primary fw-bold">от 3 200₽</span>
+                                <small class="text-muted">/ сутки</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="country-card card border-0 shadow-sm h-100" style="cursor: pointer;" onclick="redirectToHotelsByCity('Стамбул')">
+                        <img src="https://atravel61.ru/wp-content/uploads/2025/06/image.jpg"
+                             class="card-img-top"
+                             alt="Турция"
+                             style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">Турция</h5>
+                            <p class="card-text text-muted">Пляжи, базары и восточный колорит</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-primary fw-bold">от 2 800₽</span>
+                                <small class="text-muted">/ сутки</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="country-card card border-0 shadow-sm h-100" style="cursor: pointer;" onclick="redirectToHotelsByCity('Прага')">
+                        <img src="https://avatars.mds.yandex.net/get-altay/6545454/2a000001907df6080e9edd8bdea901bf6c13/orig" class="card-img-top" alt="Чехия" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">Чехия</h5>
+                            <p class="card-text text-muted">Прага, пиво и готическая архитектура</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-primary fw-bold">от 3 000₽</span>
+                                <small class="text-muted">/ сутки</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="country-card card border-0 shadow-sm h-100" style="cursor: pointer;" onclick="redirectToHotelsByCity('Лиссабон')">
+                        <img src="https://i.pinimg.com/originals/cd/89/0b/cd890b117c1c0b1489d6457d1894bc0e.jpg" class="card-img-top" alt="Португалия" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">Португалия</h5>
+                            <p class="card-text text-muted">Океан, портвейн и фаду</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-primary fw-bold">от 3 600₽</span>
+                                <small class="text-muted">/ сутки</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="testimonials-section py-5">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-5">
+                <div class="text-start">
+                    <h2 class="fw-bold mb-3">Отзывы путешественников</h2>
+                    <p class="text-muted lead">
+                        @if (Model.HasReviews)
+                        {
+                            <text>На основе @Model.Statistics.TotalReviews @GetReviewWord(Model.Statistics.TotalReviews) • Средняя оценка @Model.Statistics.AverageRating</text>
+                        }
+                        else
+                        {
+                            <text>Что говорят наши пользователи</text>
+                        }
+                    </p>
+                </div>
+                <a asp-controller="Home" asp-action="Reviews" class="btn btn-outline-primary">Все отзывы</a>
+            </div>
+
+            @if (Model.HasReviews)
+            {
+                <div class="row g-4">
+                    @foreach (var review in Model.RecentReviews)
+                    {
+                        <div class="col-md-4">
+                            <div class="testimonial-card bg-light rounded-3 p-4 h-100">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                        <i class="fas fa-user text-white"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">@review.Name</h6>
+                                        <div class="d-flex align-items-center mt-1">
+                                            <div class="text-warning me-2">
+                                                @for (int i = 1; i <= 5; i++)
+                                                {
+                                                    if (i <= review.Rating)
+                                                    {
+                                                        <i class="fas fa-star"></i>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="far fa-star"></i>
+                                                    }
+                                                }
+                                            </div>
+                                            <small class="text-muted">@review.Rating.ToString("F1")</small>
+                                        </div>
+                                        <small class="text-muted">@review.FormattedDate</small>
+                                    </div>
+                                </div>
+                                <p class="mb-0">"@review.ShortText"</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">Пока нет отзывов</h4>
+                    <p class="text-muted">Будьте первым, кто оставит отзыв!</p>
+                    <a asp-controller="Review" asp-action="Reviews" class="btn btn-primary mt-3">
+                        <i class="fas fa-pen me-2"></i>Оставить отзыв
+                    </a>
+                </div>
+            }
+        </div>
+    </section>
+</div>
+
+<style>
+    .country-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .country-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+    /* Стили для карточек отзывов на главной странице */
+    .testimonial-card {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        white-space: normal;
+        transition: all 0.3s ease;
+    }
+
+        .testimonial-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+
+        .testimonial-card p {
+            word-wrap: break-word;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+            max-width: 100%;
+            line-height: 1.5;
+        }
+
+        .testimonial-card .stars {
+            white-space: nowrap;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+    /* Адаптация для планшетов */
+    @@media (max-width: 768px) {
+        .testimonial-card
+
+    {
+        padding: 1rem !important;
+    }
+
+    .testimonial-card p {
+        font-size: 0.9rem;
+    }
+
+    .testimonial-card .d-flex.align-items-center {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .testimonial-card .rounded-circle {
+        width: 40px !important;
+        height: 40px !important;
+    }
+
+    }
+
+    /* Адаптация для телефонов */
+    @@media (max-width: 576px) {
+        .testimonial-card
+
+    {
+        padding: 0.75rem !important;
+    }
+
+    .testimonial-card p {
+        font-size: 0.85rem;
+        word-break: break-all;
+    }
+
+    .testimonial-card .d-flex.align-items-center {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .testimonial-card .text-warning {
+        white-space: normal;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+        .testimonial-card .text-warning i {
+            font-size: 0.8rem;
+        }
+
+    .testimonial-card .rounded-circle {
+        width: 35px !important;
+        height: 35px !important;
+    }
+
+    }
+</style>
+
+@functions {
+    public string GetReviewWord(int count)
+    {
+        if (count % 10 == 1 && count % 100 != 11) return "отзыва";
+        if (count % 10 >= 2 && count % 10 <= 4 && (count % 100 < 10 || count % 100 >= 20)) return "отзыва";
+        return "отзывов";
+    }
+}
+<script>
+    function redirectToHotels(accommodationType) {
+        // Маппинг типов жилья для API
+        const typeMapping = {
+            'hotel': 'hotel',
+            'apartment': 'apartment',
+            'guest_house': 'guest_house',
+            'camp_site': 'camp_site'
+        };
+
+        const mappedType = typeMapping[accommodationType] || 'all';
+
+        // Сохраняем выбранный тип в sessionStorage, чтобы страница отелей могла его прочитать
+        sessionStorage.setItem('selectedAccommodationType', mappedType);
+        sessionStorage.setItem('autoSearchHotels', 'true');
+
+        // Переходим на страницу отелей
+        window.location.href = '/Home/Hotels';
+    }
+
+    // НОВАЯ ФУНКЦИЯ ДЛЯ ПЕРЕХОДА ПО ГОРОДУ
+    function redirectToHotelsByCity(cityName) {
+        console.log('Переход к поиску отелей в городе:', cityName);
+
+        // Сохраняем город в sessionStorage
+        sessionStorage.setItem('selectedCity', cityName);
+        sessionStorage.setItem('autoSearchHotels', 'true');
+
+        // Переходим на страницу отелей
+        window.location.href = '/Home/Hotels';
+    }
+</script>

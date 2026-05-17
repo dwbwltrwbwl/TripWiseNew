@@ -1,0 +1,1249 @@
+﻿@model TripWise.Models.ViewModels.CompleteBookingViewModel
+@{
+    ViewData["Title"] = "Оформление билета";
+    var isRoundTrip = Model.TrainInfo.IsRoundTrip;
+}
+<div class="mobile-header-spacer d-block d-lg-none" style="height: 70px;"></div>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="page-header-section mb-5">
+                <div class="page-header-icon">
+                    <i class="fas fa-ticket-alt text-white"></i>
+                </div>
+                <div>
+                    <h1 class="page-title">
+                        Оформление билета
+                    </h1>
+                    <p class="page-subtitle">Заполните данные пассажиров для покупки билета</p>
+                </div>
+            </div>
+
+            <!-- Информация о поезде -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-train text-primary me-2"></i>
+                        Информация о поезде
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <small class="text-muted">Направление</small>
+                                <div class="fw-bold fs-5">
+                                    @Model.TrainInfo.DepartureStationName → @Model.TrainInfo.ArrivalStationName
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted">Поезд</small>
+                                <div class="fw-bold">№ @Model.TrainInfo.TrainNumber</div>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted">Тип вагона</small>
+                                <div class="fw-bold">@Model.TrainInfo.CarType (@Model.TrainInfo.CarClass)</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <small class="text-muted">Отправление</small>
+                                <div class="fw-bold">
+                                    @Model.TrainInfo.DepartureDateTime.ToString("dd.MM.yyyy HH:mm")
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted">Прибытие</small>
+                                <div class="fw-bold">
+                                    @(Model.TrainInfo.ArrivalDateTime?.ToString("dd.MM.yyyy HH:mm") ?? "—")
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted">Время в пути</small>
+                                <div class="fw-bold">
+                                    @{
+                                        var hours = Model.TrainInfo.Duration / 60;
+                                        var minutes = Model.TrainInfo.Duration % 60;
+                                    }
+                                    @hours ч @minutes мин
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (isRoundTrip)
+                    {
+                        <div class="alert alert-info border-0 rounded-lg mt-3">
+                            <i class="fas fa-exchange-alt me-2"></i>
+                            <strong>Туда и обратно:</strong> также включен обратный билет
+                        </div>
+                    }
+
+                    <div class="alert alert-success border-0 rounded-lg mt-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-tag me-2"></i>Стоимость:</span>
+                            <span class="fw-bold fs-4 text-success">
+                                @Model.TotalPrice.ToString("N0") ₽
+                            </span>
+                        </div>
+                        <small class="text-muted">* за @Model.TrainInfo.Passengers пассажира</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Форма данных пассажиров -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-users text-primary me-2"></i>
+                        Данные пассажиров
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <form id="bookingForm">
+                        @Html.AntiForgeryToken()
+
+                        <!-- Скрытые поля с данными поезда -->
+                        <input type="hidden" id="trainNumber" value="@Model.TrainInfo.TrainNumber" />
+                        <input type="hidden" id="departureStationId" value="@Model.TrainInfo.DepartureStationId" />
+                        <input type="hidden" id="departureStationName" value="@Model.TrainInfo.DepartureStationName" />
+                        <input type="hidden" id="arrivalStationId" value="@Model.TrainInfo.ArrivalStationId" />
+                        <input type="hidden" id="arrivalStationName" value="@Model.TrainInfo.ArrivalStationName" />
+                        <input type="hidden" id="departureDateTime" value="@Model.TrainInfo.DepartureDateTime.ToString("o")" />
+                        <input type="hidden" id="arrivalDateTime" value="@(Model.TrainInfo.ArrivalDateTime?.ToString("o") ?? "")" />
+                        <input type="hidden" id="price" value="@Model.TrainInfo.Price" />
+                        <input type="hidden" id="passengersCount" value="@Model.TrainInfo.Passengers" />
+                        <input type="hidden" id="carType" value="@Model.TrainInfo.CarType" />
+                        <input type="hidden" id="carClass" value="@Model.TrainInfo.CarClass" />
+                        <input type="hidden" id="duration" value="@Model.TrainInfo.Duration" />
+                        <input type="hidden" id="isRoundTrip" value="@Model.TrainInfo.IsRoundTrip.ToString()" />
+                        @if (isRoundTrip)
+                        {
+                            <input type="hidden" id="returnTrainNumber" value="@Model.TrainInfo.ReturnTrainNumber" />
+                            <input type="hidden" id="returnDepartureDateTime" value="@(Model.TrainInfo.ReturnDepartureDateTime?.ToString("o") ?? "")" />
+                            <input type="hidden" id="returnArrivalDateTime" value="@(Model.TrainInfo.ReturnArrivalDateTime?.ToString("o") ?? "")" />
+                            <input type="hidden" id="returnDuration" value="@Model.TrainInfo.ReturnDuration" />
+                        }
+
+                        <!-- Контейнер для пассажиров -->
+                        <div id="passengers-container">
+                            @for (int i = 0; i < Model.Passengers.Count; i++)
+                            {
+                                <div class="passenger-card mb-4 p-3 border rounded" data-passenger-index="@i">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5 class="mb-0 text-primary">Пассажир @(i + 1)</h5>
+                                        @if (i > 0)
+                                        {
+                                            <button type="button" class="btn btn-sm btn-outline-danger remove-passenger">
+                                                <i class="fas fa-trash-alt me-1"></i>Удалить
+                                            </button>
+                                        }
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label class="form-label fw-semibold">Фамилия <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control passenger-lastname"
+                                                       name="Passengers[@i].LastName"
+                                                       value="@Model.Passengers[i].LastName"
+                                                       maxlength="100">
+                                                <div class="invalid-feedback">Введите фамилию (только буквы)</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label class="form-label fw-semibold">Имя <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control passenger-firstname"
+                                                       name="Passengers[@i].FirstName"
+                                                       value="@Model.Passengers[i].FirstName"
+                                                       maxlength="100">
+                                                <div class="invalid-feedback">Введите имя (только буквы)</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label class="form-label fw-semibold">Отчество</label>
+                                                <input type="text" class="form-control passenger-middlename"
+                                                       name="Passengers[@i].MiddleName"
+                                                       value="@Model.Passengers[i].MiddleName"
+                                                       maxlength="100">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label class="form-label fw-semibold">Дата рождения <span class="text-danger">*</span></label>
+                                                <input type="date" class="form-control passenger-birthdate"
+                                                       name="Passengers[@i].DateOfBirth"
+                                                       value="@(Model.Passengers[i].DateOfBirth.Year > 1900 ? Model.Passengers[i].DateOfBirth.ToString("yyyy-MM-dd") : "")">
+                                                <div class="invalid-feedback">Дата не может быть в будущем</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label class="form-label fw-semibold">Пол <span class="text-danger">*</span></label>
+                                                <select class="form-select passenger-gender" name="Passengers[@i].Gender">
+                                                    <option value="">Выберите</option>
+                                                    <option value="M" selected="@(Model.Passengers[i].Gender == "M")">Мужской</option>
+                                                    <option value="F" selected="@(Model.Passengers[i].Gender == "F")">Женский</option>
+                                                </select>
+                                                <div class="invalid-feedback">Выберите пол</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label class="form-label fw-semibold">Гражданство <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control passenger-nationality"
+                                                       name="Passengers[@i].Nationality"
+                                                       value="@(Model.Passengers[i].Citizenship ?? "Россия")"
+                                                       maxlength="50">
+                                                <div class="invalid-feedback">Введите гражданство</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label class="form-label fw-semibold">Тип документа <span class="text-danger">*</span></label>
+                                                <select class="form-select passenger-document-type" name="Passengers[@i].DocumentType">
+                                                    <option value="">Выберите</option>
+                                                    <option value="passport" selected="@(Model.Passengers[i].DocumentType == "passport")">Паспорт РФ</option>
+                                                    <option value="foreign_passport" selected="@(Model.Passengers[i].DocumentType == "foreign_passport")">Загранпаспорт</option>
+                                                    <option value="birth_certificate" selected="@(Model.Passengers[i].DocumentType == "birth_certificate")">Свидетельство о рождении</option>
+                                                </select>
+                                                <div class="invalid-feedback">Выберите тип документа</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label class="form-label fw-semibold">Номер документа <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control passenger-document-number"
+                                                       name="Passengers[@i].DocumentNumber"
+                                                       value="@Model.Passengers[i].DocumentNumber"
+                                                       maxlength="10"
+                                                       oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                                <div class="invalid-feedback">Номер документа (только цифры, 4-10 символов)</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Кнопка добавления пассажира -->
+                        <div class="mb-4">
+                            <button type="button" class="btn btn-outline-primary" id="addPassengerBtn">
+                                <i class="fas fa-plus me-2"></i>Добавить пассажира
+                            </button>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Контактные данные -->
+                        <h4 class="mb-3">Контактные данные</h4>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="email" class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
+                                    <input type="email" class="form-control form-control-lg" id="email"
+                                           name="Contact.Email" value="@Model.Contact.Email" required>
+                                    <div class="form-text">На этот email придет билет</div>
+                                    <div class="invalid-feedback" id="emailError"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="phone" class="form-label fw-semibold">Телефон <span class="text-danger">*</span></label>
+                                    <input type="tel" class="form-control form-control-lg" id="phone"
+                                           name="Contact.Phone" value="@Model.Contact.Phone" required
+                                           placeholder="+7 (___) ___-__-__"
+                                           maxlength="18">
+                                    <div class="form-text">Формат: +7 (XXX) XXX-XX-XX</div>
+                                    <div class="invalid-feedback" id="phoneError"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Согласие -->
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="agreeTerms"
+                                       name="Contact.AgreeToTerms" value="true" required>
+                                <label class="form-check-label" for="agreeTerms">
+                                    Я согласен с <a href="#" target="_blank" data-bs-toggle="modal" data-bs-target="#termsModal">условиями оформления билета</a> и
+                                    <a href="#" target="_blank" data-bs-toggle="modal" data-bs-target="#rulesModal">правилами перевозки</a> <span class="text-danger">*</span>
+                                </label>
+                                <div class="invalid-feedback" id="agreeTermsError"></div>
+                            </div>
+                        </div>
+
+                        <!-- Кнопки -->
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <a href="javascript:history.back()" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>Назад
+                            </a>
+                            <button type="button" class="btn btn-success btn-lg" id="submitBtn">
+                                <i class="fas fa-check me-2"></i>Забронировать билет
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Подключение jQuery и маски телефона -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+
+<style>
+    /* ... все стили остаются как были ... */
+    .page-header-section {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 25px 30px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .page-header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(to bottom, #0379D9, #40B624);
+        }
+
+    .page-header-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #0379D9, #40B624);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 4px 15px rgba(3, 121, 217, 0.2);
+        flex-shrink: 0;
+    }
+
+    .page-title {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 800;
+        font-size: 2.5rem;
+        color: #0379D9;
+        margin: 0 0 8px 0;
+        line-height: 1.2;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        font-size: 1.1rem;
+        margin: 0;
+        max-width: 600px;
+    }
+
+    .section-subtitle {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        font-size: 1.3rem;
+        color: #334155;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-control-lg, .form-select-lg {
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        padding: 14px 18px;
+        font-family: 'Nunito', sans-serif;
+    }
+
+        .form-control-lg:focus, .form-select-lg:focus {
+            border-color: #0379D9;
+            box-shadow: 0 0 0 0.2rem rgba(3, 121, 217, 0.25);
+        }
+
+    .btn {
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        font-family: 'Nunito', sans-serif;
+    }
+
+    .btn-success {
+        background: #40B624;
+        border: none;
+        box-shadow: 0 4px 12px rgba(64, 182, 36, 0.2);
+        padding: 14px 30px;
+        font-size: 1.1rem;
+    }
+
+        .btn-success:hover {
+            background: #33991b;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(64, 182, 36, 0.3);
+        }
+
+    .btn-outline-secondary {
+        border: 2px solid #e2e8f0;
+        color: #64748b;
+        padding: 14px 30px;
+        font-size: 1.1rem;
+    }
+
+        .btn-outline-secondary:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+            color: #334155;
+        }
+
+    .btn-outline-primary {
+        border: 2px solid #0379D9;
+        color: #0379D9;
+        background: transparent;
+    }
+
+        .btn-outline-primary:hover {
+            background: #0379D9;
+            color: white;
+        }
+
+    .passenger-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px;
+    }
+
+        .passenger-card h5 {
+            color: #0379D9;
+            font-weight: 600;
+        }
+
+    .invalid-feedback {
+        display: none;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #dc3545;
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: #dc3545;
+    }
+
+    .form-control:focus {
+        box-shadow: none;
+    }
+
+    @@media (max-width: 768px) {
+        .page-header-section {
+            flex-direction: column;
+            text-align: center;
+            padding: 20px;
+            gap: 15px;
+        }
+
+            .page-header-section::before {
+                width: 100%;
+                height: 6px;
+                top: 0;
+                left: 0;
+                background: linear-gradient(to right, #0379D9, #40B624);
+            }
+
+        .page-header-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 1.75rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            let passengerCount = $('.passenger-card').length;
+            const totalPassengersLimit = 4;
+
+            // Маска телефона
+            $('#phone').mask('+7 (000) 000-00-00');
+
+            // ================= ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =================
+            function hasDigits(str) {
+                return /\d/.test(str);
+            }
+
+            function isValidName(str) {
+                return /^[a-zA-Zа-яА-ЯёЁ\s\-]+$/.test(str);
+            }
+
+            // ================= ВАЛИДАЦИЯ ОТДЕЛЬНОГО ПАССАЖИРА =================
+            function validatePassenger(card) {
+                let isValid = true;
+
+                // Фамилия
+                let lastName = card.find('.passenger-lastname').val().trim();
+                if (!lastName) {
+                    card.find('.passenger-lastname').addClass('is-invalid');
+                    isValid = false;
+                } else if (lastName.length < 2) {
+                    card.find('.passenger-lastname').addClass('is-invalid');
+                    isValid = false;
+                } else if (lastName.length > 100) {
+                    card.find('.passenger-lastname').addClass('is-invalid');
+                    isValid = false;
+                } else if (hasDigits(lastName)) {
+                    card.find('.passenger-lastname').addClass('is-invalid');
+                    isValid = false;
+                } else if (!isValidName(lastName)) {
+                    card.find('.passenger-lastname').addClass('is-invalid');
+                    isValid = false;
+                } else {
+                    card.find('.passenger-lastname').removeClass('is-invalid');
+                }
+
+                // Имя
+                let firstName = card.find('.passenger-firstname').val().trim();
+                if (!firstName) {
+                    card.find('.passenger-firstname').addClass('is-invalid');
+                    isValid = false;
+                } else if (firstName.length < 2) {
+                    card.find('.passenger-firstname').addClass('is-invalid');
+                    isValid = false;
+                } else if (firstName.length > 100) {
+                    card.find('.passenger-firstname').addClass('is-invalid');
+                    isValid = false;
+                } else if (hasDigits(firstName)) {
+                    card.find('.passenger-firstname').addClass('is-invalid');
+                    isValid = false;
+                } else if (!isValidName(firstName)) {
+                    card.find('.passenger-firstname').addClass('is-invalid');
+                    isValid = false;
+                } else {
+                    card.find('.passenger-firstname').removeClass('is-invalid');
+                }
+
+                // Отчество
+                let middleName = card.find('.passenger-middlename').val().trim();
+                if (middleName) {
+                    if (middleName.length > 100) {
+                        card.find('.passenger-middlename').addClass('is-invalid');
+                        isValid = false;
+                    } else if (hasDigits(middleName)) {
+                        card.find('.passenger-middlename').addClass('is-invalid');
+                        isValid = false;
+                    } else if (!isValidName(middleName)) {
+                        card.find('.passenger-middlename').addClass('is-invalid');
+                        isValid = false;
+                    } else {
+                        card.find('.passenger-middlename').removeClass('is-invalid');
+                    }
+                }
+
+                // Дата рождения
+                let birthdate = card.find('.passenger-birthdate').val();
+                if (!birthdate) {
+                    card.find('.passenger-birthdate').addClass('is-invalid');
+                    isValid = false;
+                } else {
+                    let selectedDate = new Date(birthdate);
+                    let today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    if (selectedDate > today) {
+                        card.find('.passenger-birthdate').addClass('is-invalid');
+                        isValid = false;
+                    } else {
+                        card.find('.passenger-birthdate').removeClass('is-invalid');
+                    }
+                }
+
+                // Пол
+                let gender = card.find('.passenger-gender').val();
+                if (!gender) {
+                    card.find('.passenger-gender').addClass('is-invalid');
+                    isValid = false;
+                } else {
+                    card.find('.passenger-gender').removeClass('is-invalid');
+                }
+
+                // Гражданство
+                let nationality = card.find('.passenger-nationality').val().trim();
+                if (!nationality) {
+                    card.find('.passenger-nationality').addClass('is-invalid');
+                    isValid = false;
+                } else if (nationality.length < 2) {
+                    card.find('.passenger-nationality').addClass('is-invalid');
+                    isValid = false;
+                } else if (nationality.length > 50) {
+                    card.find('.passenger-nationality').addClass('is-invalid');
+                    isValid = false;
+                } else if (hasDigits(nationality)) {
+                    card.find('.passenger-nationality').addClass('is-invalid');
+                    isValid = false;
+                } else if (!isValidName(nationality)) {
+                    card.find('.passenger-nationality').addClass('is-invalid');
+                    isValid = false;
+                } else {
+                    card.find('.passenger-nationality').removeClass('is-invalid');
+                }
+
+                // Тип документа
+                let documentType = card.find('.passenger-document-type').val();
+                if (!documentType) {
+                    card.find('.passenger-document-type').addClass('is-invalid');
+                    isValid = false;
+                } else {
+                    card.find('.passenger-document-type').removeClass('is-invalid');
+                }
+
+                // Номер документа
+                let docNumber = card.find('.passenger-document-number').val().trim();
+                if (!docNumber) {
+                    card.find('.passenger-document-number').addClass('is-invalid');
+                    isValid = false;
+                } else if (!/^\d+$/.test(docNumber)) {
+                    card.find('.passenger-document-number').addClass('is-invalid');
+                    isValid = false;
+                } else if (docNumber.length < 4) {
+                    card.find('.passenger-document-number').addClass('is-invalid');
+                    isValid = false;
+                } else if (docNumber.length > 10) {
+                    card.find('.passenger-document-number').addClass('is-invalid');
+                    isValid = false;
+                } else {
+                    card.find('.passenger-document-number').removeClass('is-invalid');
+                }
+
+                return isValid;
+            }
+
+            // ================= ИНИЦИАЛИЗАЦИЯ ВАЛИДАЦИИ ДЛЯ ПАССАЖИРА =================
+            function initPassengerValidation(card) {
+                card.find('.passenger-lastname, .passenger-firstname, .passenger-middlename, .passenger-nationality').on('input', function() {
+                    let val = $(this).val().trim();
+                    if (val && hasDigits(val)) {
+                        $(this).addClass('is-invalid');
+                    } else if (val && !isValidName(val)) {
+                        $(this).addClass('is-invalid');
+                    } else {
+                        $(this).removeClass('is-invalid');
+                    }
+                });
+
+                card.find('.passenger-birthdate').on('change', function() {
+                    let selectedDate = new Date($(this).val());
+                    let today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    if (selectedDate > today) {
+                        $(this).addClass('is-invalid');
+                    } else {
+                        $(this).removeClass('is-invalid');
+                    }
+                });
+
+                card.find('.passenger-gender, .passenger-document-type').on('change', function() {
+                    if ($(this).val()) {
+                        $(this).removeClass('is-invalid');
+                    } else {
+                        $(this).addClass('is-invalid');
+                    }
+                });
+
+                card.find('.passenger-document-number').on('input', function() {
+                    let val = $(this).val().trim();
+                    if (!val || !/^\d+$/.test(val) || val.length < 4 || val.length > 10) {
+                        $(this).addClass('is-invalid');
+                    } else {
+                        $(this).removeClass('is-invalid');
+                    }
+                });
+            }
+
+            // Применяем валидацию к существующим карточкам
+            $('.passenger-card').each(function() {
+                initPassengerValidation($(this));
+            });
+
+            // ================= ДОБАВЛЕНИЕ ПАССАЖИРА =================
+            $('#addPassengerBtn').click(function() {
+                // if (passengerCount >= totalPassengersLimit) {
+                //     showMessage('warning', `Максимальное количество пассажиров: ${totalPassengersLimit}`);
+                //     return;
+                // }
+
+                let i = passengerCount;
+                let html = `
+                    <div class="passenger-card mb-4 p-3 border rounded" data-passenger-index="${i}">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0 text-primary">Пассажир ${i + 1}</h5>
+                            <button type="button" class="btn btn-sm btn-outline-danger remove-passenger">
+                                <i class="fas fa-trash-alt me-1"></i>Удалить
+                            </button>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label fw-semibold">Фамилия <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control passenger-lastname" name="Passengers[${i}].LastName" maxlength="100">
+                                    <div class="invalid-feedback">Введите фамилию (только буквы)</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label fw-semibold">Имя <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control passenger-firstname" name="Passengers[${i}].FirstName" maxlength="100">
+                                    <div class="invalid-feedback">Введите имя (только буквы)</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label fw-semibold">Отчество</label>
+                                    <input type="text" class="form-control passenger-middlename" name="Passengers[${i}].MiddleName" maxlength="100">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label fw-semibold">Дата рождения <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control passenger-birthdate" name="Passengers[${i}].DateOfBirth">
+                                    <div class="invalid-feedback">Дата не может быть в будущем</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label fw-semibold">Пол <span class="text-danger">*</span></label>
+                                    <select class="form-select passenger-gender" name="Passengers[${i}].Gender">
+                                        <option value="">Выберите</option>
+                                        <option value="M">Мужской</option>
+                                        <option value="F">Женский</option>
+                                    </select>
+                                    <div class="invalid-feedback">Выберите пол</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label fw-semibold">Гражданство <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control passenger-nationality" name="Passengers[${i}].Nationality" maxlength="50" value="Россия">
+                                    <div class="invalid-feedback">Введите гражданство</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label fw-semibold">Тип документа <span class="text-danger">*</span></label>
+                                    <select class="form-select passenger-document-type" name="Passengers[${i}].DocumentType">
+                                        <option value="">Выберите</option>
+                                        <option value="passport">Паспорт РФ</option>
+                                        <option value="foreign_passport">Загранпаспорт</option>
+                                        <option value="birth_certificate">Свидетельство о рождении</option>
+                                    </select>
+                                    <div class="invalid-feedback">Выберите тип документа</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label fw-semibold">Номер документа <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control passenger-document-number" name="Passengers[${i}].DocumentNumber" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                    <div class="invalid-feedback">Номер документа (только цифры, 4-10 символов)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+
+                $('#passengers-container').append(html);
+                let newCard = $('#passengers-container .passenger-card').last();
+                initPassengerValidation(newCard);
+                passengerCount++;
+
+                newCard.find('.remove-passenger').click(function() {
+                    if ($('.passenger-card').length > 1) {
+                        $(this).closest('.passenger-card').remove();
+                        passengerCount--;
+                        // Обновляем номера пассажиров
+                        $('.passenger-card').each(function(idx) {
+                            $(this).find('h5').text('Пассажир ' + (idx + 1));
+                            $(this).attr('data-passenger-index', idx);
+                        });
+                    } else {
+                        showMessage('warning', 'Должен быть хотя бы один пассажир');
+                    }
+                });
+            });
+
+            // ================= УДАЛЕНИЕ ПАССАЖИРА =================
+            $(document).on('click', '.remove-passenger', function() {
+                if ($('.passenger-card').length > 1) {
+                    $(this).closest('.passenger-card').remove();
+                    passengerCount--;
+                    $('.passenger-card').each(function(idx) {
+                        $(this).find('h5').text('Пассажир ' + (idx + 1));
+                        $(this).attr('data-passenger-index', idx);
+                    });
+                } else {
+                    showMessage('warning', 'Должен быть хотя бы один пассажир');
+                }
+            });
+
+            // ================= ВАЛИДАЦИЯ КОНТАКТНЫХ ДАННЫХ =================
+            function validateContact() {
+                let isValid = true;
+                let errors = [];
+
+                // Email
+                let email = $('#email').val().trim();
+                let emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+                if (!email) {
+                    $('#email').addClass('is-invalid');
+                    errors.push('Email не указан');
+                    isValid = false;
+                } else if (!emailRegex.test(email)) {
+                    $('#email').addClass('is-invalid');
+                    errors.push('Email указан неверно');
+                    isValid = false;
+                } else {
+                    $('#email').removeClass('is-invalid');
+                }
+
+                // Телефон
+                let phoneRaw = $('#phone').val();
+                let phone = phoneRaw.replace(/\D/g, '');
+                if (!phone) {
+                    $('#phone').addClass('is-invalid');
+                    errors.push('Телефон не указан');
+                    isValid = false;
+                } else if (phone.length !== 11) {
+                    $('#phone').addClass('is-invalid');
+                    errors.push('Телефон должен содержать 11 цифр');
+                    isValid = false;
+                } else {
+                    $('#phone').removeClass('is-invalid');
+                }
+
+                // Согласие
+                if (!$('#agreeTerms').is(':checked')) {
+                    $('#agreeTerms').addClass('is-invalid');
+                    errors.push('Необходимо согласиться с условиями');
+                    isValid = false;
+                } else {
+                    $('#agreeTerms').removeClass('is-invalid');
+                }
+
+                return { isValid, errors };
+            }
+                    // ================= ПРОВЕРКА УНИКАЛЬНОСТИ НОМЕРОВ ДОКУМЕНТОВ =================
+        function validateUniqueDocumentNumbers() {
+            let isValid = true;
+            let errors = [];
+            let documentNumbers = [];
+
+            $('.passenger-card').each(function(index) {
+                let card = $(this);
+                let passengerNum = index + 1;
+                let docNumber = card.find('.passenger-document-number').val().trim();
+
+                if (docNumber) {
+                    if (documentNumbers.includes(docNumber)) {
+                        const duplicateIndex = documentNumbers.indexOf(docNumber) + 1;
+                        card.find('.passenger-document-number').addClass('is-invalid');
+                        errors.push(`Пассажир ${passengerNum}: Номер документа "${docNumber}" совпадает с номером документа пассажира ${duplicateIndex}`);
+                        isValid = false;
+                    } else {
+                        documentNumbers.push(docNumber);
+                    }
+                }
+            });
+
+            return { isValid, errors };
+        }
+            // ================= ВАЛИДАЦИЯ ВСЕХ ПАССАЖИРОВ =================
+            function validateAllPassengers() {
+                let isValid = true;
+                let errors = [];
+                    const uniqueCheck = validateUniqueDocumentNumbers();
+        if (!uniqueCheck.isValid) {
+            isValid = false;
+            errors.push(...uniqueCheck.errors);
+        }
+                $('.passenger-card').each(function(index) {
+                    let card = $(this);
+                    let passengerNum = index + 1;
+
+                    // Фамилия
+                    let lastName = card.find('.passenger-lastname').val().trim();
+                    if (!lastName) {
+                        card.find('.passenger-lastname').addClass('is-invalid');
+                        errors.push(`Пассажир ${passengerNum}: Фамилия не заполнена`);
+                        isValid = false;
+                    } else if (lastName.length < 2) {
+                        card.find('.passenger-lastname').addClass('is-invalid');
+                        errors.push(`Пассажир ${passengerNum}: Фамилия должна содержать минимум 2 символа`);
+                        isValid = false;
+                    } else if (hasDigits(lastName)) {
+                        card.find('.passenger-lastname').addClass('is-invalid');
+                        errors.push(`Пассажир ${passengerNum}: Фамилия не может содержать цифры`);
+                        isValid = false;
+                    } else if (!isValidName(lastName)) {
+                        card.find('.passenger-lastname').addClass('is-invalid');
+                        errors.push(`Пассажир ${passengerNum}: Фамилия может содержать только буквы`);
+                        isValid = false;
+                    } else {
+                        card.find('.passenger-lastname').removeClass('is-invalid');
+                    }
+
+                    // Имя
+                    let firstName = card.find('.passenger-firstname').val().trim();
+                    if (!firstName) {
+                        card.find('.passenger-firstname').addClass('is-invalid');
+                        errors.push(`Пассажир ${passengerNum}: Имя не заполнено`);
+                        isValid = false;
+                    } else if (firstName.length < 2) {
+                        card.find('.passenger-firstname').addClass('is-invalid');
+                        errors.push(`Пассажир ${passengerNum}: Имя должно содержать минимум 2 символа`);
+                        isValid = false;
+                    } else if (hasDigits(firstName)) {
+                        card.find('.passenger-firstname').addClass('is-invalid');
+                        errors.push(`Пассажир ${passengerNum}: Имя не может содержать цифры`);
+                        isValid = false;
+                    } else if (!isValidName(firstName)) {
+                        card.find('.passenger-firstname').addClass('is-invalid');
+                        errors.push(`Пассажир ${passengerNum}: Имя может содержать только буквы`);
+                        isValid = false;
+                    } else {
+                        card.find('.passenger-firstname').removeClass('is-invalid');
+                    }
+
+                    // Дата рождения
+                    let birthdate = card.find('.passenger-birthdate').val();
+                    if (!birthdate) {
+                        card.find('.passenger-birthdate').addClass('is-invalid');
+                        errors.push(`Пассажир ${passengerNum}: Дата рождения не указана`);
+                        isValid = false;
+                    } else {
+                        let selectedDate = new Date(birthdate);
+                        let today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        if (selectedDate > today) {
+                            card.find('.passenger-birthdate').addClass('is-invalid');
+                            errors.push(`Пассажир ${passengerNum}: Дата рождения не может быть в будущем`);
+                            isValid = false;
+                        } else {
+                            card.find('.passenger-birthdate').removeClass('is-invalid');
+                        }
+                    }
+
+                    // Пол
+                    let gender = card.find('.passenger-gender').val();
+                    if (!gender) {
+                        card.find('.passenger-gender').addClass('is-invalid');
+                        errors.push(`Пассажир ${passengerNum}: Пол не выбран`);
+                        isValid = false;
+                    } else {
+                        card.find('.passenger-gender').removeClass('is-invalid');
+                    }
+
+                    // Гражданство
+                    let nationality = card.find('.passenger-nationality').val().trim();
+                    if (!nationality) {
+                        card.find('.passenger-nationality').addClass('is-invalid');
+                        errors.push(`Пассажир ${passengerNum}: Гражданство не указано`);
+                        isValid = false;
+                    } else if (hasDigits(nationality)) {
+                        card.find('.passenger-nationality').addClass('is-invalid');
+                        errors.push(`Пассажир ${passengerNum}: Гражданство не может содержать цифры`);
+                        isValid = false;
+                    } else {
+                        card.find('.passenger-nationality').removeClass('is-invalid');
+                    }
+
+                    // Тип документа
+                    let documentType = card.find('.passenger-document-type').val();
+                    if (!documentType) {
+                        card.find('.passenger-document-type').addClass('is-invalid');
+                        errors.push(`Пассажир ${passengerNum}: Тип документа не выбран`);
+                        isValid = false;
+                    } else {
+                        card.find('.passenger-document-type').removeClass('is-invalid');
+                    }
+
+                    // Номер документа
+                    let docNumber = card.find('.passenger-document-number').val().trim();
+                    if (!docNumber) {
+                        card.find('.passenger-document-number').addClass('is-invalid');
+                        errors.push(`Пассажир ${passengerNum}: Номер документа не указан`);
+                        isValid = false;
+                    } else if (!/^\d+$/.test(docNumber)) {
+                        card.find('.passenger-document-number').addClass('is-invalid');
+                        errors.push(`Пассажир ${passengerNum}: Номер документа должен содержать только цифры`);
+                        isValid = false;
+                    } else if (docNumber.length < 4) {
+                        card.find('.passenger-document-number').addClass('is-invalid');
+                        errors.push(`Пассажир ${passengerNum}: Номер документа должен содержать минимум 4 цифры`);
+                        isValid = false;
+                    } else if (docNumber.length > 10) {
+                        card.find('.passenger-document-number').addClass('is-invalid');
+                        errors.push(`Пассажир ${passengerNum}: Номер документа не должен превышать 10 цифр`);
+                        isValid = false;
+                    } else {
+                        card.find('.passenger-document-number').removeClass('is-invalid');
+                    }
+                });
+
+                return { isValid, errors };
+            }
+
+            // ================= ОТПРАВКА ФОРМЫ =================
+            $('#submitBtn').off('click').on('click', function(e) {
+                e.preventDefault();
+
+                const contactValidation = validateContact();
+                const passengersValidation = validateAllPassengers();
+
+                if (!contactValidation.isValid || !passengersValidation.isValid) {
+                    let allErrors = [...contactValidation.errors, ...passengersValidation.errors];
+                    let errorMessage = '❌ ОШИБКИ В ДАННЫХ:\n\n';
+                    allErrors.forEach(err => {
+                        errorMessage += '• ' + err + '\n';
+                    });
+                    alert(errorMessage);
+                    return;
+                }
+
+                let btn = $(this);
+                btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Обработка...');
+
+                let passengers = [];
+                $('.passenger-card').each(function() {
+                    let card = $(this);
+                    passengers.push({
+                        lastName: card.find('.passenger-lastname').val().trim(),
+                        firstName: card.find('.passenger-firstname').val().trim(),
+                        middleName: card.find('.passenger-middlename').val().trim(),
+                        dateOfBirth: card.find('.passenger-birthdate').val(),
+                        gender: card.find('.passenger-gender').val(),
+                        nationality: card.find('.passenger-nationality').val().trim(),
+                        documentType: card.find('.passenger-document-type').val(),
+                        documentNumber: card.find('.passenger-document-number').val().trim()
+                    });
+                });
+
+                let formData = {
+                    TrainInfo: {
+                        TrainNumber: $('#trainNumber').val(),
+                        ReturnTrainNumber: $('#returnTrainNumber').val() || null,
+                        DepartureStationId: $('#departureStationId').val(),
+                        DepartureStationName: $('#departureStationName').val(),
+                        ArrivalStationId: $('#arrivalStationId').val(),
+                        ArrivalStationName: $('#arrivalStationName').val(),
+                        DepartureDateTime: $('#departureDateTime').val(),
+                        ArrivalDateTime: $('#arrivalDateTime').val() || null,
+                        ReturnDepartureDateTime: $('#returnDepartureDateTime').val() || null,
+                        ReturnArrivalDateTime: $('#returnArrivalDateTime').val() || null,
+                        Price: parseFloat($('#price').val()),
+                        Passengers: passengers.length,
+                        CarType: $('#carType').val(),
+                        CarClass: $('#carClass').val(),
+                        Duration: parseInt($('#duration').val()),
+                        ReturnDuration: $('#returnDuration').val() ? parseInt($('#returnDuration').val()) : null,
+                        IsRoundTrip: $('#isRoundTrip').val() === 'True'
+                    },
+                    Passengers: passengers,
+                    Contact: {
+                        Email: $('#email').val().trim(),
+                        Phone: $('#phone').val().trim(),
+                        AgreeToTerms: $('#agreeTerms').is(':checked')
+                    }
+                };
+
+                $.ajax({
+                    url: '@Url.Action("ProcessPayment")',
+                    type: 'POST',
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val(),
+                        'Content-Type': 'application/json'
+                    },
+                    data: JSON.stringify(formData),
+                    success: function(response) {
+                        if (response.success) {
+                            showMessage('success', 'Билет успешно оформлен! Перенаправляем...');
+                            setTimeout(function() {
+                                window.location.href = response.redirectUrl;
+                            }, 2000);
+                        } else {
+                            let errorMessage = '❌ ОШИБКА ПРИ ОФОРМЛЕНИИ:\n\n';
+                            if (response.errors && response.errors.length > 0) {
+                                response.errors.forEach(err => {
+                                    errorMessage += '• ' + err + '\n';
+                                });
+                            } else if (response.message) {
+                                errorMessage += response.message;
+                            } else {
+                                errorMessage += 'Неизвестная ошибка';
+                            }
+                            alert(errorMessage);
+                            btn.prop('disabled', false).html('<i class="fas fa-check me-2"></i>Забронировать билет');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Ошибка AJAX:', xhr);
+                        let errorMsg = '❌ Ошибка сервера. Попробуйте позже.';
+                        alert(errorMsg);
+                        btn.prop('disabled', false).html('<i class="fas fa-check me-2"></i>Забронировать билет');
+                    }
+                });
+            });
+
+            function showMessage(type, text) {
+                let alertClass = type === 'success' ? 'alert-success' : 'alert-warning';
+                let icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+                let html = `
+                    <div class="alert ${alertClass} alert-dismissible fade show position-fixed top-0 end-0 m-3" role="alert" style="z-index: 9999;">
+                        <i class="fas ${icon} me-2"></i>${text}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>`;
+                $('body').append(html);
+                setTimeout(function() { $('.alert').fadeOut('slow', function() { $(this).remove(); }); }, 3000);
+            }
+        });
+    </script>
+}
+
+<!-- Модальное окно с условиями оформления билета -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-0" style="background: linear-gradient(135deg, #0379D9, #40B624);">
+                <h5 class="modal-title text-white">
+                    <i class="fas fa-file-contract me-2"></i>Условия оформления билета
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="terms-content">
+                    <h6 class="fw-bold text-primary mb-3">1. Общие положения</h6>
+                    <p class="small text-muted mb-3">
+                        1.1. Настоящие условия регулируют порядок оформления электронных билетов на железнодорожные перевозки через сервис "Вместе В Путь".
+                    </p>
+                    <p class="small text-muted mb-3">
+                        1.2. Оформляя билет, вы подтверждаете свое согласие с настоящими условиями и правилами перевозки.
+                    </p>
+
+                    <h6 class="fw-bold text-primary mb-3 mt-4">2. Порядок оформления</h6>
+                    <p class="small text-muted mb-3">
+                        2.1. Для оформления билета необходимо заполнить все обязательные поля формы: данные пассажиров, контактную информацию.
+                    </p>
+                    <p class="small text-muted mb-3">
+                        2.2. Указываемые данные должны соответствовать документам, удостоверяющим личность.
+                    </p>
+                    <p class="small text-muted mb-3">
+                        2.3. После успешного оформления билет отправляется на указанный email в течение нескольких минут.
+                    </p>
+
+                    <h6 class="fw-bold text-primary mb-3 mt-4">3. Ответственность</h6>
+                    <p class="small text-muted mb-3">
+                        3.1. Пользователь несет ответственность за достоверность предоставленных данных.
+                    </p>
+                    <p class="small text-muted mb-3">
+                        3.2. Сервис не несет ответственности за невозможность посадки в поезд в случае несоответствия данных в билете документам.
+                    </p>
+
+                    <h6 class="fw-bold text-primary mb-3 mt-4">4. Конфиденциальность</h6>
+                    <p class="small text-muted mb-3">
+                        4.1. Все персональные данные обрабатываются в соответствии с Федеральным законом "О персональных данных".
+                    </p>
+                    <p class="small text-muted mb-3">
+                        4.2. Данные используются исключительно для оформления билетов и не передаются третьим лицам.
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer border-0 justify-content-center">
+                <button type="button" class="btn btn-primary btn-lg px-5" data-bs-dismiss="modal">
+                    <i class="fas fa-check me-2"></i>Принимаю
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно с правилами перевозки -->
+<div class="modal fade" id="rulesModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-0" style="background: linear-gradient(135deg, #0379D9, #40B624);">
+                <h5 class="modal-title text-white">
+                    <i class="fas fa-gavel me-2"></i>Правила перевозки
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="rules-content">
+                    <h6 class="fw-bold text-primary mb-3">1. Провоз багажа</h6>
+                    <p class="small text-muted mb-3">
+                        1.1. Пассажир имеет право провозить бесплатно ручную кладь весом до 36 кг и размером не более 180 см по сумме трех измерений.
+                    </p>
+                    <p class="small text-muted mb-3">
+                        1.2. Допускается провоз одного места багажа весом до 36 кг за дополнительную плату.
+                    </p>
+
+                    <h6 class="fw-bold text-primary mb-3 mt-4">2. Посадка в поезд</h6>
+                    <p class="small text-muted mb-3">
+                        2.1. Посадка пассажиров в поезд начинается за 40 минут и заканчивается за 5 минут до отправления.
+                    </p>
+                    <p class="small text-muted mb-3">
+                        2.2. При посадке необходимо предъявить документ, удостоверяющий личность, и электронный билет (на экране телефона или распечатанный).
+                    </p>
+
+                    <h6 class="fw-bold text-primary mb-3 mt-4">3. Возврат билетов</h6>
+                    <p class="small text-muted mb-3">
+                        3.1. При возврате билета позднее чем за 24 часа до отправления поезда возвращается 100% стоимости.
+                    </p>
+                    <p class="small text-muted mb-3">
+                        3.2. При возврате за 8-24 часа до отправления возвращается 50% стоимости.
+                    </p>
+                    <p class="small text-muted mb-3">
+                        3.3. При возврате менее чем за 8 часов до отправления возврат не производится.
+                    </p>
+
+                    <h6 class="fw-bold text-primary mb-3 mt-4">4. Права пассажира</h6>
+                    <p class="small text-muted mb-3">
+                        4.1. Пассажир имеет право на бесплатное получение постельного белья (в вагонах с предоставлением мест для лежания).
+                    </p>
+                    <p class="small text-muted mb-3">
+                        4.2. Пассажир может провозить детей до 5 лет без предоставления отдельного места.
+                    </p>
+
+                    <h6 class="fw-bold text-primary mb-3 mt-4">5. Обязанности пассажира</h6>
+                    <p class="small text-muted mb-3">
+                        5.1. Соблюдать общественный порядок и правила пожарной безопасности.
+                    </p>
+                    <p class="small text-muted mb-3">
+                        5.2. Не нарушать покой других пассажиров в ночное время (с 22:00 до 07:00).
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer border-0 justify-content-center">
+                <button type="button" class="btn btn-primary btn-lg px-5" data-bs-dismiss="modal">
+                    <i class="fas fa-check me-2"></i>Принимаю
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

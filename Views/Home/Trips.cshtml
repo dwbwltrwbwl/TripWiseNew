@@ -1,0 +1,3793 @@
+﻿@{
+    ViewData["Title"] = "Мои поездки";
+    var userId = Context.Session.GetInt32("UserId");
+}
+<div class="mobile-header-spacer d-block d-lg-none" style="height: 70px;"></div>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Заголовок страницы с выделением -->
+            <div class="page-header-section mb-5">
+                <div class="page-header-icon">
+                    <i class="fas fa-suitcase"></i>
+                </div>
+                <div>
+                    <h1 class="page-title">Мои поездки</h1>
+                    <p class="page-subtitle">Управляйте вашими запланированными и завершенными путешествиями</p>
+                </div>
+            </div>
+
+            @if (userId == null)
+            {
+                <!-- Секция для неавторизованных пользователей -->
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-5 text-center">
+                                <div class="mb-4">
+                                    <i class="fas fa-suitcase-rolling text-primary" style="font-size: 4rem;"></i>
+                                </div>
+                                <h3 class="fw-bold mb-3">Войдите в аккаунт</h3>
+                                <p class="text-muted mb-4">
+                                    Чтобы просматривать и создавать поездки, войдите в свой аккаунт или зарегистрируйтесь.
+                                </p>
+                                <div class="d-flex flex-column flex-md-row justify-content-center gap-3">
+                                    <a asp-controller="Account" asp-action="Login" class="btn btn-primary btn-lg px-5">
+                                        <i class="fas fa-sign-in-alt me-2"></i>Войти
+                                    </a>
+                                    <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary btn-lg px-5">
+                                        <i class="fas fa-user-plus me-2"></i>Зарегистрироваться
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- Основной контент для авторизованных пользователей -->
+                <div class="row">
+                    <div class="col-12">
+                        <!-- Заголовок и фильтры -->
+                        <div class="d-flex justify-content-between align-items-start mb-5">
+                            <div class="d-flex flex-column flex-grow-1 me-3">
+                                <!-- Поиск -->
+                                <div class="input-group" style="max-width: 400px;">
+                                    <span class="input-group-text bg-white border-end-0">
+                                        <i class="fas fa-search text-muted"></i>
+                                    </span>
+                                    <input type="text"
+                                           class="form-control border-start-0 ps-0"
+                                           id="searchTrips"
+                                           placeholder="Поиск по названию или описанию..."
+                                           autocomplete="off">
+                                    <button class="btn btn-outline-secondary" type="button" id="clearSearch" style="display: none;">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Фильтры -->
+                                <div class="d-flex gap-3 mt-3 flex-wrap">
+                                    <!-- Фильтр по роли -->
+                                    <div class="dropdown">
+                                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="roleFilterBtn">
+                                            <i class="fas fa-user-tag me-1"></i> Роль: Все
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item filter-option" href="#" data-filter-type="role" data-filter-value="all">Все поездки</a></li>
+                                            <li><a class="dropdown-item filter-option" href="#" data-filter-type="role" data-filter-value="organizer">Где я организатор</a></li>
+                                            <li><a class="dropdown-item filter-option" href="#" data-filter-type="role" data-filter-value="participant">Где я участник</a></li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- Фильтр по участникам -->
+                                    <div class="dropdown">
+                                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="participantsFilterBtn">
+                                            <i class="fas fa-users me-1"></i> Участники: Все
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item filter-option" href="#" data-filter-type="participants" data-filter-value="all">Все поездки</a></li>
+                                            <li><a class="dropdown-item filter-option" href="#" data-filter-type="participants" data-filter-value="with-friends">С друзьями</a></li>
+                                            <li><a class="dropdown-item filter-option" href="#" data-filter-type="participants" data-filter-value="only-friends">Только друзья</a></li>
+                                            <li><a class="dropdown-item filter-option" href="#" data-filter-type="participants" data-filter-value="without-friends">Без друзей</a></li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- Кнопка сброса фильтров -->
+                                    <button class="btn btn-sm btn-outline-secondary" id="clearFiltersBtn" style="display: none;">
+                                        <i class="fas fa-times me-1"></i>Сбросить фильтры
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-primary btn-lg px-4" data-bs-toggle="modal" data-bs-target="#createTripModal">
+                                <i class="fas fa-plus me-2"></i>Новая поездка
+                            </button>
+                        </div>
+
+                        <!-- ВСТАВЬТЕ БЛОК С ПРИГЛАШЕНИЯМИ ЗДЕСЬ -->
+                        <!-- Приглашения в поездки -->
+                        <div class="mb-5" id="invitationsSection">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h3 class="section-subtitle">
+                                    <i class="fas fa-envelope text-warning me-2"></i>
+                                    Приглашения в поездки
+                                </h3>
+                            </div>
+                            <div id="invitationsContainer">
+                                <div class="text-center py-5">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Загрузка...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Предстоящие поездки -->
+                        <div class="mb-5" id="upcomingTripsSection">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h3 class="section-subtitle">
+                                    <i class="fas fa-calendar-alt text-primary me-2"></i>
+                                    Предстоящие поездки
+                                </h3>
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-sort me-1"></i> Сортировка
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><h6 class="dropdown-header">По дате</h6></li>
+                                        <li><a class="dropdown-item sort-option" href="#" data-sort="date-asc" data-section="upcoming">Сначала ранние</a></li>
+                                        <li><a class="dropdown-item sort-option" href="#" data-sort="date-desc" data-section="upcoming">Сначала поздние</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><h6 class="dropdown-header">По названию</h6></li>
+                                        <li><a class="dropdown-item sort-option" href="#" data-sort="name-asc" data-section="upcoming">От А до Я</a></li>
+                                        <li><a class="dropdown-item sort-option" href="#" data-sort="name-desc" data-section="upcoming">От Я до А</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><h6 class="dropdown-header">По бюджету</h6></li>
+                                        <li><a class="dropdown-item sort-option" href="#" data-sort="budget-asc" data-section="upcoming">Сначала дорогие</a></li>
+                                        <li><a class="dropdown-item sort-option" href="#" data-sort="budget-desc" data-section="upcoming">Сначала бюджетные</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><h6 class="dropdown-header">По длительности</h6></li>
+                                        <li><a class="dropdown-item sort-option" href="#" data-sort="duration-asc" data-section="upcoming">Сначала короткие</a></li>
+                                        <li><a class="dropdown-item sort-option" href="#" data-sort="duration-desc" data-section="upcoming">Сначала длинные</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div id="upcomingTripsContainer">
+                                <div class="text-center py-5">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Загрузка...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Завершенные поездки -->
+                        <div class="mb-5" id="completedTripsSection">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h3 class="section-subtitle">
+                                    <i class="fas fa-history text-primary me-2"></i>
+                                    Завершенные поездки
+                                </h3>
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-sort me-1"></i> Сортировка
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><h6 class="dropdown-header">По дате</h6></li>
+                                        <li><a class="dropdown-item sort-option" href="#" data-sort="date-asc" data-section="completed">Сначала ранние</a></li>
+                                        <li><a class="dropdown-item sort-option" href="#" data-sort="date-desc" data-section="completed">Сначала поздние</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><h6 class="dropdown-header">По названию</h6></li>
+                                        <li><a class="dropdown-item sort-option" href="#" data-sort="name-asc" data-section="completed">От А до Я</a></li>
+                                        <li><a class="dropdown-item sort-option" href="#" data-sort="name-desc" data-section="completed">От Я до А</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><h6 class="dropdown-header">По бюджету</h6></li>
+                                        <li><a class="dropdown-item sort-option" href="#" data-sort="budget-asc" data-section="completed">Сначала дорогие</a></li>
+                                        <li><a class="dropdown-item sort-option" href="#" data-sort="budget-desc" data-section="completed">Сначала бюджетные</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><h6 class="dropdown-header">По длительности</h6></li>
+                                        <li><a class="dropdown-item sort-option" href="#" data-sort="duration-asc" data-section="completed">Сначала короткие</a></li>
+                                        <li><a class="dropdown-item sort-option" href="#" data-sort="duration-desc" data-section="completed">Сначала длинные</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div id="completedTripsContainer">
+                                <div class="text-center py-5">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Загрузка...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Модальное окно создания поездки -->
+                <div class="modal fade" id="createTripModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                        <div class="modal-content">
+                            <div class="modal-header border-0">
+                                <h5 class="modal-title fw-bold">
+                                    Создать новую поездку
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="createTripForm" onsubmit="createTrip(event)">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="tripName" placeholder="Название поездки" required maxlength="50">
+                                        <label for="tripName">Название поездки (до 50 символов)</label>
+                                        <div class="invalid-feedback">Название должно быть от 3 до 50 символов</div>
+                                    </div>
+
+                                    <div class="form-floating mb-3">
+                                        <textarea class="form-control" id="tripDescription" placeholder="Описание поездки" style="height: 100px;" maxlength="100"></textarea>
+                                        <label for="tripDescription">Описание (необязательно, до 100 символов)</label>
+                                        <div class="char-counter text-muted small mt-1" id="descriptionCounter">0/100</div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input type="date" class="form-control" id="startDate" required>
+                                                <label for="startDate">Дата начала</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input type="date" class="form-control" id="endDate" required>
+                                                <label for="endDate">Дата окончания</label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- В модальном окне создания поездки -->
+                                    <div class="form-floating mb-3">
+                                        <input type="number" class="form-control" id="totalBudget"
+                                               placeholder="Бюджет" min="0" step="0.01" value="0"
+                                               max="9999999999" oninput="validateBudget(this)">
+                                        <label for="totalBudget">Бюджет (₽)</label>
+                                        <div class="invalid-feedback">Бюджет не может быть отрицательным или превышать 10 знаков</div>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold">Пригласить друзей</label>
+                                        <div id="friendsForInvite" class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                                            <div class="text-muted text-center py-3">
+                                                <i class="fas fa-spinner fa-spin me-2"></i>Загрузка друзей...
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="isPublic" checked>
+                                        <label class="form-check-label" for="isPublic">
+                                            Создать общий чат для поездки
+                                        </label>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer border-0">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                                <button type="button" class="btn btn-primary px-4" onclick="createTrip(event)">
+                                    Создать поездку
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Модальное окно приглашения друзей -->
+                <div class="modal fade" id="inviteFriendsModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header border-0">
+                                <h5 class="modal-title fw-bold">
+                                    <i class="fas fa-user-plus text-primary me-2"></i>
+                                    Пригласить друзей
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" id="inviteTripId">
+                                <div id="inviteFriendsList" class="mb-3" style="max-height: 300px; overflow-y: auto;">
+                                    <!-- Загружается динамически -->
+                                </div>
+                            </div>
+                            <div class="modal-footer border-0">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Закрыть</button>
+                                <button type="button" class="btn btn-primary" onclick="sendInvites()">
+                                    Отправить приглашения
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Модальное окно подтверждения удаления поездки -->
+                <!-- Модальное окно подтверждения удаления поездки -->
+                <div class="modal fade" id="deleteTripModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header border-0">
+                                <h5 class="modal-title fw-bold text-danger">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    Удаление поездки
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" id="deleteTripId">
+                                <input type="hidden" id="deleteTripHasChat">
+
+                                <!-- Шаг 1: Подтверждение удаления -->
+                                <div id="deleteStep1">
+                                    <div class="text-center mb-4">
+                                        <i class="fas fa-trash-alt text-danger fa-4x mb-3"></i>
+                                        <h5 id="deleteTripTitle" class="fw-bold"></h5>
+                                    </div>
+                                    <p class="text-center mb-4">
+                                        Вы уверены, что хотите удалить эту поездку?<br>
+                                        <small class="text-muted">Это действие нельзя будет отменить.</small>
+                                    </p>
+                                </div>
+
+                                <!-- Шаг 2: Выбор удаления чата (показывается только если есть чат) -->
+                                <div id="deleteStep2" style="display: none;">
+                                    <div class="text-center mb-4">
+                                        <i class="fas fa-comments text-primary fa-4x mb-3"></i>
+                                        <h5 class="fw-bold">Что делать с чатом?</h5>
+                                    </div>
+                                    <p class="text-center mb-4">
+                                        У этой поездки есть общий чат. Вы можете удалить его вместе с поездкой или оставить.
+                                    </p>
+
+                                    <div class="d-flex flex-column gap-3">
+                                        <div class="form-check p-3 border rounded hover-bg-light" onclick="document.getElementById('deleteChatYes').checked = true">
+                                            <div class="d-flex align-items-start">
+                                                <input class="form-check-input" type="radio" name="deleteChatOption" id="deleteChatYes" value="yes" checked onclick="event.stopPropagation()">
+                                                <label class="form-check-label w-100 ms-2" for="deleteChatYes" onclick="event.stopPropagation()">
+                                                    <div class="d-flex align-items-start">
+                                                        <div class="me-3 flex-shrink-0">
+                                                            <i class="fas fa-trash-alt text-danger fa-lg"></i>
+                                                        </div>
+                                                        <div>
+                                                            <div class="fw-bold">Удалить чат</div>
+                                                            <small class="text-muted">Все сообщения в чате будут безвозвратно удалены</small>
+                                                        </div>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-check p-3 border rounded hover-bg-light" onclick="document.getElementById('deleteChatNo').checked = true">
+                                            <div class="d-flex align-items-start">
+                                                <input class="form-check-input" type="radio" name="deleteChatOption" id="deleteChatNo" value="no" onclick="event.stopPropagation()">
+                                                <label class="form-check-label w-100 ms-2" for="deleteChatNo" onclick="event.stopPropagation()">
+                                                    <div class="d-flex align-items-start">
+                                                        <div class="me-3 flex-shrink-0">
+                                                            <i class="fas fa-comments text-success fa-lg"></i>
+                                                        </div>
+                                                        <div>
+                                                            <div class="fw-bold">Оставить чат</div>
+                                                            <small class="text-muted">Чат останется доступным для участников</small>
+                                                        </div>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-0">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+
+                                <!-- Кнопки для шага 1 -->
+                                <button type="button" class="btn btn-danger" id="deleteStep1Btn" onclick="proceedToStep2()">
+                                    <i class="fas fa-trash-alt me-2"></i>Удалить
+                                </button>
+
+                                <!-- Кнопки для шага 2 (скрыты по умолчанию) -->
+                                <div id="deleteStep2Btns" style="display: none;">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="backToStep1()">
+                                        <i class="fas fa-arrow-left me-2"></i>Назад
+                                    </button>
+                                    <button type="button" class="btn btn-danger" onclick="deleteTripWithOption()">
+                                        <i class="fas fa-trash-alt me-2"></i>Подтвердить
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Модальное окно редактирования поездки -->
+                <div class="modal fade" id="editTripModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                        <div class="modal-content">
+                            <div class="modal-header border-0">
+                                <h5 class="modal-title fw-bold">
+                                    <i class="fas fa-edit text-primary me-2"></i>
+                                    Редактировать поездку
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="editTripForm" onsubmit="updateTrip(event)">
+                                    <input type="hidden" id="editTripId">
+
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="editTripName"
+                                               placeholder="Название поездки" required maxlength="50">
+                                        <label for="editTripName">Название поездки (до 50 символов)</label>
+                                    </div>
+
+                                    <div class="form-floating mb-3">
+                                        <textarea class="form-control" id="editTripDescription"
+                                                  placeholder="Описание поездки" style="height: 100px;" maxlength="100"></textarea>
+                                        <label for="editTripDescription">Описание (необязательно, до 100 символов)</label>
+                                        <div class="char-counter text-muted small mt-1" id="editDescriptionCounter">0/100</div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input type="date" class="form-control" id="editStartDate" required>
+                                                <label for="editStartDate">Дата начала</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input type="date" class="form-control" id="editEndDate" required>
+                                                <label for="editEndDate">Дата окончания</label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- В модальном окне создания поездки -->
+                                    <!-- В модальном окне редактирования, после дат добавьте: -->
+                                    <div class="form-floating mb-3">
+                                        <input type="number" class="form-control" id="editTotalBudget"
+                                               placeholder="Бюджет" min="0" step="0.01" value="0"
+                                               max="9999999999" oninput="validateBudget(this)">
+                                        <label for="editTotalBudget">Бюджет (₽)</label>
+                                        <div class="invalid-feedback">Бюджет не может быть отрицательным или превышать 10 знаков</div>
+                                    </div>
+
+                                    <div class="form-check form-switch mb-3" id="editPublicSwitch" style="display: none;">
+                                        <input class="form-check-input" type="checkbox" id="editIsPublic">
+                                        <label class="form-check-label" for="editIsPublic">
+                                            Общий чат для поездки
+                                        </label>
+                                    </div>
+
+                                    <div class="alert alert-info" id="editChatInfo" style="display: none;">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <span id="editChatInfoText"></span>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer border-0">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                                <button type="button" class="btn btn-primary px-4" onclick="updateTrip(event)">
+                                    <i class="fas fa-save me-2"></i>Сохранить изменения
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Модальное окно управления участниками -->
+                <div class="modal fade" id="manageParticipantsModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header border-0">
+                                <h5 class="modal-title fw-bold">
+                                    <i class="fas fa-users text-primary me-2"></i>
+                                    Участники поездки
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" id="manageParticipantsTripId">
+                                <div id="participantsList" style="max-height: 400px; overflow-y: auto;">
+                                    <div class="text-center py-4">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Загрузка...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-0">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Закрыть</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Стили для выделения раздела "Мои поездки" - КАК НА АВИАБИЛЕТАХ */
+    .page-header-section {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 25px 30px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .page-header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(to bottom, #0379D9, #40B624);
+        }
+
+    .page-header-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #0379D9, #40B624);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 4px 15px rgba(3, 121, 217, 0.2);
+        flex-shrink: 0;
+    }
+
+        .page-header-icon i {
+            color: white !important;
+        }
+
+    /* Добавляем обертку для текста как на авиабилетах */
+    .page-header-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .page-title {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 800;
+        font-size: 2.5rem;
+        color: #0379D9;
+        margin: 0 0 8px 0;
+        line-height: 1.2;
+        word-break: break-word;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        font-size: 1.1rem;
+        margin: 0;
+        line-height: 1.4;
+        word-break: break-word;
+        max-width: 600px;
+    }
+
+    .section-subtitle {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        font-size: 1.5rem;
+        color: #334155;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    /* Карточки поездок */
+    .trip-card {
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        background: white;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+        .trip-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            border-color: #0379D9;
+        }
+
+        .trip-card.upcoming {
+            border-top: 4px solid #0379D9;
+        }
+
+        .trip-card.active {
+            border-top: 4px solid #40B624;
+        }
+
+        .trip-card.completed {
+            border-top: 4px solid #6c757d;
+            opacity: 0.8;
+        }
+
+            .trip-card.completed:hover {
+                opacity: 1;
+            }
+
+        .trip-card .card-body {
+            padding: 1.5rem;
+            flex: 1;
+        }
+
+        .trip-card .card-footer {
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            padding: 1rem 1.5rem;
+        }
+
+    .trip-status {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+        .trip-status.upcoming {
+            background: #e7f1ff;
+            color: #0379D9;
+        }
+
+        .trip-status.active {
+            background: #e1f7e1;
+            color: #40B624;
+        }
+
+        .trip-status.completed {
+            background: #e9ecef;
+            color: #6c757d;
+        }
+
+    .trip-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
+    }
+
+    .trip-dates {
+        color: #64748b;
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+    }
+
+        .trip-dates i {
+            width: 18px;
+            color: #0379D9;
+        }
+
+    .trip-budget {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .budget-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.25rem;
+    }
+
+        .budget-item:last-child {
+            margin-bottom: 0;
+        }
+
+    .participant-avatars {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .participant-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #0379D9;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border: 2px solid white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        position: relative;
+    }
+
+        .participant-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+    .participant-count {
+        background: #e9ecef;
+        color: #495057;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+    }
+
+    .friend-badge {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        width: 16px;
+        height: 16px;
+        background: #40B624;
+        border-radius: 50%;
+        border: 2px solid white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 8px;
+        color: white;
+    }
+
+    .friend-checkbox {
+        padding: 10px;
+        border-radius: 8px;
+        transition: background-color 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 5px;
+    }
+
+        .friend-checkbox:hover {
+            background-color: #f8f9fa;
+        }
+
+        .friend-checkbox .form-check-input {
+            width: 20px;
+            height: 20px;
+            margin: 0;
+            cursor: pointer;
+            border: 2px solid #adb5bd;
+        }
+
+            .friend-checkbox .form-check-input:checked {
+                background-color: #0379D9;
+                border-color: #0379D9;
+            }
+
+            .friend-checkbox .form-check-input:focus {
+                border-color: #0379D9;
+                box-shadow: 0 0 0 0.2rem rgba(3, 121, 217, 0.25);
+            }
+
+        .friend-checkbox .form-check-label {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+            cursor: pointer;
+            margin: 0;
+        }
+
+    /* Исправления для модального окна */
+    .modal {
+        padding-right: 0 !important;
+    }
+
+    .modal-open {
+        overflow: auto !important;
+        padding-right: 0 !important;
+    }
+
+        .modal-open .container,
+        .modal-open .container-fluid {
+            filter: none !important;
+            transform: none !important;
+        }
+
+    .modal.fade .modal-dialog {
+        transition: transform 0.2s ease-out;
+        transform: scale(0.95);
+    }
+
+    .modal.show .modal-dialog {
+        transform: scale(1);
+    }
+
+    /* Улучшения для форм в модальном окне */
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .form-floating > .form-control,
+    .form-floating > .form-select {
+        height: calc(3.5rem + 2px);
+        line-height: 1.25;
+    }
+
+    .form-floating > label {
+        padding: 1rem 0.75rem;
+        color: #6c757d;
+    }
+
+    /* Стили для контейнера с друзьями */
+    #friendsForInvite {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        scrollbar-width: thin;
+        scrollbar-color: #0379D9 #e9ecef;
+    }
+
+        #friendsForInvite::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #friendsForInvite::-webkit-scrollbar-track {
+            background: #e9ecef;
+            border-radius: 3px;
+        }
+
+        #friendsForInvite::-webkit-scrollbar-thumb {
+            background: #0379D9;
+            border-radius: 3px;
+        }
+
+            #friendsForInvite::-webkit-scrollbar-thumb:hover {
+                background: #025aa5;
+            }
+
+    .avatar-circle-sm {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 12px;
+        font-weight: 600;
+        background-color: #0379D9;
+        flex-shrink: 0;
+    }
+
+    /* Стили для кнопок действий */
+    .btn-outline-danger {
+        border-color: #dc3545;
+        color: #dc3545;
+        transition: all 0.2s ease;
+    }
+
+        .btn-outline-danger:hover {
+            background-color: #dc3545;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+        }
+
+    .btn-outline-warning {
+        border-color: #ffc107;
+        color: #ffc107;
+        transition: all 0.2s ease;
+    }
+
+        .btn-outline-warning:hover {
+            background-color: #ffc107;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
+        }
+
+    .btn-outline-success {
+        border-color: #28a745;
+        color: #28a745;
+        transition: all 0.2s ease;
+    }
+
+        .btn-outline-success:hover {
+            background-color: #28a745;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+        }
+
+    .btn-outline-primary {
+        border-color: #0379D9;
+        color: #0379D9;
+        transition: all 0.2s ease;
+    }
+
+        .btn-outline-primary:hover {
+            background-color: #0379D9;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(3, 121, 217, 0.3);
+        }
+
+    .btn-outline-secondary {
+        border-color: #6c757d;
+        color: #6c757d;
+        transition: all 0.2s ease;
+    }
+
+        .btn-outline-secondary:hover {
+            background-color: #6c757d;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+        }
+
+    /* Улучшенные стили для группы кнопок */
+    .btn-group {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+        .btn-group .btn {
+            border-radius: 6px !important;
+            padding: 0.375rem 0.5rem;
+            font-size: 0.85rem;
+        }
+
+    /* Стили для модального окна удаления */
+    .hover-bg-light {
+        transition: background-color 0.2s ease;
+        cursor: pointer;
+    }
+
+        .hover-bg-light:hover {
+            background-color: #f8f9fa;
+        }
+
+    #deleteStep2 .form-check {
+        margin: 0;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        transition: all 0.2s ease;
+        background-color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+        #deleteStep2 .form-check:hover {
+            border-color: #0379D9;
+            box-shadow: 0 2px 8px rgba(3, 121, 217, 0.1);
+        }
+
+    #deleteStep2 .form-check-input[type="radio"] {
+        width: 1.2rem;
+        height: 1.2rem;
+        margin: 0;
+        cursor: pointer;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+        #deleteStep2 .form-check-input[type="radio"]:checked {
+            background-color: #0379D9;
+            border-color: #0379D9;
+        }
+
+    #deleteStep2 .form-check:has(input:checked) {
+        border-color: #0379D9;
+        background-color: #f0f7ff;
+    }
+
+    #deleteStep1, #deleteStep2 {
+        animation: fadeIn 0.3s ease;
+    }
+
+    @@keyframes fadeIn {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    /* Стили для информации о чате в модальном окне */
+    #editChatInfo {
+        border-left: 4px solid #0379D9;
+        background-color: #f0f7ff;
+        border-radius: 8px;
+        padding: 1rem;
+    }
+
+        #editChatInfo i {
+            color: #0379D9;
+        }
+
+    /* Стили для поиска */
+    .input-group {
+        border-radius: 10px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+        .input-group:focus-within {
+            box-shadow: 0 4px 12px rgba(3, 121, 217, 0.15);
+            border-color: #0379D9;
+        }
+
+    .input-group-text {
+        background-color: white;
+        border: 1px solid #dee2e6;
+        border-right: none;
+        border-radius: 10px 0 0 10px;
+    }
+
+    .input-group .form-control {
+        border: 1px solid #dee2e6;
+        border-left: none;
+        border-radius: 0 10px 10px 0;
+        padding: 0.75rem 0;
+        font-size: 1rem;
+    }
+
+        .input-group .form-control:focus {
+            box-shadow: none;
+            border-color: #dee2e6;
+        }
+
+    .input-group .btn-outline-secondary {
+        border: 1px solid #dee2e6;
+        border-left: none;
+        border-radius: 0 10px 10px 0;
+        background-color: white;
+        color: #6c757d;
+    }
+
+        .input-group .btn-outline-secondary:hover {
+            background-color: #f8f9fa;
+            color: #dc3545;
+            border-color: #dee2e6;
+        }
+
+    /* Подсветка найденного текста */
+    .trip-title mark,
+    .trip-description mark {
+        background-color: #fff3cd;
+        padding: 0;
+        border-radius: 2px;
+    }
+
+    /* Стили для кнопок сортировки */
+    .dropdown-toggle {
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+    }
+
+        .dropdown-toggle:hover {
+            background-color: #f8f9fa;
+            border-color: #adb5bd;
+        }
+
+    .dropdown-menu {
+        border-radius: 12px;
+        border: 1px solid #dee2e6;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        padding: 0.5rem 0;
+    }
+
+    .dropdown-header {
+        color: #6c757d;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 0.5rem 1rem;
+    }
+
+    .dropdown-item {
+        padding: 0.6rem 1.5rem;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+            color: #0379D9;
+            padding-left: 2rem;
+        }
+
+        .dropdown-item:active {
+            background-color: #0379D9;
+            color: white;
+        }
+
+    .dropdown-divider {
+        margin: 0.5rem 0;
+        border-top: 1px solid #e9ecef;
+    }
+
+    /* Стили для пустого состояния */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: linear-gradient(135deg, #ffffff, #f8fafc);
+        border-radius: 20px;
+        border: 2px dashed #e2e8f0;
+        transition: all 0.3s ease;
+    }
+
+        .empty-state:hover {
+            border-color: #0379D9;
+            background: linear-gradient(135deg, #f8fafc, #ffffff);
+        }
+
+        .empty-state i {
+            font-size: 3.5rem;
+            color: #94a3b8;
+            margin-bottom: 1.5rem;
+            opacity: 0.7;
+        }
+
+        .empty-state h5 {
+            color: #1e293b;
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .empty-state p {
+            color: #64748b;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+    /* Кнопка создания поездки в пустом состоянии */
+    .btn-create-empty {
+        background: linear-gradient(135deg, #0379D9, #0261b0);
+        color: white;
+        border: none;
+        padding: 0 2rem;
+        height: 48px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        box-shadow: 0 4px 12px rgba(3, 121, 217, 0.25);
+        transition: all 0.3s ease;
+        min-width: 180px;
+        letter-spacing: 0.5px;
+        margin-top: 10px;
+        line-height: 1;
+    }
+
+        .btn-create-empty i {
+            font-size: 1.2rem;
+            color: white;
+            transition: transform 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: -1px;
+        }
+
+        .btn-create-empty span {
+            display: inline-flex;
+            align-items: center;
+            height: 100%;
+        }
+
+        .btn-create-empty:hover {
+            background: linear-gradient(135deg, #0261b0, #0379D9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(3, 121, 217, 0.4);
+        }
+
+            .btn-create-empty:hover i {
+                transform: rotate(90deg);
+            }
+
+        .btn-create-empty:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(3, 121, 217, 0.3);
+        }
+
+    /* Кнопка создания поездки (основная) */
+    /* Замените стиль для .btn-create-trip */
+    .btn-create-trip {
+        background: linear-gradient(135deg, #0379D9, #0261b0);
+        color: white;
+        border: none;
+        padding: 0 1.5rem;
+        height: 44px;
+        border-radius: 50px;
+        font-weight: 500;
+        font-size: 1rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 4px 12px rgba(3, 121, 217, 0.3);
+        transition: all 0.3s ease;
+        min-width: 160px;
+        letter-spacing: 0.3px;
+        line-height: 1;
+        vertical-align: middle;
+    }
+
+    .btn-create-tip i {
+        font-size: 1.1rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+    }
+
+        .btn-create-trip span {
+            display: inline-flex;
+            align-items: center;
+            height: 100%;
+        }
+
+        .btn-create-trip:hover {
+            background: linear-gradient(135deg, #0261b0, #0379D9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(3, 121, 217, 0.4);
+        }
+
+            .btn-create-trip:hover i {
+                transform: rotate(90deg);
+            }
+
+        .btn-create-trip:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(3, 121, 217, 0.3);
+        }
+
+    /* Стили для кнопки управления участниками */
+    .btn-outline-info {
+        border-color: #17a2b8;
+        color: #17a2b8;
+        transition: all 0.2s ease;
+    }
+
+        .btn-outline-info:hover {
+            background-color: #17a2b8;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(23, 162, 184, 0.3);
+        }
+
+    /* Стили для списка участников */
+    #participantsList .list-group-item {
+        transition: all 0.2s ease;
+    }
+
+        #participantsList .list-group-item:hover {
+            background-color: #f8f9fa;
+        }
+
+    #participantsList .btn-group {
+        gap: 5px;
+    }
+
+        #participantsList .btn-group .btn {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.85rem;
+        }
+
+    /* Стили для карточек приглашений */
+    .invitation-card {
+        border-left: 4px solid #ffc107;
+        transition: all 0.3s ease;
+    }
+
+        .invitation-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+        }
+
+    /* Стили для фильтров */
+    .filter-option {
+        cursor: pointer;
+    }
+
+        .filter-option:hover {
+            background-color: #f8f9fa;
+            color: #0379D9;
+        }
+
+    #clearFiltersBtn {
+        transition: all 0.2s ease;
+    }
+
+        #clearFiltersBtn:hover {
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+
+    /* ========== МОБИЛЬНАЯ АДАПТАЦИЯ (КАК НА АВИАБИЛЕТАХ) ========== */
+    @@media (max-width: 768px) {
+        .page-header-section
+
+    {
+        padding: 20px;
+        gap: 15px;
+    }
+
+    .page-header-section::before {
+        width: 100%;
+        height: 6px;
+        top: 0;
+        left: 0;
+        background: linear-gradient(to right, #0379D9, #40B624);
+    }
+
+    .page-header-icon {
+        width: 55px;
+        height: 55px;
+        font-size: 1.5rem;
+    }
+
+    .page-title {
+        font-size: 1.6rem;
+        margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.25rem;
+    }
+
+    /* Блок с поиском и фильтрами */
+    .d-flex.justify-content-between.align-items-start.mb-5 {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch !important;
+    }
+
+    .d-flex.flex-column.flex-grow-1 {
+        width: 100%;
+    }
+
+    /* ПОЛЕ ПОИСКА - фикс для мобилки */
+    .input-group {
+        max-width: 100% !important;
+        width: 100%;
+    }
+
+        .input-group .form-control {
+            font-size: 16px;
+        }
+
+    /* Фильтры - горизонтальный скролл */
+    .d-flex.gap-3.mt-3 {
+        flex-wrap: nowrap !important;
+        overflow-x: auto;
+        gap: 8px !important;
+        padding-bottom: 5px;
+    }
+
+        .d-flex.gap-3.mt-3 .dropdown {
+            flex-shrink: 0;
+        }
+
+    .dropdown-toggle {
+        white-space: nowrap;
+    }
+
+    /* Кнопка создания поездки */
+    .btn-create-trip {
+        width: 100%;
+    }
+
+    /* Карточки */
+    .trip-card {
+        margin-bottom: 1rem;
+    }
+
+        .trip-card .card-body {
+            padding: 1rem;
+        }
+
+    .trip-title {
+        font-size: 1.2rem;
+    }
+
+    .trip-dates, .trip-budget {
+        font-size: 0.85rem;
+    }
+
+    .participant-avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+
+    /* Заголовки секций */
+    .d-flex.justify-content-between.align-items-center.mb-4 {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 10px;
+    }
+
+        .d-flex.justify-content-between.align-items-center.mb-4 .dropdown {
+            width: 100%;
+        }
+
+        .d-flex.justify-content-between.align-items-center.mb-4 .dropdown-toggle {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+    /* Кнопки в карточке */
+    .btn-group {
+        flex-direction: row;
+        flex-wrap: wrap;
+        width: 100%;
+        justify-content: center;
+    }
+
+        .btn-group .btn {
+            flex: 1;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+
+    /* Футер карточки */
+    .card-footer .d-flex {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .card-footer small {
+        text-align: center;
+    }
+
+    /* Кнопка сброса фильтров */
+    #clearFiltersBtn {
+        flex-shrink: 0;
+    }
+
+    /* Выпадающие списки */
+    .dropdown-menu {
+        position: fixed !important;
+        top: auto !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: calc(100% - 32px) !important;
+        max-width: 300px;
+        margin-top: 8px;
+        z-index: 1050;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    }
+
+    @@media (max-width: 576px) {
+        .page-header-section
+
+    {
+        padding: 15px;
+        gap: 12px;
+    }
+
+    .page-header-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.3rem;
+    }
+
+    .page-title {
+        font-size: 1.4rem;
+    }
+
+    .page-subtitle {
+        font-size: 0.85rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.1rem;
+    }
+
+    .trip-title {
+        font-size: 1.1rem;
+    }
+
+    .trip-dates, .trip-budget {
+        font-size: 0.8rem;
+    }
+
+    .participant-avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+    }
+
+    .participant-count {
+        font-size: 0.7rem;
+        padding: 2px 8px;
+    }
+
+    /* Модальные окна */
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    .modal-body {
+        padding: 1rem;
+    }
+
+    .form-floating > .form-control {
+        font-size: 0.9rem;
+    }
+
+    }
+    @@media (max-width: 768px) {
+        .input-group
+
+    {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        width: 100%;
+    }
+
+    .input-group-text {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+    }
+
+    .input-group .form-control {
+        display: block !important;
+        flex: 1 1 auto !important;
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .input-group > * {
+        margin: 0 !important;
+    }
+
+    }
+    #deleteStep2 .form-check {
+        margin: 0;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        transition: all 0.2s ease;
+        background-color: white;
+        cursor: pointer;
+    }
+
+        #deleteStep2 .form-check:hover {
+            border-color: #0379D9;
+            box-shadow: 0 2px 8px rgba(3, 121, 217, 0.1);
+        }
+
+    #deleteStep2 .form-check-input[type="radio"] {
+        width: 1.2rem;
+        height: 1.2rem;
+        margin-right: 1rem;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+        #deleteStep2 .form-check-input[type="radio"]:checked {
+            background-color: #0379D9;
+            border-color: #0379D9;
+        }
+
+    #deleteStep2 .form-check:has(input:checked) {
+        border-color: #0379D9;
+        background-color: #f0f7ff;
+    }
+
+    #deleteStep2 .form-check-label {
+        cursor: pointer;
+        flex: 1;
+        margin: 0;
+    }
+
+    #deleteStep2 .d-flex {
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    #deleteStep2 .text-muted {
+        font-size: 0.85rem;
+    }
+
+    #deleteStep2 .me-3 {
+        flex-shrink: 0;
+    }
+
+    #deleteStep2 .text-muted {
+        font-size: 0.85rem;
+        display: block;
+        margin-top: 4px;
+    }
+    #deleteStep2Btns {
+        display: inline-flex;
+        gap: 10px;
+    }
+
+        #deleteStep1Btn, #deleteStep2Btns .btn {
+            min-width: 100px;
+        }
+
+    .trip-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        word-break: break-word;
+    }
+
+    .trip-description {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        word-break: break-word;
+    }
+
+    #deleteTripTitle {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        word-break: break-word;
+        max-width: 100%;
+    }
+
+    /* Стили для карточек приглашений */
+    .invitation-card {
+        border-left: 4px solid #ffc107;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+        .invitation-card .card-body {
+            overflow: hidden;
+        }
+
+        /* Обрезка длинных названий */
+        .invitation-card h5 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            word-break: break-word;
+            line-height: 1.3;
+        }
+
+        /* Обрезка длинных имен */
+        .invitation-card .inviter-name {
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            word-break: break-word;
+            font-size: 0.85rem;
+        }
+
+        /* Аватар и информация в приглашении */
+        .invitation-card .d-flex.align-items-center {
+            min-width: 0;
+            flex-wrap: nowrap;
+        }
+
+            .invitation-card .d-flex.align-items-center > div:last-child {
+                min-width: 0;
+                flex: 1;
+                overflow: hidden;
+            }
+
+        .invitation-card .me-3 {
+            flex-shrink: 0;
+        }
+
+        /* Сообщение в приглашении */
+        .invitation-card .alert {
+            white-space: normal;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        /* Кнопки в приглашении */
+        .invitation-card .d-flex.gap-2 {
+            flex-wrap: wrap;
+        }
+
+            .invitation-card .d-flex.gap-2 .btn {
+                flex: 1;
+                min-width: 100px;
+                white-space: nowrap;
+            }
+
+    @@media (max-width: 576px) {
+        .invitation-card .d-flex.gap-2 .btn
+
+    {
+        white-space: normal;
+        font-size: 0.85rem;
+        padding: 0.375rem 0.5rem;
+    }
+
+    .invitation-card h5 {
+        font-size: 0.95rem;
+    }
+
+    }
+
+    /* Вспомогательные классы для обрезки текста */
+.min-width-0 {
+    min-width: 0;
+}
+
+.text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.text-truncate-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Для мобильных устройств */
+@@media (max-width: 768px) {
+    .invitation-card h5 {
+        font-size: 1rem;
+        -webkit-line-clamp: 2;
+    }
+    
+    .invitation-card .inviter-name {
+        font-size: 0.75rem;
+    }
+    
+    .invitation-card .alert {
+        font-size: 0.85rem;
+        padding: 0.5rem;
+    }
+    
+    .invitation-card .btn {
+        font-size: 0.8rem;
+        padding: 0.375rem 0.5rem;
+    }
+}
+
+@@media (max-width: 576px) {
+    .invitation-card .d-flex.align-items-center {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .invitation-card .me-3 {
+        margin-right: 0 !important;
+        margin-bottom: 10px;
+    }
+    
+    .invitation-card h5 {
+        text-align: center;
+    }
+    
+    .invitation-card .inviter-name {
+        text-align: center;
+        display: block;
+    }
+}
+
+/* Стили для ФИО создателя в карточке поездки */
+.trip-card .card-footer small {
+    display: inline-block;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.trip-card .card-footer .text-muted {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+}
+
+.trip-card .card-footer .text-muted i {
+    flex-shrink: 0;
+}
+
+.trip-card .card-footer .text-muted span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Для мобильных устройств */
+@@media (max-width: 768px) {
+    .trip-card .card-footer small {
+        max-width: 120px;
+        font-size: 0.7rem;
+    }
+}
+
+@@media (max-width: 576px) {
+    .trip-card .card-footer small {
+        max-width: 100px;
+    }
+}
+
+    /* =========================================
+       FIX: нормальное растягивание input на мобилках
+       ========================================= */
+
+    @@media (max-width: 767px) {
+        /* Все input/select/textarea */
+        input,
+        textarea,
+        select,
+        .form-control {
+            width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box;
+        }
+        /* Bootstrap input-group */
+        .input-group {
+            display: flex !important;
+            flex-wrap: nowrap !important;
+            width: 100% !important;
+            align-items: stretch;
+        }
+
+            .input-group > .form-control,
+            .input-group > input,
+            .input-group > textarea {
+                flex: 1 1 auto !important;
+                width: 1% !important;
+                min-width: 0 !important;
+            }
+            /* Кнопки возле input */
+            .input-group > .btn,
+            .input-group > button,
+            .input-group-text {
+                flex: 0 0 auto !important;
+            }
+        /* Модалки */
+        .modal-body .form-control {
+            width: 100% !important;
+            min-width: 0 !important;
+        }
+        /* Поле сообщения */
+        #messageInput {
+            flex: 1 1 auto !important;
+            width: 1% !important;
+            min-width: 0 !important;
+        }
+        /* Поиск */
+        #chatSearch,
+        #searchUsersInput,
+        #newChatUserSearch,
+        #newChatName,
+        #addMembersSearch,
+        #voteQuestion,
+        #voteExpiresAt {
+            width: 100% !important;
+        }
+    }
+
+    /* Фикс для длинных ФИО в чек-боксах */
+    .friend-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px;
+        border-radius: 8px;
+        transition: background-color 0.2s ease;
+        margin-bottom: 5px;
+    }
+
+        .friend-checkbox .form-check-input {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .friend-checkbox .form-check-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 0; /* Важно для обрезки текста */
+            cursor: pointer;
+            margin: 0;
+        }
+
+    .min-width-0 {
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .text-truncate {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Для мобильных устройств */
+    @@media (max-width: 576px) {
+        .friend-checkbox .form-check-label {
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+    
+        .friend-checkbox .min-width-0 {
+            flex: 1;
+            min-width: 0;
+        }
+    
+        .text-truncate {
+            max-width: 180px !important;
+        }
+    }
+
+    /* =========================================
+       ФИКСЫ ДЛЯ МОБИЛЬНОЙ ВЕРСИИ - ПРИГЛАШЕНИЕ ДРУЗЕЙ
+       ========================================= */
+
+    /* Исправление для контейнера с друзьями */
+    #friendsForInvite,
+    #inviteFriendsList {
+        max-height: 200px !important;
+        overflow-y: auto !important;
+    }
+
+    @@media (max-width: 768px) {
+        /* Фикс для чек-боксов друзей на мобилках */
+        .friend-checkbox {
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            padding: 8px !important;
+            width: 100% !important;
+            min-width: 0 !important;
+        }
+
+            .friend-checkbox .form-check-input {
+                flex-shrink: 0 !important;
+                width: 20px !important;
+                height: 20px !important;
+                margin: 0 !important;
+            }
+
+            .friend-checkbox .form-check-label {
+                display: flex !important;
+                align-items: center !important;
+                gap: 8px !important;
+                flex: 1 !important;
+                min-width: 0 !important;
+                margin: 0 !important;
+            }
+
+            .friend-checkbox .min-width-0 {
+                flex: 1 !important;
+                min-width: 0 !important;
+                overflow: hidden !important;
+            }
+
+            .friend-checkbox .text-truncate {
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                display: block !important;
+                width: 100% !important;
+            }
+
+                .friend-checkbox .text-truncate.d-block {
+                    max-width: 100% !important;
+                }
+            /* Фикс для изображений аватаров */
+            .friend-checkbox .flex-shrink-0 {
+                flex-shrink: 0 !important;
+            }
+
+            .friend-checkbox .rounded-circle,
+            .friend-checkbox .avatar-circle-sm {
+                width: 32px !important;
+                height: 32px !important;
+                flex-shrink: 0 !important;
+            }
+    }
+
+    @@media (max-width: 480px) {
+        .friend-checkbox {
+            padding: 6px !important;
+        }
+
+            .friend-checkbox .form-check-input {
+                width: 18px !important;
+                height: 18px !important;
+            }
+
+            .friend-checkbox .fw-bold {
+                font-size: 13px !important;
+            }
+
+            .friend-checkbox .text-muted {
+                font-size: 11px !important;
+            }
+    }
+
+    /* =========================================
+       ФИКС ДЛЯ КНОПКИ "Создать общий чат" НА МОБИЛКЕ
+       ========================================= */
+
+    @@media (max-width: 768px) {
+        /* Фикс для переключателя (switch) */
+        .form-check.form-switch {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            flex-wrap: nowrap !important;
+            gap: 10px !important;
+            width: 100% !important;
+            padding: 8px 0 !important;
+        }
+
+            .form-check.form-switch .form-check-input {
+                flex-shrink: 0 !important;
+                width: 40px !important;
+                height: 20px !important;
+                margin: 0 !important;
+                float: none !important;
+            }
+
+            .form-check.form-switch .form-check-label {
+                flex: 1 !important;
+                font-size: 14px !important;
+                white-space: normal !important;
+                word-break: normal !important;
+            }
+        /* Фикс для контейнера с друзьями в модалке */
+        #friendsForInvite,
+        #inviteFriendsList {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        /* Фикс для обертки чек-боксов */
+        .mb-4 {
+            width: 100% !important;
+            overflow-x: hidden !important;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script src="~/js/friends.js"></script>
+    <script>
+        // Глобальные переменные
+        let currentUserId = @Json.Serialize(userId);
+        let allTrips = [];
+        let deleteTripModal = null;
+        let editTripModal = null;
+        let searchTerm = '';
+        let searchTimeout = null;
+        let manageParticipantsModal = null;
+        let filterRole = 'all';
+        let filterParticipants = 'all';
+
+        let sortSettings = {
+            upcoming: { type: 'date', order: 'asc' },
+            completed: { type: 'date', order: 'asc' }
+        };
+                function setupCharCountersForDescription() {
+            const descriptionInput = document.getElementById('tripDescription');
+            const descriptionCounter = document.getElementById('descriptionCounter');
+
+            if (descriptionInput && descriptionCounter) {
+                descriptionInput.addEventListener('input', function() {
+                    const count = this.value.length;
+                    descriptionCounter.textContent = `${count}/100`;
+                    if (count >= 100) {
+                        descriptionCounter.style.color = '#dc3545';
+                    } else if (count >= 90) {
+                        descriptionCounter.style.color = '#ffc107';
+                    } else {
+                        descriptionCounter.style.color = '#6c757d';
+                    }
+                });
+            }
+        }
+                // Инициализация при загрузке страницы
+                document.addEventListener('DOMContentLoaded', function() {
+            console.log('Trips page loaded');
+                    const editDescriptionInput = document.getElementById('editTripDescription');
+        const editDescriptionCounter = document.getElementById('editDescriptionCounter');
+
+            if (currentUserId) {
+                // Загружаем поездки и друзей
+                loadTrips();
+                loadFriendsForInvite();
+
+                // Загружаем приглашения (ДОБАВИТЬ ЭТУ СТРОКУ)
+                loadInvitations();
+
+                // Инициализируем модальное окно удаления
+                const modalElement = document.getElementById('deleteTripModal');
+                if (modalElement) {
+                    deleteTripModal = new bootstrap.Modal(modalElement);
+                    modalElement.addEventListener('hidden.bs.modal', function() {
+                        resetDeleteModal();
+                    });
+                }
+
+                // Инициализируем модальное окно участников
+                const manageModalElement = document.getElementById('manageParticipantsModal');
+                if (manageModalElement) {
+                    manageParticipantsModal = new bootstrap.Modal(manageModalElement);
+                }
+
+                // Инициализируем модальное окно редактирования
+                const editModalElement = document.getElementById('editTripModal');
+                if (editModalElement) {
+                    editTripModal = new bootstrap.Modal(editModalElement);
+                }
+                        if (editDescriptionInput && editDescriptionCounter) {
+            editDescriptionInput.addEventListener('input', function() {
+                const count = this.value.length;
+                editDescriptionCounter.textContent = `${count}/100`;
+                if (count >= 100) {
+                    editDescriptionCounter.style.color = '#dc3545';
+                } else if (count >= 90) {
+                    editDescriptionCounter.style.color = '#ffc107';
+                } else {
+                    editDescriptionCounter.style.color = '#6c757d';
+                }
+            });
+        }
+                // Инициализируем поиск
+                const searchInput = document.getElementById('searchTrips');
+                const clearButton = document.getElementById('clearSearch');
+
+                if (searchInput) {
+                    searchInput.addEventListener('input', handleSearchInput);
+                    searchInput.addEventListener('keydown', handleSearchKeyPress);
+                }
+
+                if (clearButton) {
+                    clearButton.addEventListener('click', clearSearch);
+                }
+
+                // Добавляем обработчики для сортировки
+                initSortHandlers();
+
+                // Добавляем обработчики для фильтров
+                initFilterHandlers();
+            }
+            setupCharCountersForDescription();
+        });
+
+        // Инициализация обработчиков сортировки
+        function initSortHandlers() {
+            document.querySelectorAll('.sort-option').forEach(option => {
+                option.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    const sortValue = this.dataset.sort;
+                    const section = this.dataset.section;
+                    const [type, order] = sortValue.split('-');
+
+                    console.log('Sort clicked:', { type, order, section });
+
+                    // Обновляем настройки сортировки
+                    sortSettings[section] = { type, order };
+
+                    // Применяем сортировку с учетом текущего поиска
+                    renderFilteredTrips();
+
+                    // Обновляем текст кнопки
+                    updateSortButtonsText();
+
+                    // Показываем уведомление
+                    const typeText = {
+                        'date': 'дате',
+                        'name': 'названию',
+                        'budget': 'бюджету',
+                        'duration': 'длительности'
+                    }[type];
+
+                    const orderText = {
+                        'asc': {
+                            'date': 'сначала ранние',
+                            'name': 'А-Я',
+                            'budget': 'сначала дорогие',
+                            'duration': 'сначала короткие'
+                        },
+                        'desc': {
+                            'date': 'сначала поздние',
+                            'name': 'Я-А',
+                            'budget': 'сначала бюджетные',
+                            'duration': 'сначала длинные'
+                        }
+                    }[order][type];
+
+                    showNotification(`Поездки отсортированы по ${typeText} (${orderText})`, 'success');
+                });
+            });
+        }
+
+        // Функция для сброса состояния модального окна удаления
+        function resetDeleteModal() {
+            document.getElementById('deleteStep1').style.display = 'block';
+            document.getElementById('deleteStep2').style.display = 'none';
+            document.getElementById('deleteStep1Btn').style.display = 'inline-block';
+            document.getElementById('deleteStep2Btns').style.display = 'none';
+            document.getElementById('deleteChatYes').checked = true;
+        }
+
+        // Загрузка поездок
+        async function loadTrips() {
+            try {
+                const response = await fetch('/Trips/GetUserTrips');
+                const data = await response.json();
+
+                if (data.success) {
+                    allTrips = data.data.all || [];
+                    renderFilteredTrips();
+                    updateSortButtonsText();
+                } else {
+                    showNotification(data.message || 'Ошибка загрузки поездок', 'danger');
+                }
+            } catch (error) {
+                console.error('Error loading trips:', error);
+                showNotification('Не удалось загрузить поездки', 'danger');
+            }
+        }
+
+        // Обновление текста кнопок сортировки
+                // Обновление текста кнопок сортировки
+        function updateSortButtonsText() {
+            const getSortText = (settings, isCompleted = false) => {
+                const orderMap = {
+                    'asc': {
+                        'date': 'Сначала ранние',
+                        'name': 'А-Я',
+                        'budget': 'Сначала дорогие',
+                        'duration': 'Сначала короткие'
+                    },
+                    'desc': {
+                        'date': 'Сначала поздние',
+                        'name': 'Я-А',
+                        'budget': 'Сначала бюджетные',
+                        'duration': 'Сначала длинные'
+                    }
+                };
+                return `${orderMap[settings.order][settings.type]}`;
+            };
+
+            const upcomingBtn = document.querySelector('#upcomingTripsSection .dropdown-toggle');
+            const completedBtn = document.querySelector('#completedTripsSection .dropdown-toggle');
+
+            if (upcomingBtn) {
+                upcomingBtn.innerHTML = `<i class="fas fa-sort me-1"></i> ${getSortText(sortSettings.upcoming, false)}`;
+            }
+            if (completedBtn) {
+                completedBtn.innerHTML = `<i class="fas fa-sort me-1"></i> ${getSortText(sortSettings.completed, true)}`;
+            }
+        }
+                function truncateText(text, maxLength) {
+            if (!text) return '';
+            if (text.length <= maxLength) return text;
+            return text.substring(0, maxLength - 3) + '...';
+        }
+                // Отображение поездок
+        function renderTrips(trips, type) {
+            const container = document.getElementById(`${type}TripsContainer`);
+
+            if (!container) return;
+
+            // Определяем, идет ли поиск
+            const isSearching = searchTerm && searchTerm.trim() !== '';
+
+            if (trips.length === 0) {
+                if (isSearching) {
+                    // Если ничего не найдено при поиске
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                            <h5>Ничего не найдено</h5>
+                            <p class="text-muted">По запросу "${escapeHtml(searchTerm)}" ничего не найдено</p>
+                            <button class="btn btn-outline-primary mt-2" onclick="clearSearch()">
+                                <i class="fas fa-times me-2"></i>Очистить поиск
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    // Обычное пустое состояние (нет поездок)
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-${type === 'upcoming' ? 'calendar-times' : 'suitcase'}"></i>
+                            <h5>Нет ${type === 'upcoming' ? 'предстоящих' : 'завершенных'} поездок</h5>
+                            <p>${type === 'upcoming' ? 'Создайте новую поездку, чтобы начать планирование' : 'Завершенные поездки появятся здесь'}</p>
+                            ${type === 'upcoming' ? `
+                                <button class="btn btn-create-empty" data-bs-toggle="modal" data-bs-target="#createTripModal">
+                                    <span>Создать поездку</span>
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+                }
+                return;
+            }
+
+            let html = '<div class="row g-4">';
+
+            trips.forEach(trip => {
+                const startDate = new Date(trip.startDate).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+                const endDate = new Date(trip.endDate).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+                const budgetPercent = trip.totalBudget > 0 ? Math.round((trip.spentBudget / trip.totalBudget) * 100) : 0;
+
+                // Подсвечиваем найденный текст
+                let highlightedTitle = trip.title;
+                let highlightedDescription = trip.description || '';
+
+                if (searchTerm && searchTerm.trim() !== '') {
+                    const searchRegex = new RegExp(`(${escapeRegex(searchTerm)})`, 'gi');
+                    highlightedTitle = trip.title.replace(searchRegex, '<mark>$1</mark>');
+                    if (trip.description) {
+                        highlightedDescription = trip.description.replace(searchRegex, '<mark>$1</mark>');
+                    }
+                }
+
+                html += `
+                    <div class="col-md-6 col-lg-4">
+                        <div class="trip-card ${trip.status}">
+                            <div class="card-body">
+                                <div class="trip-status ${trip.status}">
+                                    ${trip.status === 'upcoming' ? 'Предстоит' : trip.status === 'active' ? 'В процессе' : 'Завершена'}
+                                </div>
+
+                                <h3 class="trip-title">${highlightedTitle}</h3>
+
+                                ${trip.description ? `
+                                    <div class="trip-description text-muted small mb-2">
+                                        ${highlightedDescription.length > 100 ? highlightedDescription.substring(0, 100) + '...' : highlightedDescription}
+                                    </div>
+                                ` : ''}
+
+                                <div class="trip-dates">
+                                    <div><i class="far fa-calendar-alt me-2"></i>${startDate} — ${endDate}</div>
+                                    <div class="mt-1"><i class="far fa-clock me-2"></i>${trip.duration} ${getDaysWord(trip.duration)}</div>
+                                </div>
+
+                                <div class="trip-budget">
+                                    <div class="budget-item">
+                                        <span>Бюджет:</span>
+                                        <span class="fw-bold">${formatMoney(trip.totalBudget)} ₽</span>
+                                    </div>
+                                    <div class="budget-item">
+                                        <span>Потрачено:</span>
+                                        <span class="fw-bold text-${trip.spentBudget > trip.totalBudget ? 'danger' : 'success'}">${formatMoney(trip.spentBudget)} ₽</span>
+                                    </div>
+                                    ${trip.totalBudget > 0 ? `
+                                        <div class="progress mt-2" style="height: 6px;">
+                                            <div class="progress-bar ${trip.spentBudget > trip.totalBudget ? 'bg-danger' : 'bg-success'}"
+                                                 style="width: ${Math.min(budgetPercent, 100)}%"></div>
+                                        </div>
+                                    ` : ''}
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="participant-avatars">
+                                        ${trip.participants.slice(0, 5).map(p => `
+                                            <div class="participant-avatar position-relative" title="${escapeHtml(p.fullName)}">
+                                                ${p.avatarPath ?
+                                                    `<img src="${p.avatarPath}" alt="${escapeHtml(p.fullName)}">` :
+                                                    `<span>${getInitials(p.fullName)}</span>`
+                                                }
+                                                ${p.isFriend ? '<span class="friend-badge"><i class="fas fa-check"></i></span>' : ''}
+                                            </div>
+                                        `).join('')}
+                                        ${trip.participantCount > 5 ?
+                                            `<span class="participant-count">+${trip.participantCount - 5}</span>` :
+                                            ''}
+                                    </div>
+                                    <span class="text-muted small">
+                                        <i class="fas fa-map-marker-alt me-1"></i>${trip.pointsCount} мест
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="card-footer">
+                                <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted" title="${escapeHtml(trip.createdBy.fullName)}">
+            <i class="fas fa-user me-1"></i>
+            <span>${escapeHtml(truncateText(trip.createdBy.fullName, 20))}</span>
+        </small>
+        <div class="btn-group">
+            ${trip.hasChat ? `
+                <button class="btn btn-sm btn-outline-primary" onclick="goToTripChat(${trip.chatId})" title="Чат поездки">
+                    <i class="fas fa-comments"></i>
+                </button>
+            ` : ''}
+            ${trip.createdBy.id === currentUserId ? `
+                <button class="btn btn-sm btn-outline-info" onclick="openManageParticipantsModal(${trip.id})" title="Управление участниками">
+                    <i class="fas fa-user-friends"></i>
+                </button>
+                ${trip.status !== 'completed' ? `
+                    <button class="btn btn-sm btn-outline-success" onclick="openInviteModal(${trip.id})" title="Пригласить друзей">
+                        <i class="fas fa-user-plus"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning" onclick="openEditTripModal(${trip.id})" title="Редактировать поездку">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="confirmDeleteTrip(${trip.id}, '${escapeHtml(trip.title)}', ${trip.hasChat})" title="Удалить поездку">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    ` : ''}
+                ` : `
+                <!-- Кнопки для обычных участников -->
+                <button class="btn btn-sm btn-outline-info" onclick="openManageParticipantsModal(${trip.id})" title="Просмотр участников">
+                    <i class="fas fa-users"></i>
+                </button>
+            `}
+        </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        // Экранирование спецсимволов для регулярного выражения
+        function escapeRegex(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+                // Функция сортировки поездок
+        function sortTrips(trips, sortType, sortOrder, isCompleted = false) {
+            return [...trips].sort((a, b) => {
+                switch(sortType) {
+                    case 'date':
+                        const dateA = new Date(a.startDate).getTime();
+                        const dateB = new Date(b.startDate).getTime();
+
+                        if (isCompleted) {
+                            // Для завершенных поездок
+                            // asc = сначала новые (более поздние даты первыми)
+                            // desc = сначала старые (более ранние даты первыми)
+                            if (sortOrder === 'asc') {
+                                return dateB - dateA;
+                            } else {
+                                return dateA - dateB;
+                            }
+                        } else {
+                            // Для предстоящих поездок
+                            // asc = сначала новые (более ранние даты первыми)
+                            // desc = сначала старые (более поздние даты первыми)
+                            if (sortOrder === 'asc') {
+                                return dateA - dateB;
+                            } else {
+                                return dateB - dateA;
+                            }
+                        }
+
+                    case 'name':
+                        const nameCompare = a.title.localeCompare(b.title, 'ru');
+                        return sortOrder === 'asc' ? nameCompare : -nameCompare;
+
+                    case 'budget':
+                        if (sortOrder === 'asc') {
+                            // Сначала дорогие: от большего к меньшему
+                            return b.totalBudget - a.totalBudget;
+                        } else {
+                            // Сначала бюджетные: от меньшего к большему
+                            return a.totalBudget - b.totalBudget;
+                        }
+
+                    case 'duration':
+                        if (sortOrder === 'asc') {
+                            // Сначала короткие: от меньшего к большему
+                            return a.duration - b.duration;
+                        } else {
+                            // Сначала длинные: от большего к меньшему
+                            return b.duration - a.duration;
+                        }
+
+                    default:
+                        return 0;
+                }
+            });
+        }
+
+                        function renderFilteredTrips() {
+            const now = new Date();
+
+            let upcoming = allTrips.filter(trip => new Date(trip.endDate) >= now);
+            let completed = allTrips.filter(trip => new Date(trip.endDate) < now);
+
+            // Применяем поиск
+            if (searchTerm) {
+                upcoming = filterTripsBySearch(upcoming, searchTerm);
+                completed = filterTripsBySearch(completed, searchTerm);
+            }
+
+            // Применяем фильтры
+            upcoming = applyFilters(upcoming);
+            completed = applyFilters(completed);
+
+            // Применяем сортировку
+            upcoming = sortTrips(upcoming, sortSettings.upcoming.type, sortSettings.upcoming.order, false);
+            completed = sortTrips(completed, sortSettings.completed.type, sortSettings.completed.order, true);
+
+            renderTrips(upcoming, 'upcoming');
+            renderTrips(completed, 'completed');
+            updateSearchResultsInfo(upcoming.length, completed.length);
+        }
+
+                function initFilterHandlers() {
+            document.querySelectorAll('.filter-option').forEach(option => {
+                option.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    const filterType = this.dataset.filterType;
+                    const filterValue = this.dataset.filterValue;
+
+                    if (filterType === 'role') {
+                        filterRole = filterValue;
+                        updateFilterButtonText('roleFilterBtn', filterValue, 'Роль');
+                    } else if (filterType === 'participants') {
+                        filterParticipants = filterValue;
+                        updateFilterButtonText('participantsFilterBtn', filterValue, 'Участники');
+                    }
+
+                    // Показываем кнопку сброса, если применен любой фильтр
+                    const clearBtn = document.getElementById('clearFiltersBtn');
+                    if (filterRole !== 'all' || filterParticipants !== 'all') {
+                        clearBtn.style.display = 'inline-flex';
+                    } else {
+                        clearBtn.style.display = 'none';
+                    }
+
+                    // Применяем фильтры
+                    renderFilteredTrips();
+                });
+            });
+
+            // Обработчик сброса фильтров
+            const clearBtn = document.getElementById('clearFiltersBtn');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function() {
+                    filterRole = 'all';
+                    filterParticipants = 'all';
+
+                    updateFilterButtonText('roleFilterBtn', 'all', 'Роль');
+                    updateFilterButtonText('participantsFilterBtn', 'all', 'Участники');
+
+                    this.style.display = 'none';
+                    renderFilteredTrips();
+                });
+            }
+        }
+                function updateFilterButtonText(buttonId, value, defaultText) {
+            const button = document.getElementById(buttonId);
+            if (!button) return;
+
+            const textMap = {
+                'all': defaultText,
+                'organizer': 'Организатор',
+                'participant': 'Участник',
+                'with-friends': 'С друзьями',
+                'only-friends': 'Только друзья',
+                'without-friends': 'Без друзей'
+            };
+
+            const iconMap = {
+                'roleFilterBtn': '<i class="fas fa-user-tag me-1"></i>',
+                'participantsFilterBtn': '<i class="fas fa-users me-1"></i>'
+            };
+
+            const icon = iconMap[buttonId] || '';
+            const text = textMap[value] || defaultText;
+            button.innerHTML = `${icon} ${text}: ${value === 'all' ? 'Все' : text}`;
+        }
+        // Поиск по поездкам
+        function filterTripsBySearch(trips, term) {
+            if (!term || term.trim() === '') return trips;
+
+            const searchLower = term.toLowerCase().trim();
+            return trips.filter(trip =>
+                trip.title.toLowerCase().includes(searchLower) ||
+                (trip.description && trip.description.toLowerCase().includes(searchLower)) ||
+                trip.createdBy.fullName.toLowerCase().includes(searchLower) ||
+                trip.participants.some(p => p.fullName.toLowerCase().includes(searchLower))
+            );
+        }
+
+        // Обновление информации о результатах поиска
+                // Обновление информации о результатах поиска
+        function updateSearchResultsInfo(upcomingCount, completedCount) {
+            const clearButton = document.getElementById('clearSearch');
+            const searchInput = document.getElementById('searchTrips');
+
+            if (searchTerm && searchTerm.trim() !== '') {
+                clearButton.style.display = 'block';
+                const totalFound = upcomingCount + completedCount;
+
+                // Обновляем плейсхолдер
+                if (searchInput) {
+                    searchInput.placeholder = `Поиск: "${searchTerm}" (найдено: ${totalFound})`;
+                }
+
+                if (totalFound === 0) {
+                    // Уведомление уже показывается в renderTrips через пустое состояние
+                } else {
+                    showNotification(`Найдено поездок: ${totalFound} (предстоящих: ${upcomingCount}, завершенных: ${completedCount})`, 'info');
+                }
+            } else {
+                clearButton.style.display = 'none';
+                if (searchInput) {
+                    searchInput.placeholder = 'Поиск по названию или описанию...';
+                }
+            }
+        }
+
+        // Обработчик поиска
+        function handleSearchInput() {
+            const searchInput = document.getElementById('searchTrips');
+            const newSearchTerm = searchInput.value.trim();
+
+            if (newSearchTerm === searchTerm) return;
+
+            searchTerm = newSearchTerm;
+
+            if (searchTimeout) clearTimeout(searchTimeout);
+
+            searchTimeout = setTimeout(() => {
+                renderFilteredTrips();
+                searchTimeout = null;
+            }, 300);
+        }
+
+        // Очистка поиска
+        function clearSearch() {
+            const searchInput = document.getElementById('searchTrips');
+            searchInput.value = '';
+            searchTerm = '';
+            renderFilteredTrips();
+            searchInput.focus();
+        }
+
+        // Обработчик клавиш
+        function handleSearchKeyPress(e) {
+            if (e.key === 'Escape') clearSearch();
+        }
+
+        // Загрузка друзей для приглашения
+        async function loadFriendsForInvite() {
+            try {
+                const response = await fetch('/api/friends/GetFriends');
+                const data = await response.json();
+
+                if (data.success) {
+                    const container = document.getElementById('friendsForInvite');
+
+                    if (!data.data || data.data.length === 0) {
+                        container.innerHTML = `
+                            <div class="text-center text-muted py-3">
+                                <i class="fas fa-user-friends fa-2x mb-2 opacity-50"></i>
+                                <p>У вас пока нет друзей для приглашения</p>
+                                <small>Найдите друзей через поиск на странице чатов</small>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    let html = '';
+                    data.data.forEach(friend => {
+                        html += `
+                                    <div class="friend-checkbox">
+            <input class="form-check-input flex-shrink-0" type="checkbox" value="${friend.friendId}" id="friend_${friend.friendId}">
+            <label class="form-check-label d-flex align-items-center flex-grow-1 min-width-0" for="friend_${friend.friendId}">
+                <div class="me-2 flex-shrink-0">
+                    ${friend.avatarPath ?
+                        `<img src="${friend.avatarPath}" class="rounded-circle" width="32" height="32" style="object-fit: cover;">` :
+                        `<div class="avatar-circle-sm bg-primary" style="width:32px;height:32px; font-size:12px;">${getInitials(friend.fullName)}</div>`
+                    }
+                </div>
+                <div class="min-width-0">
+                    <div class="fw-bold text-truncate" style="max-width: 200px;" title="${escapeHtml(friend.fullName)}">${escapeHtml(friend.fullName)}</div>
+                    <small class="text-muted text-truncate d-block" style="max-width: 200px;" title="${escapeHtml(friend.email)}">${escapeHtml(friend.email)}</small>
+                </div>
+            </label>
+        </div>
+                        `;
+                    });
+
+                    container.innerHTML = html;
+                }
+            } catch (error) {
+                console.error('Error loading friends for invite:', error);
+            }
+        }
+
+        // Создание поездки
+        // Замените функцию createTrip
+        async function createTrip(event) {
+            event.preventDefault();
+
+            const title = document.getElementById('tripName').value.trim();
+            const description = document.getElementById('tripDescription').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            let totalBudget = parseFloat(document.getElementById('totalBudget').value) || 0;
+
+            // Валидация названия
+            if (!title) {
+                showNotification('Введите название поездки', 'warning');
+                return;
+            }
+            if (title.length < 3) {
+                showNotification('Название должно содержать минимум 3 символа', 'warning');
+                return;
+            }
+            if (title.length > 50) {
+                showNotification('Название не может превышать 50 символов', 'warning');
+                return;
+            }
+
+            // Валидация описания
+            if (description && description.length > 100) {
+                showNotification('Описание не может превышать 100 символов', 'warning');
+                return;
+            }
+
+            // Валидация бюджета
+            if (totalBudget < 0) {
+                showNotification('Бюджет не может быть отрицательным', 'warning');
+                return;
+            }
+            if (totalBudget.toString().length > 10) {
+                showNotification('Бюджет не может превышать 10 знаков', 'warning');
+                return;
+            }
+
+            if (!startDate || !endDate) {
+                showNotification('Заполните даты поездки', 'warning');
+                return;
+            }
+
+            if (new Date(endDate) <= new Date(startDate)) {
+                showNotification('Дата окончания должна быть позже даты начала', 'warning');
+                return;
+            }
+
+            const invitedFriends = [];
+            document.querySelectorAll('#friendsForInvite input:checked').forEach(cb => {
+                invitedFriends.push(parseInt(cb.value));
+            });
+
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+                const response = await fetch('/Trips/CreateTrip', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        description: description,
+                        startDate: new Date(startDate).toISOString(),
+                        endDate: new Date(endDate).toISOString(),
+                        totalBudget: totalBudget,
+                        isPublic: document.getElementById('isPublic').checked,
+                        invitedFriends: invitedFriends
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification('Поездка успешно создана!', 'success');
+
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('createTripModal'));
+                    modal.hide();
+                    document.getElementById('createTripForm').reset();
+                    await loadTrips();
+                } else {
+                    showNotification(data.message || 'Ошибка при создании поездки', 'danger');
+                }
+            } catch (error) {
+                console.error('Error creating trip:', error);
+                showNotification('Не удалось создать поездку', 'danger');
+            }
+        }
+
+                // Открыть модальное окно приглашения друзей
+        async function openInviteModal(tripId) {
+            document.getElementById('inviteTripId').value = tripId;
+
+            try {
+                const response = await fetch(`/Trips/GetFriendsForInvite?tripId=${tripId}`);
+                const data = await response.json();
+
+                const container = document.getElementById('inviteFriendsList');
+
+                if (!data.success || !data.data || data.data.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-user-friends fa-3x mb-3 opacity-50"></i>
+                            <p>Нет друзей для приглашения</p>
+                            <small>Все ваши друзья уже в поездке или уже приглашены</small>
+                        </div>
+                    `;
+                } else {
+                    let html = '';
+                    data.data.forEach(friend => {
+                        html += `
+                                    <div class="friend-checkbox">
+            <input class="form-check-input flex-shrink-0" type="checkbox" value="${friend.friendId}" id="friend_${friend.friendId}">
+            <label class="form-check-label d-flex align-items-center flex-grow-1 min-width-0" for="friend_${friend.friendId}">
+                <div class="me-2 flex-shrink-0">
+                    ${friend.avatarPath ?
+                        `<img src="${friend.avatarPath}" class="rounded-circle" width="32" height="32" style="object-fit: cover;">` :
+                        `<div class="avatar-circle-sm bg-primary" style="width:32px;height:32px; font-size:12px;">${getInitials(friend.fullName)}</div>`
+                    }
+                </div>
+                <div class="min-width-0">
+                    <div class="fw-bold text-truncate" style="max-width: 200px;" title="${escapeHtml(friend.fullName)}">${escapeHtml(friend.fullName)}</div>
+                    <small class="text-muted text-truncate d-block" style="max-width: 200px;" title="${escapeHtml(friend.email)}">${escapeHtml(friend.email)}</small>
+                </div>
+            </label>
+        </div>
+                        `;
+                    });
+
+                    // Добавляем поле для сообщения
+                    html += `
+                        <div class="mt-3">
+                            <label class="form-label">Сообщение (необязательно)</label>
+                            <textarea class="form-control" id="invitationMessage" rows="2" placeholder="Напишите личное сообщение..."></textarea>
+                        </div>
+                    `;
+
+                    container.innerHTML = html;
+                }
+
+                const modal = new bootstrap.Modal(document.getElementById('inviteFriendsModal'));
+                modal.show();
+            } catch (error) {
+                console.error('Error loading friends for invite:', error);
+                showNotification('Не удалось загрузить друзей', 'danger');
+            }
+        }
+
+        // Отправить приглашения
+                async function sendInvites() {
+            const tripId = document.getElementById('inviteTripId').value;
+            const message = document.getElementById('invitationMessage')?.value || '';
+
+            const friendIds = [];
+            document.querySelectorAll('#inviteFriendsList input:checked').forEach(cb => {
+                friendIds.push(parseInt(cb.value));
+            });
+
+            if (friendIds.length === 0) {
+                showNotification('Выберите друзей для приглашения', 'warning');
+                return;
+            }
+
+            let successCount = 0;
+
+            for (const friendId of friendIds) {
+                const success = await sendInvitation(tripId, friendId, message);
+                if (success) successCount++;
+            }
+
+            if (successCount > 0) {
+                showNotification(`Приглашения отправлены ${successCount} друзьям!`, 'success');
+
+                const modal = bootstrap.Modal.getInstance(document.getElementById('inviteFriendsModal'));
+                modal.hide();
+            }
+        }
+                // Добавьте эту функцию
+                function validateBudget(input) {
+            let value = input.value;
+
+            // Удаляем все кроме цифр и точки
+            value = value.replace(/[^\d.]/g, '');
+
+            // Ограничиваем длину до 10 символов
+            if (value.length > 10) {
+                value = value.slice(0, 10);
+            }
+
+            // Проверяем на отрицательное значение
+            if (parseFloat(value) < 0) {
+                value = '0';
+            }
+
+            input.value = value;
+        }
+        // Перейти в чат поездки
+        function goToTripChat(chatId) {
+            window.location.href = `/Home/Chats?chatId=${chatId}`;
+        }
+
+        // Просмотр деталей поездки
+        function viewTripDetails(tripId) {
+            showNotification('Функция просмотра деталей в разработке', 'info');
+        }
+
+        // Подтверждение удаления поездки
+                // Подтверждение удаления поездки
+        function confirmDeleteTrip(tripId, tripTitle, hasChat) {
+            document.getElementById('deleteTripId').value = tripId;
+            document.getElementById('deleteTripHasChat').value = hasChat;
+            document.getElementById('deleteTripTitle').textContent = `"${tripTitle}"`;
+
+            // Всегда показываем шаг 1 сначала
+            document.getElementById('deleteStep1').style.display = 'block';
+            document.getElementById('deleteStep2').style.display = 'none';
+            document.getElementById('deleteStep1Btn').style.display = 'inline-flex';
+            document.getElementById('deleteStep2Btns').style.display = 'none';
+
+            // Обновляем текст кнопки
+            const deleteBtn = document.getElementById('deleteStep1Btn');
+            if (!hasChat) {
+                deleteBtn.innerHTML = '<i class="fas fa-trash-alt me-2"></i>Удалить поездку';
+            } else {
+                deleteBtn.innerHTML = '<i class="fas fa-trash-alt me-2"></i>Далее';
+            }
+
+            deleteTripModal.show();
+        }
+        // Переход ко второму шагу
+                // Переход ко второму шагу
+        function proceedToStep2() {
+            const hasChat = document.getElementById('deleteTripHasChat').value === 'true';
+
+            if (hasChat) {
+                document.getElementById('deleteStep1').style.display = 'none';
+                document.getElementById('deleteStep2').style.display = 'block';
+                document.getElementById('deleteStep1Btn').style.display = 'none';
+                document.getElementById('deleteStep2Btns').style.display = 'inline-flex';
+            } else {
+                deleteTripWithOption();
+            }
+        }
+
+        // Возврат к первому шагу
+        function backToStep1() {
+            document.getElementById('deleteStep1').style.display = 'block';
+            document.getElementById('deleteStep2').style.display = 'none';
+            document.getElementById('deleteStep1Btn').style.display = 'inline-block';
+            document.getElementById('deleteStep2Btns').style.display = 'none';
+        }
+
+        // Удаление поездки с опцией
+        function deleteTripWithOption() {
+            const tripId = document.getElementById('deleteTripId').value;
+            const deleteChat = document.getElementById('deleteChatYes').checked;
+            deleteTrip(tripId, deleteChat);
+        }
+
+        // Удаление поездки
+        async function deleteTrip(tripId, deleteChat = true) {
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+                const response = await fetch(`/Trips/DeleteTrip/${tripId}?deleteChat=${deleteChat}`, {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': token
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification('Поездка успешно удалена', 'success');
+                    deleteTripModal.hide();
+                    await loadTrips();
+                } else {
+                    showNotification(data.message || 'Ошибка при удалении поездки', 'danger');
+                }
+            } catch (error) {
+                console.error('Error deleting trip:', error);
+                showNotification('Не удалось удалить поездку', 'danger');
+            }
+        }
+
+               // Исправленная функция открытия модального окна редактирования
+        async function openEditTripModal(tripId) {
+            console.log('Opening edit modal for trip:', tripId);
+
+            try {
+                const response = await fetch(`/Trips/GetTripForEdit/${tripId}`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Edit trip data:', data);
+
+                if (data.success && data.data) {
+                    const trip = data.data;
+
+                    // Заполняем поля формы
+                    document.getElementById('editTripId').value = trip.idTrip;
+                    document.getElementById('editTripName').value = trip.title || '';
+                    document.getElementById('editTripDescription').value = trip.description || '';
+                    document.getElementById('editStartDate').value = trip.startDate;
+                    document.getElementById('editEndDate').value = trip.endDate;
+
+                    // Заполняем бюджет (если есть поле)
+                    const budgetInput = document.getElementById('editTotalBudget');
+                    if (budgetInput) {
+                        budgetInput.value = trip.totalBudget !== undefined ? trip.totalBudget : 0;
+                    }
+
+                    // Настройка чата
+                    const publicSwitch = document.getElementById('editPublicSwitch');
+                    const isPublicCheckbox = document.getElementById('editIsPublic');
+                    const chatInfo = document.getElementById('editChatInfo');
+
+                    if (publicSwitch) {
+                        publicSwitch.style.display = 'block';
+
+                        if (trip.hasChat) {
+                            // У поездки есть чат
+                            if (isPublicCheckbox) {
+                                isPublicCheckbox.checked = true;
+                                isPublicCheckbox.disabled = true;
+                            }
+
+                            if (chatInfo) {
+                                chatInfo.style.display = 'block';
+                                document.getElementById('editChatInfoText').textContent =
+                                    'У поездки уже есть чат. Его нельзя отключить, но можно удалить отдельно при удалении поездки.';
+                            }
+                        } else {
+                            // Нет чата
+                            if (isPublicCheckbox) {
+                                isPublicCheckbox.checked = trip.isPublic || false;
+                                isPublicCheckbox.disabled = false;
+                            }
+
+                            if (chatInfo) {
+                                chatInfo.style.display = 'none';
+                            }
+                        }
+                    }
+
+                    // Показываем модальное окно
+                    if (editTripModal) {
+                        editTripModal.show();
+                    } else {
+                        // Если модальное окно не инициализировано, инициализируем его
+                        const modalElement = document.getElementById('editTripModal');
+                        if (modalElement) {
+                            editTripModal = new bootstrap.Modal(modalElement);
+                            editTripModal.show();
+                        } else {
+                            showNotification('Ошибка: модальное окно не найдено', 'danger');
+                        }
+                    }
+                } else {
+                    showNotification(data.message || 'Ошибка загрузки данных поездки', 'danger');
+                }
+            } catch (error) {
+                console.error('Error loading trip for edit:', error);
+                showNotification('Не удалось загрузить данные поездки. Пожалуйста, обновите страницу.', 'danger');
+            }
+        }
+
+        // Обновление поездки
+                // Исправленная функция обновления поездки
+        async function updateTrip(event) {
+            event.preventDefault();
+
+            // Получаем ID поездки
+            const tripId = document.getElementById('editTripId')?.value;
+            if (!tripId) {
+                showNotification('Ошибка: ID поездки не найден', 'danger');
+                return;
+            }
+
+            const title = document.getElementById('editTripName')?.value?.trim() || '';
+            const description = document.getElementById('editTripDescription')?.value || '';
+            const startDate = document.getElementById('editStartDate')?.value;
+            const endDate = document.getElementById('editEndDate')?.value;
+
+            // Получаем бюджет (с проверкой существования поля)
+            let totalBudget = 0;
+            const budgetInput = document.getElementById('editTotalBudget');
+            if (budgetInput) {
+                totalBudget = parseFloat(budgetInput.value) || 0;
+            }
+
+            const isPublicCheckbox = document.getElementById('editIsPublic');
+            const isPublic = isPublicCheckbox ? isPublicCheckbox.checked : false;
+
+            // Валидация
+            if (!title) {
+                showNotification('Введите название поездки', 'warning');
+                return;
+            }
+            if (title.length < 3) {
+                showNotification('Название должно содержать минимум 3 символа', 'warning');
+                return;
+            }
+            if (title.length > 50) {
+                showNotification('Название не может превышать 50 символов', 'warning');
+                return;
+            }
+
+            if (description && description.length > 100) {
+                showNotification('Описание не может превышать 100 символов', 'warning');
+                return;
+            }
+
+            if (totalBudget < 0) {
+                showNotification('Бюджет не может быть отрицательным', 'warning');
+                return;
+            }
+            if (totalBudget.toString().length > 10) {
+                showNotification('Бюджет не может превышать 10 знаков', 'warning');
+                return;
+            }
+
+            if (!startDate || !endDate) {
+                showNotification('Заполните даты поездки', 'warning');
+                return;
+            }
+
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+
+            if (end <= start) {
+                showNotification('Дата окончания должна быть позже даты начала', 'warning');
+                return;
+            }
+
+            // Проверка, что поездка не завершена
+            const now = new Date();
+            if (end < now) {
+                showNotification('Нельзя редактировать завершенные поездки', 'warning');
+                return;
+            }
+
+            // Показываем индикатор загрузки
+            const submitBtn = event.target?.querySelector('.btn-primary') || document.querySelector('#editTripModal .btn-primary');
+            const originalText = submitBtn?.innerHTML;
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Сохранение...';
+            }
+
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+                const requestBody = {
+                    id: parseInt(tripId),
+                    title: title,
+                    description: description,
+                    startDate: start.toISOString(),
+                    endDate: end.toISOString(),
+                    totalBudget: totalBudget,
+                    isPublic: isPublic
+                };
+
+                console.log('Sending update request:', requestBody);
+
+                const response = await fetch('/Trips/UpdateTrip', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await response.json();
+                console.log('Update response:', data);
+
+                if (data.success) {
+                    showNotification('Поездка успешно обновлена!', 'success');
+
+                    // Закрываем модальное окно
+                    if (editTripModal) {
+                        editTripModal.hide();
+                    }
+
+                    // Перезагружаем список поездок
+                    await loadTrips();
+                } else {
+                    showNotification(data.message || 'Ошибка при обновлении поездки', 'danger');
+                }
+            } catch (error) {
+                console.error('Error updating trip:', error);
+                showNotification('Не удалось обновить поездку. Проверьте подключение к интернету.', 'danger');
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
+            }
+        }
+
+        // Вспомогательные функции
+        function getDaysWord(days) {
+            if (days % 10 === 1 && days % 100 !== 11) return 'день';
+            if ([2,3,4].includes(days % 10) && ![12,13,14].includes(days % 100)) return 'дня';
+            return 'дней';
+        }
+
+        function formatMoney(amount) {
+            if (amount === null || amount === undefined) return '0';
+            return amount.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+        }
+
+        function getInitials(fullName) {
+            if (!fullName) return '?';
+            const parts = fullName.split(' ');
+            if (parts.length >= 2) {
+                return (parts[0][0] + parts[1][0]).toUpperCase();
+            }
+            return parts[0][0].toUpperCase();
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showNotification(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.style.top = '20px';
+            alertDiv.style.right = '20px';
+            alertDiv.style.zIndex = '9999';
+            alertDiv.style.minWidth = '300px';
+            alertDiv.style.maxWidth = '400px';
+            alertDiv.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' :
+                                        type === 'danger' ? 'fa-exclamation-circle' :
+                                        'fa-info-circle'} me-2"></i>
+                    <div class="flex-grow-1">${message}</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+
+            document.body.appendChild(alertDiv);
+
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.classList.remove('show');
+                    setTimeout(() => alertDiv.remove(), 150);
+                }
+            }, 3000);
+        }
+                        async function openManageParticipantsModal(tripId) {
+            document.getElementById('manageParticipantsTripId').value = tripId;
+
+            try {
+                const response = await fetch(`/Trips/GetTripParticipants?tripId=${tripId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    renderParticipantsList(data.data.participants, data.data.chatId, tripId);
+                    manageParticipantsModal.show();
+                } else {
+                    showNotification(data.message || 'Ошибка загрузки участников', 'danger');
+                }
+            } catch (error) {
+                console.error('Error loading participants:', error);
+                showNotification('Не удалось загрузить участников', 'danger');
+            }
+        }
+
+        // Отображение списка участников
+                function renderParticipantsList(participants, chatId, tripId) {
+            const container = document.getElementById('participantsList');
+
+            if (!participants || participants.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Нет участников</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Определяем, является ли текущий пользователь организатором
+            const currentUserId = @Json.Serialize(Context.Session.GetInt32("UserId"));
+            const currentUserIsCreator = participants.some(p => p.isCreator && p.isCurrentUser);
+
+            let html = '<div class="list-group list-group-flush">';
+
+            participants.forEach(participant => {
+                const joinedDate = new Date(participant.joinedAt).toLocaleDateString('ru-RU', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                });
+
+                const roleBadge = participant.isCreator
+                    ? '<span class="badge bg-primary ms-2">Организатор</span>'
+                    : '<span class="badge bg-secondary ms-2">Участник</span>';
+
+                const friendBadge = participant.isFriend
+                    ? '<span class="badge bg-success ms-2"><i class="fas fa-user-friends me-1"></i>Друг</span>'
+                    : '';
+
+                let actionButtons = '';
+
+                // Кнопки для организатора (может удалять других участников, кроме себя)
+                if (currentUserIsCreator && !participant.isCreator && !participant.isCurrentUser) {
+                    actionButtons = `
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-danger" onclick="removeParticipant(${tripId}, ${participant.userId})" title="Удалить из поездки">
+                                <i class="fas fa-user-minus"></i>
+                            </button>
+                            ${chatId ? `
+                                <button class="btn btn-sm btn-outline-primary" onclick="startPrivateChatWithParticipant(${participant.userId})" title="Написать лично">
+                                    <i class="fas fa-comment"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+                }
+                // Кнопки для обычного участника (может только покинуть поездку, если он не организатор)
+                else if (!currentUserIsCreator && participant.isCurrentUser && !participant.isCreator) {
+                    actionButtons = `
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-warning" onclick="leaveTrip(${tripId})" title="Покинуть поездку">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </button>
+                            ${chatId ? `
+                                <button class="btn btn-sm btn-outline-primary" onclick="startPrivateChatWithParticipant(${participant.userId})" title="Написать лично">
+                                    <i class="fas fa-comment"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+                }
+                // Кнопка для просмотра участников (для всех)
+                else if (!participant.isCurrentUser && chatId) {
+                    actionButtons = `
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-primary" onclick="startPrivateChatWithParticipant(${participant.userId})" title="Написать лично">
+                                <i class="fas fa-comment"></i>
+                            </button>
+                        </div>
+                    `;
+                }
+
+                html += `
+                    <div class="list-group-item d-flex justify-content-between align-items-center py-3" data-user-id="${participant.userId}">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                ${participant.avatarPath ?
+                                    `<img src="${participant.avatarPath}" class="rounded-circle" width="48" height="48" style="object-fit: cover;">` :
+                                    `<div class="avatar-circle-sm bg-primary" style="width:48px;height:48px; font-size:18px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">${getInitials(participant.fullName)}</div>`
+                                }
+                            </div>
+                            <div>
+                                <div class="fw-bold">
+                                    ${escapeHtml(participant.fullName)}
+                                    ${roleBadge}
+                                    ${friendBadge}
+                                </div>
+                                <small class="text-muted">Присоединился: ${joinedDate}</small>
+                            </div>
+                        </div>
+                        ${actionButtons}
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+                async function removeParticipant(tripId, userIdToRemove) {
+            if (!confirm('Вы уверены, что хотите удалить этого участника из поездки? Он также будет удален из общего чата.')) {
+                return;
+            }
+
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+                const response = await fetch('/Trips/RemoveParticipant', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify({
+                        tripId: tripId,
+                        userId: userIdToRemove
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification(data.message, 'success');
+
+                    // Обновляем список участников
+                    await openManageParticipantsModal(tripId);
+
+                    // Обновляем карточки поездок
+                    await loadTrips();
+                } else {
+                    showNotification(data.message || 'Ошибка при удалении участника', 'danger');
+                }
+            } catch (error) {
+                console.error('Error removing participant:', error);
+                showNotification('Не удалось удалить участника', 'danger');
+            }
+        }
+
+        // Покинуть поездку (для обычных участников)
+        async function leaveTrip(tripId) {
+            if (!confirm('Вы уверены, что хотите покинуть эту поездку? Вы также будете удалены из общего чата.')) {
+                return;
+            }
+
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+                const response = await fetch('/Trips/RemoveParticipant', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify({
+                        tripId: tripId,
+                        userId: currentUserId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification(data.message, 'success');
+
+                    // Закрываем модальное окно
+                    manageParticipantsModal.hide();
+
+                    // Обновляем карточки поездок
+                    await loadTrips();
+                } else {
+                    showNotification(data.message || 'Ошибка при выходе из поездки', 'danger');
+                }
+            } catch (error) {
+                console.error('Error leaving trip:', error);
+                showNotification('Не удалось покинуть поездку', 'danger');
+            }
+        }
+
+        // Начать личный чат с участником
+        async function startPrivateChatWithParticipant(userId) {
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+                const response = await fetch('/Chats/CreatePrivateChat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify(userId)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const chatId = result.data;
+                    window.location.href = `/Home/Chats?chatId=${chatId}`;
+                } else {
+                    showNotification(result.message || 'Ошибка при создании чата', 'danger');
+                }
+            } catch (error) {
+                console.error('Error starting private chat:', error);
+                showNotification('Не удалось создать чат', 'danger');
+            }
+        }
+                // Загрузка приглашений
+        async function loadInvitations() {
+            try {
+                const response = await fetch('/Trips/GetMyInvitations');
+                const data = await response.json();
+
+                if (data.success) {
+                    renderInvitations(data.data);
+                } else {
+                    console.error('Error loading invitations:', data.message);
+                }
+            } catch (error) {
+                console.error('Error loading invitations:', error);
+            }
+        }
+
+                // Отображение приглашений
+        function renderInvitations(invitations) {
+            const container = document.getElementById('invitationsContainer');
+
+            if (!invitations || invitations.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-envelope-open-text fa-3x text-muted mb-3"></i>
+                        <h5>Нет приглашений</h5>
+                        <p class="text-muted">Когда вас пригласят в поездку, они появятся здесь</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="row g-4">';
+
+            invitations.forEach(inv => {
+                const date = new Date(inv.invitedAt).toLocaleDateString('ru-RU', {
+                    day: 'numeric',
+                    month: 'long',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                // Обрезаем длинное название поездки
+                const tripTitle = inv.tripTitle || 'Без названия';
+                const shortTripTitle = tripTitle.length > 40 ? tripTitle.substring(0, 37) + '...' : tripTitle;
+
+                // Обрезаем длинное имя пригласившего
+                const inviterName = inv.inviterName || 'Пользователь';
+                const shortInviterName = inviterName.length > 25 ? inviterName.substring(0, 22) + '...' : inviterName;
+
+                // Обрезаем длинное сообщение
+                let shortMessage = inv.message || '';
+                if (shortMessage.length > 80) {
+                    shortMessage = shortMessage.substring(0, 77) + '...';
+                }
+
+                html += `
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card border-warning invitation-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="me-3 flex-shrink-0">
+                                        ${inv.inviterAvatar ?
+                                            `<img src="${inv.inviterAvatar}" class="rounded-circle" width="50" height="50" style="object-fit: cover;">` :
+                                            `<div class="avatar-circle-sm bg-warning" style="width:50px;height:50px; font-size:20px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">${getInitials(inviterName)}</div>`
+                                        }
+                                    </div>
+                                    <div class="min-width-0 flex-grow-1">
+                                        <h5 class="mb-0" title="${escapeHtml(tripTitle)}">${escapeHtml(shortTripTitle)}</h5>
+                                        <small class="text-muted inviter-name" title="${escapeHtml(inviterName)}">
+                                            <i class="fas fa-user me-1"></i>${escapeHtml(shortInviterName)}
+                                        </small>
+                                    </div>
+                                </div>
+
+                                ${inv.message ? `
+                                    <div class="alert alert-light mt-2 p-2" title="${escapeHtml(inv.message)}">
+                                        <i class="fas fa-quote-left text-muted me-1"></i>
+                                        "${escapeHtml(shortMessage)}"
+                                    </div>
+                                ` : ''}
+
+                                <div class="text-muted small mb-3">
+                                    <i class="far fa-clock me-1"></i>${date}
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-success flex-grow-1" onclick="respondToInvitation(${inv.id}, true)">
+                                        <i class="fas fa-check me-1"></i>Принять
+                                    </button>
+                                    <button class="btn btn-outline-danger flex-grow-1" onclick="respondToInvitation(${inv.id}, false)">
+                                        <i class="fas fa-times me-1"></i>Отклонить
+                                    </button>
+                                </div>
+
+                                ${inv.chatId ? `
+                                    <div class="mt-2 text-center">
+                                        <small class="text-muted">
+                                            <i class="fas fa-comments me-1"></i>
+                                            После принятия вы попадете в общий чат поездки
+                                        </small>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Ответ на приглашение
+        async function respondToInvitation(invitationId, accept) {
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+                const response = await fetch('/Trips/RespondToInvitation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify({
+                        invitationId: invitationId,
+                        accept: accept
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification(data.message, accept ? 'success' : 'info');
+
+                    // Перезагружаем приглашения и поездки
+                    await loadInvitations();
+                    await loadTrips();
+                } else {
+                    showNotification(data.message || 'Ошибка', 'danger');
+                }
+            } catch (error) {
+                console.error('Error responding to invitation:', error);
+                showNotification('Не удалось обработать приглашение', 'danger');
+            }
+        }
+
+        // Отправка приглашения другу (для использования в openInviteModal)
+        async function sendInvitation(tripId, friendId, message) {
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+                const response = await fetch('/Trips/SendInvitation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify({
+                        tripId: tripId,
+                        friendId: friendId,
+                        message: message
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    return true;
+                } else {
+                    showNotification(data.message || 'Ошибка при отправке приглашения', 'danger');
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error sending invitation:', error);
+                showNotification('Не удалось отправить приглашение', 'danger');
+                return false;
+            }
+        }
+                function applyFilters(trips) {
+            let filtered = [...trips];
+
+            // Фильтр по роли
+            if (filterRole !== 'all') {
+                filtered = filtered.filter(trip => {
+                    if (filterRole === 'organizer') {
+                        return trip.createdBy.id === currentUserId;
+                    } else if (filterRole === 'participant') {
+                        return trip.createdBy.id !== currentUserId;
+                    }
+                    return true;
+                });
+            }
+
+            // Фильтр по участникам
+            if (filterParticipants !== 'all') {
+                filtered = filtered.filter(trip => {
+                    const hasFriends = trip.participants.some(p => p.isFriend && p.userId !== currentUserId);
+                    const allParticipants = trip.participants.filter(p => p.userId !== currentUserId);
+                    const allAreFriends = allParticipants.length > 0 && allParticipants.every(p => p.isFriend);
+                    const noFriends = !hasFriends;
+
+                    if (filterParticipants === 'with-friends') {
+                        return hasFriends;
+                    } else if (filterParticipants === 'only-friends') {
+                        return allAreFriends;
+                    } else if (filterParticipants === 'without-friends') {
+                        return noFriends;
+                    }
+                    return true;
+                });
+            }
+
+            return filtered;
+        }
+    </script>
+}

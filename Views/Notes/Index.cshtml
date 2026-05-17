@@ -1,0 +1,1323 @@
+﻿<div class="mobile-header-spacer d-block d-lg-none" style="height: 70px;"></div>
+
+@{
+    ViewData["Title"] = "Заметки";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+
+            <!-- HEADER -->
+            <div class="page-header-section mb-4">
+                <div class="page-header-icon">
+                    <i class="fas fa-sticky-note text-white"></i>
+                </div>
+                <div class="page-header-content">
+                    <h1 class="page-title">Заметки</h1>
+                    <p class="page-subtitle">Ваши личные записи, списки и идеи</p>
+                </div>
+            </div>
+
+            <!-- Кнопка создания заметки -->
+            <div class="mb-4">
+                <button class="btn btn-primary btn-lg" id="createNoteBtn">
+                    <i class="fas fa-plus me-2"></i>Создать заметку
+                </button>
+            </div>
+
+            <!-- Список заметок -->
+            <div id="notesList" class="notes-grid">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для создания/редактирования заметки -->
+<div class="modal fade" id="noteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="noteModalTitle">
+                    <i class="fas fa-sticky-note text-primary me-2"></i>
+                    Создать заметку
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="noteId" value="0">
+
+                <input type="text" class="form-control form-control-lg" id="noteTitle" placeholder="Название заметки" maxlength="200">
+                <div class="d-flex justify-content-end mt-1">
+                    <small class="text-muted" id="titleCounter">0/200 символов</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Содержание</label>
+                    <textarea class="form-control" id="noteContent" rows="6" placeholder="Напишите что-нибудь..." maxlength="500"></textarea>
+                    <div class="d-flex justify-content-end mt-1">
+                        <small class="text-muted" id="contentCounter">0/500 символов</small>
+                    </div>
+                </div>
+
+                <!-- Чек-лист -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <span><i class="fas fa-check-square me-2"></i>Чек-лист</span>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="openAddChecklistItemModal()">
+                            <i class="fas fa-plus me-1"></i>Добавить пункт
+                        </button>
+                    </label>
+                    <div id="checklistItemsContainer" class="border rounded p-2 checklist-container">
+                        <div class="text-center text-muted py-2">
+                            <i class="fas fa-list-ul me-1"></i>Нет пунктов
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label fw-bold">Цвет</label>
+                        <div class="d-flex flex-wrap gap-2" id="colorOptions">
+                            <div class="color-option" style="background: #ffffff;" data-color="white"></div>
+                            <div class="color-option" style="background: #fef9c3;" data-color="#fef9c3"></div>
+                            <div class="color-option" style="background: #d9f99d;" data-color="#d9f99d"></div>
+                            <div class="color-option" style="background: #bfdbfe;" data-color="#bfdbfe"></div>
+                            <div class="color-option" style="background: #fbcfe8;" data-color="#fbcfe8"></div>
+                            <div class="color-option" style="background: #fed7aa;" data-color="#fed7aa"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="form-check mt-md-4">
+                            <input class="form-check-input" type="checkbox" id="notePinned">
+                            <label class="form-check-label fw-bold" for="notePinned">
+                                <i class="fas fa-thumbtack me-1"></i>Закрепить заметку
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="saveNoteBtn">
+                    <i class="fas fa-save me-2"></i>Сохранить
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для добавления/редактирования пункта чек-листа -->
+<div class="modal fade" id="checklistItemModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="checklistItemModalTitle">
+                    <i class="fas fa-plus-circle text-primary me-2"></i>
+                    Добавить пункт
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editingItemId" value="0">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Текст пункта</label>
+                    <textarea class="form-control" id="checklistItemText" rows="3" maxlength="50"
+                              placeholder="Например: Паспорт, Билеты..."></textarea>
+                    <div class="d-flex justify-content-end mt-1">
+                        <small class="text-muted" id="checklistItemCounter">0/50 символов</small>
+                    </div>
+                </div>
+                <div class="text-muted small">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Нажмите Ctrl + Enter для быстрого добавления
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="saveChecklistItemBtn">
+                    <i class="fas fa-save me-2"></i>Сохранить
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно подтверждения удаления заметки -->
+<div class="modal fade" id="deleteNoteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-danger">
+                    <i class="fas fa-trash-alt me-2"></i>Удалить заметку?
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить эту заметку? Это действие нельзя отменить.</p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Удалить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно подтверждения удаления пункта -->
+<div class="modal fade" id="deleteChecklistItemModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-danger">
+                    <i class="fas fa-trash-alt me-2"></i>Удалить пункт?
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить этот пункт?</p>
+                <p class="text-muted small" id="deleteItemText"></p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteChecklistItemBtn">Удалить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* HEADER */
+    .page-header-section {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 25px 30px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .page-header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(to bottom, #0379D9, #40B624);
+        }
+
+    .page-header-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #0379D9, #40B624);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 4px 15px rgba(3, 121, 217, 0.2);
+        flex-shrink: 0;
+    }
+
+        .page-header-icon i {
+            color: white !important;
+        }
+
+    .page-header-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .page-title {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 800;
+        font-size: 2.5rem;
+        color: #0379D9;
+        margin: 0 0 8px 0;
+        line-height: 1.2;
+        word-break: break-word;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        font-size: 1.1rem;
+        margin: 0;
+        line-height: 1.4;
+        word-break: break-word;
+    }
+
+    /* Контейнер для заметок - центрирование пустого состояния */
+    #notesList {
+        min-height: 50vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        /* Когда есть заметки - убираем центрирование и показываем сетку */
+        #notesList:has(.note-card) {
+            display: block;
+            min-height: auto;
+        }
+
+    /* Сетка заметок */
+    .notes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+    }
+
+    /* Карточка заметки */
+    .note-card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        background: white;
+        height: 100%;
+    }
+
+        .note-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .note-card.pinned {
+            border-left: 4px solid #f59e0b;
+        }
+
+        .note-card .card-body {
+            padding: 1.5rem;
+        }
+
+    .note-title {
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .note-preview {
+        color: #64748b;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+    }
+
+    .note-date {
+        font-size: 0.7rem;
+        color: #94a3b8;
+        margin-top: 0.75rem;
+    }
+
+    .note-actions {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        display: none;
+        gap: 8px;
+    }
+
+    .note-card:hover .note-actions {
+        display: flex;
+    }
+
+    .note-actions .btn {
+        padding: 4px 8px;
+        font-size: 0.75rem;
+        border-radius: 8px;
+        background: white;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .pinned-icon {
+        color: #f59e0b;
+        font-size: 0.9rem;
+    }
+
+    /* Цветовые опции */
+    .color-option {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .color-option.selected {
+            border-color: #0379D9;
+            box-shadow: 0 0 0 2px rgba(3, 121, 217, 0.3);
+        }
+
+    /* Чек-лист */
+    .checklist-container {
+        max-height: 250px;
+        overflow-y: auto;
+    }
+
+    .checklist-item {
+        transition: all 0.2s ease;
+    }
+
+        .checklist-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .checklist-item.completed .checklist-text {
+            text-decoration: line-through;
+            color: #6c757d;
+        }
+
+    .checklist-text {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        word-break: break-word;
+    }
+
+        .checklist-text:hover {
+            background-color: #e9ecef;
+            border-radius: 4px;
+            padding: 2px 4px;
+            margin: -2px -4px;
+        }
+
+    /* Кнопки */
+    .btn-primary {
+        background: #0379D9;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+        .btn-primary:hover {
+            background: #0356a8;
+            transform: translateY(-2px);
+        }
+
+    .btn-outline-primary {
+        border-radius: 12px;
+        font-weight: 600;
+    }
+
+    /* Форма */
+    .form-control, .form-select {
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        padding: 12px 16px;
+        font-family: 'Nunito', sans-serif;
+    }
+
+        .form-control:focus {
+            border-color: #0379D9;
+            box-shadow: 0 0 0 3px rgba(3, 121, 217, 0.1);
+            outline: none;
+        }
+
+    /* Уведомления */
+    .notification-alert {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 280px;
+        max-width: 350px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @@keyframes slideIn {
+        from
+
+    {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    }
+
+    /* Модальные окна */
+    .modal-open {
+        overflow: auto !important;
+        padding-right: 0 !important;
+    }
+
+    .modal {
+        padding-right: 0 !important;
+    }
+
+    body.modal-open {
+        overflow: auto !important;
+    }
+
+    .modal.fade .modal-dialog {
+        transition: transform 0.3s ease-out;
+        transform: scale(0.95);
+    }
+
+    .modal.show .modal-dialog {
+        transform: scale(1);
+    }
+
+    /* ========== МОБИЛЬНАЯ АДАПТАЦИЯ ========== */
+
+    @@media (max-width: 768px) {
+        .page-header-section
+
+    {
+        padding: 20px;
+        gap: 15px;
+    }
+
+    .page-header-section::before {
+        width: 100%;
+        height: 6px;
+        top: 0;
+        left: 0;
+        background: linear-gradient(to right, #0379D9, #40B624);
+    }
+
+    .page-header-icon {
+        width: 55px;
+        height: 55px;
+        font-size: 1.5rem;
+    }
+
+    .page-title {
+        font-size: 1.6rem;
+        margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+        font-size: 0.95rem;
+    }
+
+    #notesList {
+        min-height: 40vh;
+    }
+
+    .notes-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .note-card .card-body {
+        padding: 1rem;
+    }
+
+    .note-title {
+        font-size: 1rem;
+        padding-right: 40px;
+    }
+
+    .note-preview {
+        font-size: 0.85rem;
+    }
+
+    .btn-primary.btn-lg {
+        width: 100%;
+        font-size: 1rem;
+        padding: 12px;
+    }
+
+    /* Модальное окно на мобильных */
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    .modal-content {
+        border-radius: 16px;
+    }
+
+    .modal-body {
+        padding: 1rem;
+    }
+
+    .color-option {
+        width: 32px;
+        height: 32px;
+    }
+
+    }
+
+    @@media (max-width: 576px) {
+        .page-header-section
+
+    {
+        padding: 15px;
+        gap: 12px;
+    }
+
+    .page-header-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.3rem;
+    }
+
+    .page-title {
+        font-size: 1.4rem;
+    }
+
+    .page-subtitle {
+        font-size: 0.85rem;
+    }
+
+    #notesList {
+        min-height: 35vh;
+    }
+
+    .note-card .card-body {
+        padding: 0.875rem;
+    }
+
+    .note-title {
+        font-size: 0.95rem;
+    }
+
+    .note-preview {
+        font-size: 0.8rem;
+        -webkit-line-clamp: 2;
+    }
+
+    .checklist-container {
+        max-height: 200px;
+    }
+
+    .color-option {
+        width: 28px;
+        height: 28px;
+    }
+
+    .modal-footer {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+        .modal-footer .btn {
+            width: 100%;
+            margin: 0;
+        }
+
+    }
+
+    /* Маленькие телефоны */
+    @@media (max-width: 380px) {
+        .color-option
+
+    {
+        width: 24px;
+        height: 24px;
+    }
+
+    .note-card .card-body {
+        padding: 0.75rem;
+    }
+
+    #notesList {
+        min-height: 30vh;
+    }
+
+    }
+    /* Фикс для длинных названий заметок */
+    .note-title span {
+        word-break: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+        display: block;
+        max-width: calc(100% - 30px);
+    }
+
+    .note-title {
+        align-items: flex-start;
+    }
+
+    /* Адаптация для мобильных устройств */
+    @@media (max-width: 768px) {
+        .note-title span
+
+    {
+        max-width: calc(100% - 40px);
+        font-size: 0.9rem;
+    }
+
+    }
+
+    @@media (max-width: 576px) {
+        .note-title span
+
+    {
+        max-width: calc(100% - 35px);
+        font-size: 0.85rem;
+    }
+
+    }
+
+    /* Альтернативное решение - многоточие для очень длинных слов */
+    .note-title span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        let currentNoteId = null;
+        let deleteNoteId = null;
+        let currentNoteChecklist = [];
+        let deleteChecklistItemId = null;
+        let checklistItemModal = null;
+        let deleteChecklistItemModal = null;
+
+        // Временный чек-лист для новой заметки
+        let temporaryChecklist = [];
+        let nextTempId = -1;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadNotes();
+
+            document.getElementById('createNoteBtn').addEventListener('click', openCreateModal);
+            document.getElementById('saveNoteBtn').addEventListener('click', saveNote);
+            document.getElementById('confirmDeleteBtn').addEventListener('click', deleteNote);
+
+            // Выбор цвета
+            document.querySelectorAll('.color-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+
+            // Инициализация модального окна чек-листа
+            const modalElement = document.getElementById('checklistItemModal');
+            if (modalElement) {
+                checklistItemModal = new bootstrap.Modal(modalElement);
+                document.getElementById('saveChecklistItemBtn').addEventListener('click', saveChecklistItemModal);
+
+                const textarea = document.getElementById('checklistItemText');
+                if (textarea) {
+                    textarea.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                            e.preventDefault();
+                            saveChecklistItemModal();
+                        }
+                    });
+                }
+            }
+
+            // Инициализация модального окна удаления пункта
+            const deleteModalElement = document.getElementById('deleteChecklistItemModal');
+            if (deleteModalElement) {
+                deleteChecklistItemModal = new bootstrap.Modal(deleteModalElement);
+                document.getElementById('confirmDeleteChecklistItemBtn').addEventListener('click', confirmDeleteChecklistItem);
+            }
+
+            // Исправление для модальных окон
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                modal.addEventListener('show.bs.modal', function() {
+                    const bodyPaddingRight = window.getComputedStyle(document.body).paddingRight;
+                    document.body.style.overflow = 'auto';
+                    document.body.style.paddingRight = bodyPaddingRight;
+                });
+
+                modal.addEventListener('hidden.bs.modal', function() {
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+                });
+            });
+        });
+                function initCounters() {
+            const titleInput = document.getElementById('noteTitle');
+            const contentTextarea = document.getElementById('noteContent');
+            const checklistItemTextarea = document.getElementById('checklistItemText');
+
+            // Счётчик для названия (200 символов)
+            if (titleInput) {
+                const titleCounter = document.getElementById('titleCounter');
+                if (titleCounter) {
+                    titleCounter.textContent = `${titleInput.value.length}/200 символов`;
+                    titleInput.addEventListener('input', function() {
+                        let length = this.value.length;
+                        if (length > 200) {
+                            this.value = this.value.substring(0, 200);
+                            length = 200;
+                        }
+                        titleCounter.textContent = `${length}/200 символов`;
+                        if (length >= 190) {
+                            titleCounter.style.color = '#ffc107';
+                        }
+                        if (length >= 200) {
+                            titleCounter.style.color = '#dc3545';
+                        } else {
+                            titleCounter.style.color = '';
+                        }
+                    });
+                }
+            }
+
+            // Счётчик для содержания (500 символов)
+            if (contentTextarea) {
+                const contentCounter = document.getElementById('contentCounter');
+                if (contentCounter) {
+                    contentCounter.textContent = `${contentTextarea.value.length}/500 символов`;
+                    contentTextarea.addEventListener('input', function() {
+                        let length = this.value.length;
+                        if (length > 500) {
+                            this.value = this.value.substring(0, 500);
+                            length = 500;
+                        }
+                        contentCounter.textContent = `${length}/500 символов`;
+                        if (length >= 480) {
+                            contentCounter.style.color = '#ffc107';
+                        } else if (length >= 500) {
+                            contentCounter.style.color = '#dc3545';
+                        } else {
+                            contentCounter.style.color = '';
+                        }
+                    });
+                }
+            }
+
+            // Счётчик для пункта чек-листа (50 символов)
+            if (checklistItemTextarea) {
+                const checklistCounter = document.getElementById('checklistItemCounter');
+                if (checklistCounter) {
+                    checklistCounter.textContent = `${checklistItemTextarea.value.length}/50 символов`;
+                    checklistItemTextarea.addEventListener('input', function() {
+                        let length = this.value.length;
+                        if (length > 50) {
+                            this.value = this.value.substring(0, 50);
+                            length = 50;
+                        }
+                        checklistCounter.textContent = `${length}/50 символов`;
+                        if (length >= 45) {
+                            checklistCounter.style.color = '#ffc107';
+                        } else if (length >= 50) {
+                            checklistCounter.style.color = '#dc3545';
+                        } else {
+                            checklistCounter.style.color = '';
+                        }
+                    });
+                }
+            }
+        }
+        async function loadNotes() {
+            try {
+                const response = await fetch('/Notes/GetNotes');
+                const data = await response.json();
+
+                if (data.success) {
+                    renderNotes(data.data);
+                } else {
+                    showError('Не удалось загрузить заметки');
+                }
+            } catch (error) {
+                console.error('Error loading notes:', error);
+                showError('Ошибка загрузки заметок');
+            }
+        }
+
+        function renderNotes(notes) {
+            const container = document.getElementById('notesList');
+
+            if (!notes || notes.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-sticky-note fa-4x text-muted mb-3"></i>
+                        <h5 class="text-muted">У вас пока нет заметок</h5>
+                        <p class="text-muted">Нажмите "Создать заметку", чтобы начать</p>
+                    </div>
+                `;
+                return;
+            }
+                    
+            let html = '';
+            notes.forEach(note => {
+                const pinnedClass = note.isPinned ? 'pinned' : '';
+                const colorStyle = note.color && note.color !== 'white' ? `background-color: ${note.color};` : '';
+
+                html += `
+                    <div class="note-card ${pinnedClass}" style="${colorStyle}" onclick="openEditModal(${note.id})">
+                        <div class="card-body">
+                            <div class="note-title">
+                                <span>
+                                    ${note.isPinned ? '<i class="fas fa-thumbtack pinned-icon me-2"></i>' : ''}
+                                    ${escapeHtml(note.title)}
+                                </span>
+                            </div>
+                            <div class="note-preview">
+                                ${escapeHtml(note.preview || 'Нет содержимого')}
+                            </div>
+                            <div class="note-date">
+                                ${formatDate(note.updatedAt || note.createdAt)}
+                            </div>
+                        </div>
+                        <div class="note-actions">
+                            <button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation(); openDeleteModal(${note.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function openCreateModal() {
+            currentNoteId = null;
+            temporaryChecklist = [];
+            nextTempId = -1;
+
+            document.getElementById('noteModalTitle').innerHTML = '<i class="fas fa-sticky-note text-primary me-2"></i>Создать заметку';
+            document.getElementById('noteId').value = '0';
+            document.getElementById('noteTitle').value = '';
+            document.getElementById('noteContent').value = '';
+            document.getElementById('notePinned').checked = false;
+
+            document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+            const whiteOption = document.querySelector('.color-option[data-color="white"]');
+            if (whiteOption) whiteOption.classList.add('selected');
+
+            renderChecklistItems();
+
+            const modal = new bootstrap.Modal(document.getElementById('noteModal'));
+            modal.show();
+            initCounters();
+        }
+
+        async function openEditModal(noteId) {
+            try {
+                const response = await fetch('/Notes/GetNotes');
+                const data = await response.json();
+
+                if (data.success) {
+                    const note = data.data.find(n => n.id === noteId);
+                    if (note) {
+                        currentNoteId = noteId;
+                        temporaryChecklist = [];
+
+                        document.getElementById('noteModalTitle').innerHTML = '<i class="fas fa-edit text-primary me-2"></i>Редактировать заметку';
+                        document.getElementById('noteId').value = noteId;
+                        document.getElementById('noteTitle').value = note.title;
+                        document.getElementById('noteContent').value = note.content;
+                        document.getElementById('notePinned').checked = note.isPinned;
+
+                        document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+                        if (note.color && note.color !== 'white') {
+                            const selected = document.querySelector(`.color-option[data-color="${note.color}"]`);
+                            if (selected) selected.classList.add('selected');
+                            else if (whiteOption) whiteOption.classList.add('selected');
+                        } else {
+                            const whiteOption = document.querySelector('.color-option[data-color="white"]');
+                            if (whiteOption) whiteOption.classList.add('selected');
+                        }
+
+                        await loadChecklistItems(noteId);
+
+                        const modal = new bootstrap.Modal(document.getElementById('noteModal'));
+                        modal.show();
+                        initCounters();
+                    }
+                }
+            } catch (error) {
+                console.error('Error opening note:', error);
+                showError('Не удалось открыть заметку');
+            }
+        }
+
+        // ==================== ЧЕК-ЛИСТ ====================
+
+        async function loadChecklistItems(noteId) {
+            try {
+                const response = await fetch(`/Notes/GetChecklistItems?noteId=${noteId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    currentNoteChecklist = data.data || [];
+                    renderChecklistItems();
+                }
+            } catch (error) {
+                console.error('Error loading checklist:', error);
+            }
+        }
+
+        function renderChecklistItems() {
+            const container = document.getElementById('checklistItemsContainer');
+            const noteId = parseInt(document.getElementById('noteId').value);
+
+            if (!container) return;
+
+            let items = [];
+            if (noteId === 0) {
+                items = temporaryChecklist;
+            } else {
+                items = currentNoteChecklist;
+            }
+
+            if (items.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-muted py-2">
+                        <i class="fas fa-list-ul me-1"></i>Нет пунктов
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="list-group list-group-flush">';
+            items.forEach(item => {
+                const completedClass = item.isCompleted ? 'completed' : '';
+                html += `
+                    <div class="list-group-item checklist-item d-flex align-items-center p-2 ${completedClass}" data-item-id="${item.id}">
+                        <div class="form-check me-2">
+                            <input class="form-check-input" type="checkbox"
+                                   ${item.isCompleted ? 'checked' : ''}
+                                   onchange="toggleChecklistItem(${item.id}, this.checked)">
+                        </div>
+                        <span class="flex-grow-1 checklist-text ${item.isCompleted ? 'text-decoration-line-through text-muted' : ''}"
+                              ondblclick="openEditChecklistItemModal(${item.id}, '${escapeHtml(item.text).replace(/'/g, "\\'")}')">
+                            ${escapeHtml(item.text)}
+                        </span>
+                        <button class="btn btn-sm btn-link text-danger" onclick="openDeleteChecklistItemModal(${item.id}, '${escapeHtml(item.text).replace(/'/g, "\\'")}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            });
+            html += '</div>';
+
+            container.innerHTML = html;
+        }
+
+        function openAddChecklistItemModal() {
+            document.getElementById('editingItemId').value = '0';
+            document.getElementById('checklistItemModalTitle').innerHTML = '<i class="fas fa-plus-circle text-primary me-2"></i>Добавить пункт';
+            document.getElementById('checklistItemText').value = '';
+            document.getElementById('checklistItemText').focus();
+            checklistItemModal.show();
+        }
+
+        function openEditChecklistItemModal(itemId, currentText) {
+            document.getElementById('editingItemId').value = itemId;
+            document.getElementById('checklistItemModalTitle').innerHTML = '<i class="fas fa-edit text-primary me-2"></i>Редактировать пункт';
+            document.getElementById('checklistItemText').value = currentText;
+            document.getElementById('checklistItemText').focus();
+            checklistItemModal.show();
+        }
+
+        async function saveChecklistItemModal() {
+            const itemId = parseInt(document.getElementById('editingItemId').value);
+            const text = document.getElementById('checklistItemText').value.trim();
+
+            if (!text) {
+                showError('Введите текст пункта');
+                return;
+            }
+                        if (text.length > 50) {
+            showError('Текст пункта не может превышать 50 символов');
+            return;
+        }
+
+            const noteId = parseInt(document.getElementById('noteId').value);
+
+            if (noteId === 0) {
+                if (itemId < 0) {
+                    const index = temporaryChecklist.findIndex(i => i.id === itemId);
+                    if (index !== -1) temporaryChecklist[index].text = text;
+                } else {
+                    temporaryChecklist.push({ id: nextTempId--, text: text, isCompleted: false });
+                }
+                renderChecklistItems();
+            } else {
+                if (itemId === 0) await addChecklistItem(noteId, text);
+                else await updateChecklistItem(itemId, text);
+            }
+
+            checklistItemModal.hide();
+        }
+
+        async function addChecklistItem(noteId, text) {
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                const response = await fetch('/Notes/AddChecklistItem', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                    body: JSON.stringify({ noteId: noteId, text: text })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    await loadChecklistItems(noteId);
+                    showSuccess('Пункт добавлен');
+                } else showError(data.message || 'Ошибка при добавлении');
+            } catch (error) {
+                console.error('Error adding checklist item:', error);
+                showError('Ошибка при добавлении');
+            }
+        }
+
+        async function updateChecklistItem(itemId, text) {
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                const response = await fetch('/Notes/UpdateChecklistItem', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                    body: JSON.stringify({ id: itemId, text: text })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    const noteId = parseInt(document.getElementById('noteId').value);
+                    await loadChecklistItems(noteId);
+                    showSuccess('Пункт обновлен');
+                } else showError(data.message || 'Ошибка при обновлении');
+            } catch (error) {
+                console.error('Error updating checklist item:', error);
+                showError('Ошибка при обновлении');
+            }
+        }
+
+        async function toggleChecklistItem(itemId, isCompleted) {
+            const noteId = parseInt(document.getElementById('noteId').value);
+
+            if (noteId === 0) {
+                const index = temporaryChecklist.findIndex(i => i.id === itemId);
+                if (index !== -1) {
+                    temporaryChecklist[index].isCompleted = isCompleted;
+                    renderChecklistItems();
+                }
+            } else {
+                try {
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                    const response = await fetch('/Notes/UpdateChecklistItem', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                        body: JSON.stringify({ id: itemId, isCompleted: isCompleted })
+                    });
+                    const data = await response.json();
+                    if (data.success) await loadChecklistItems(noteId);
+                    else showError(data.message || 'Ошибка при обновлении');
+                } catch (error) {
+                    console.error('Error toggling checklist item:', error);
+                    showError('Ошибка при обновлении');
+                }
+            }
+        }
+
+        function openDeleteChecklistItemModal(itemId, itemText) {
+            deleteChecklistItemId = itemId;
+            document.getElementById('deleteItemText').innerHTML = `<strong>${escapeHtml(itemText)}</strong>`;
+            deleteChecklistItemModal.show();
+        }
+
+        async function confirmDeleteChecklistItem() {
+            if (!deleteChecklistItemId) return;
+
+            const noteId = parseInt(document.getElementById('noteId').value);
+
+            if (noteId === 0) {
+                const index = temporaryChecklist.findIndex(i => i.id === deleteChecklistItemId);
+                if (index !== -1) {
+                    temporaryChecklist.splice(index, 1);
+                    renderChecklistItems();
+                }
+                deleteChecklistItemModal.hide();
+                showSuccess('Пункт удален');
+            } else {
+                try {
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                    const response = await fetch(`/Notes/DeleteChecklistItem?id=${deleteChecklistItemId}`, {
+                        method: 'DELETE',
+                        headers: { 'RequestVerificationToken': token }
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        await loadChecklistItems(noteId);
+                        deleteChecklistItemModal.hide();
+                        showSuccess('Пункт удален');
+                    } else showError(data.message || 'Ошибка при удалении');
+                } catch (error) {
+                    console.error('Error deleting checklist item:', error);
+                    showError('Ошибка при удалении');
+                }
+            }
+        }
+
+        // ==================== СОХРАНЕНИЕ ЗАМЕТКИ ====================
+
+        async function saveNote() {
+            const title = document.getElementById('noteTitle').value.trim();
+            const content = document.getElementById('noteContent').value;
+            const isPinned = document.getElementById('notePinned').checked;
+            const selectedColor = document.querySelector('.color-option.selected')?.getAttribute('data-color') || null;
+            const noteId = parseInt(document.getElementById('noteId').value);
+
+            if (!title) {
+                showError('Введите название заметки');
+                return;
+            }
+                        if (title.length > 200) {
+            showError('Название заметки не может превышать 200 символов');
+            return;
+        }
+
+        if (content.length > 500) {
+            showError('Содержание заметки не может превышать 500 символов');
+            return;
+        }
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+                let url = '/Notes/Create';
+                let method = 'POST';
+                let body = {
+                    title: title,
+                    content: content,
+                    color: selectedColor,
+                    isPinned: isPinned,
+                    checklistItems: temporaryChecklist.map(item => ({
+                        text: item.text,
+                        isCompleted: item.isCompleted
+                    }))
+                };
+
+                if (noteId > 0) {
+                    url = '/Notes/Update';
+                    method = 'PUT';
+                    body = {
+                        id: noteId,
+                        title: title,
+                        content: content,
+                        color: selectedColor,
+                        isPinned: isPinned,
+                        checklistItems: currentNoteChecklist.map(item => ({
+                            text: item.text,
+                            isCompleted: item.isCompleted
+                        }))
+                    };
+                }
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify(body)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('noteModal'));
+                    modal.hide();
+                    loadNotes();
+                    showSuccess(noteId > 0 ? 'Заметка обновлена' : 'Заметка создана');
+                } else {
+                    showError(data.message || 'Ошибка при сохранении');
+                }
+            } catch (error) {
+                console.error('Error saving note:', error);
+                showError('Ошибка при сохранении');
+            }
+        }
+
+        function openDeleteModal(noteId) {
+            deleteNoteId = noteId;
+            const modal = new bootstrap.Modal(document.getElementById('deleteNoteModal'));
+            modal.show();
+        }
+
+        async function deleteNote() {
+            if (!deleteNoteId) return;
+
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                const response = await fetch(`/Notes/Delete?id=${deleteNoteId}`, {
+                    method: 'DELETE',
+                    headers: { 'RequestVerificationToken': token }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('deleteNoteModal'));
+                    modal.hide();
+                    loadNotes();
+                    showSuccess('Заметка удалена');
+                } else {
+                    showError(data.message || 'Ошибка при удалении');
+                }
+            } catch (error) {
+                console.error('Error deleting note:', error);
+                showError('Ошибка при удалении');
+            }
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) return `Сегодня в ${date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`;
+            if (diffDays === 1) return 'Вчера';
+            if (diffDays < 7) return `${diffDays} дня(ей) назад`;
+            return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showSuccess(message) { showNotification(message, 'success'); }
+        function showError(message) { showNotification(message, 'danger'); }
+
+        function showNotification(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `notification-alert alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} me-2"></i>
+                    <div class="flex-grow-1">${message}</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            document.body.appendChild(alertDiv);
+            setTimeout(() => alertDiv.remove(), 3000);
+        }
+    </script>
+}

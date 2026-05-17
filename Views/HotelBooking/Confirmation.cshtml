@@ -1,0 +1,334 @@
+﻿@model TripWise.Models.ViewModels.HotelBookingConfirmationViewModel
+@{
+    ViewData["Title"] = "Бронирование подтверждено";
+}
+<script>
+    // Отключаем кэширование страницы
+    window.onpageshow = function(event) {
+        if (event.persisted) {
+            window.location.replace('/Home/Hotels');
+        }
+    };
+</script>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Успешное бронирование -->
+            <div class="text-center mb-5">
+                <div class="success-animation mb-4">
+                    <i class="fas fa-check-circle text-success" style="font-size: 5rem;"></i>
+                </div>
+                <h1 class="display-4 fw-bold text-success mb-3">Бронирование подтверждено!</h1>
+                <p class="lead text-muted">Номер брони: <strong class="text-dark">@Model.BookingNumber</strong></p>
+                <p class="text-muted">Подтверждение отправлено на вашу почту <strong>@Model.ContactEmail</strong></p>
+            </div>
+
+            <!-- Детали бронирования -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h3 class="section-subtitle mb-0">
+                        <i class="fas fa-hotel text-primary me-2"></i>
+                        Детали бронирования
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Отель -->
+                    <div class="text-center mb-4">
+                        <h2 class="hotel-title">@Model.HotelName</h2>
+                        <p class="text-muted">@Model.HotelAddress</p>
+                    </div>
+
+                    <div class="row g-4">
+                        <!-- Даты -->
+                        <div class="col-md-6">
+                            <div class="info-section p-3 bg-light rounded">
+                                <h6 class="fw-bold mb-3">
+                                    <i class="fas fa-calendar-alt text-primary me-2"></i>
+                                    Даты проживания
+                                </h6>
+                                <p class="mb-2">
+                                    <strong>Заезд:</strong> @Model.CheckInDate.ToString("dd.MM.yyyy") (после 14:00)
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Выезд:</strong> @Model.CheckOutDate.ToString("dd.MM.yyyy") (до 12:00)
+                                </p>
+                                <p class="mb-0">
+                                    <strong>Ночей:</strong> @Model.Nights
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Гости -->
+                        <div class="col-md-6">
+                            <div class="info-section p-3 bg-light rounded">
+                                <h6 class="fw-bold mb-3">
+                                    <i class="fas fa-users text-primary me-2"></i>
+                                    Гости и номера
+                                </h6>
+                                <p class="mb-2">
+                                    <strong>Гостей:</strong> @Model.Guests
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Комнат:</strong> @Model.Rooms
+                                </p>
+                                <p class="mb-0">
+                                    <strong>Цена за ночь:</strong> @Model.PricePerNight.ToString("N0") ₽
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Контактная информация -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="info-section p-3 bg-light rounded">
+                                <h6 class="fw-bold mb-3">
+                                    <i class="fas fa-user text-primary me-2"></i>
+                                    Контактная информация
+                                </h6>
+                                <p class="mb-2">
+                                    <strong>Имя:</strong> @Model.ContactName
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Email:</strong> @Model.ContactEmail
+                                </p>
+                                <p class="mb-0">
+                                    <strong>Телефон:</strong> @Model.ContactPhone
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Особые пожелания -->
+                    @if (!string.IsNullOrEmpty(Model.SpecialRequests))
+                    {
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="info-section p-3 bg-warning bg-opacity-10 rounded">
+                                    <h6 class="fw-bold mb-3">
+                                        <i class="fas fa-comment text-warning me-2"></i>
+                                        Особые пожелания
+                                    </h6>
+                                    <p class="mb-0">@Model.SpecialRequests</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Стоимость -->
+                    <div class="price-info mt-4 p-3 bg-success bg-opacity-10 rounded">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold">Итого к оплате:</span>
+                            <span class="fw-bold fs-3 text-success">@Model.TotalPrice.ToString("N0") ₽</span>
+                        </div>
+                        <p class="text-muted small mt-2 mb-0">
+                            <i class="fas fa-info-circle me-1"></i>
+                            @Model.PricePerNight.ToString("N0") ₽ × @Model.Nights ночей × @Model.Rooms комн.
+                        </p>
+                    </div>
+
+                    <!-- Информация о бронировании -->
+                    <div class="booking-info mt-3 small text-muted">
+                        <p class="mb-0">Номер брони: @Model.BookingNumber</p>
+                        <p class="mb-0">Дата бронирования: @Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</p>
+                        <p class="mb-0">Статус: <span class="badge bg-success">@Model.Status</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Важная информация -->
+            <div class="alert alert-info border-0 rounded-lg mb-4">
+                <div class="d-flex">
+                    <i class="fas fa-info-circle fa-2x text-info me-3"></i>
+                    <div>
+                        <h6 class="alert-heading mb-2">Важная информация</h6>
+                        <ul class="mb-0 small">
+                            <li>При заселении необходимо предъявить документ, удостоверяющий личность</li>
+                            <li>Расчетный час: заезд с 14:00, выезд до 12:00</li>
+                            <li>При отмене менее чем за 24 часа может взиматься штраф</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Кнопки действий -->
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <a href="/Home/MyOrders" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-list me-2"></i>
+                    Мои бронирования
+                </a>
+                <a href="/Home/Hotels" class="btn btn-primary btn-lg">
+                    <i class="fas fa-search me-2"></i>
+                    Новый поиск
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hotel-title {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 700;
+        font-size: 2rem;
+        color: #0379D9;
+        margin: 0;
+    }
+
+    .section-subtitle {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        font-size: 1.3rem;
+        color: #334155;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .info-section {
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        height: 100%;
+    }
+
+    .btn {
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        font-family: 'Nunito', sans-serif;
+        padding: 12px 24px;
+    }
+
+    .btn-primary {
+        background: #0379D9;
+        border: none;
+        box-shadow: 0 4px 12px rgba(3, 121, 217, 0.2);
+    }
+
+        .btn-primary:hover {
+            background: #0356a8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(3, 121, 217, 0.3);
+        }
+
+    .btn-outline-primary {
+        border: 2px solid #0379D9;
+        color: #0379D9;
+    }
+
+        .btn-outline-primary:hover {
+            background: #0379D9;
+            color: white;
+        }
+
+    .badge {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        padding: 6px 12px;
+        border-radius: 8px;
+    }
+
+        .badge.bg-success {
+            background: #40B624 !important;
+        }
+
+    @@media (max-width: 768px) {
+        .hotel-title {
+            font-size: 1.5rem;
+        }
+    }
+
+    /* Перенос длинного текста */
+    .hotel-title,
+    .info-section p,
+    .booking-info p,
+    .alert ul li,
+    .card-body .text-center p,
+    .section-subtitle,
+    .fw-semibold,
+    .fw-bold {
+        word-wrap: break-word;
+        word-break: break-word;
+        white-space: normal;
+        overflow-wrap: break-word;
+    }
+
+    /* Для контактной информации */
+    .info-section .fw-semibold {
+        word-break: break-all;
+    }
+
+    /* Для особых пожеланий */
+    .bg-warning p {
+        word-wrap: break-word;
+        word-break: break-word;
+        white-space: normal;
+    }
+
+    /* Для заголовка отеля на мобильных */
+    @@media (max-width: 576px) {
+        .hotel-title
+
+    {
+        font-size: 1.2rem;
+        word-break: break-word;
+    }
+
+    .info-section p,
+    .booking-info p {
+        font-size: 0.85rem;
+        word-break: break-word;
+    }
+
+    }
+
+    /* Перенос длинного email */
+    .text-muted strong,
+    .lead.text-muted strong,
+    .card-body .text-muted,
+    .booking-info p,
+    .alert ul li,
+    p strong,
+    .text-break {
+        word-wrap: break-word !important;
+        word-break: break-all !important;
+        white-space: normal !important;
+        overflow-wrap: break-word !important;
+    }
+
+    /* Специально для email в сообщении */
+    .text-muted {
+        word-break: break-all;
+        white-space: normal;
+    }
+
+    /* Для контейнера с текстом */
+    .container .text-muted,
+    .card-body .text-muted {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+</style>
+
+<script>
+    // Очищаем историю, чтобы при нажатии "Назад" уходило на поиск отелей
+    (function() {
+        var currentUrl = window.location.href;
+        if (window.history && window.history.replaceState) {
+            window.history.replaceState({ page: 'confirmation' }, document.title, currentUrl);
+            window.history.pushState({ page: 'confirmation' }, document.title, currentUrl);
+        }
+    })();
+
+    window.addEventListener('popstate', function(event) {
+        if (window._redirecting) return;
+        window._redirecting = true;
+        window.location.replace('/Home/Hotels');
+    });
+</script>
