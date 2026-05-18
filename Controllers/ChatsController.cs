@@ -1,13 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+//using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using TripWise.Models;
-using TripWise.Models.DTOs;
+using Microsoft.Extensions.Logging;
+using MySqlConnector;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Logging;
+using TripWise.Models;
+using TripWise.Models.DTOs;
 
 namespace TripWise.Controllers
 {
@@ -476,29 +477,26 @@ namespace TripWise.Controllers
 
                 // Прямой SQL запрос с OUTPUT
                 var sql = @"
-    DECLARE @InsertedIds TABLE (Id INT);
-    
-    INSERT INTO [ChatMessages] 
-    ([message], [sentAt], [idUser], [idChat], [replyToId], 
-     [attachmentName], [attachmentSize], [attachmentType], [attachmentUrl], [attachmentsJson])
-    OUTPUT INSERTED.idMessage INTO @InsertedIds
-    VALUES 
-    (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9);
-    
-    SELECT Id FROM @InsertedIds;";
+INSERT INTO `ChatMessages` 
+(`message`, `sentAt`, `idUser`, `idChat`, `replyToId`, 
+ `attachmentName`, `attachmentSize`, `attachmentType`, `attachmentUrl`, `attachmentsJson`)
+VALUES 
+(@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9);
+
+SELECT LAST_INSERT_ID() AS Id;";
 
                 var parameters = new[]
                 {
-            new SqlParameter("@p0", request.Text ?? ""),
-            new SqlParameter("@p1", DateTime.UtcNow),
-            new SqlParameter("@p2", userId.Value),
-            new SqlParameter("@p3", request.ChatId),
-            new SqlParameter("@p4", request.ReplyToId ?? (object)DBNull.Value),
-            new SqlParameter("@p5", firstAttachment?.FileName ?? (object)DBNull.Value),
-            new SqlParameter("@p6", firstAttachment?.FileSize ?? (object)DBNull.Value),
-            new SqlParameter("@p7", firstAttachment?.FileType ?? (object)DBNull.Value),
-            new SqlParameter("@p8", firstAttachment?.FileUrl ?? (object)DBNull.Value),
-            new SqlParameter("@p9", attachmentsJson ?? (object)DBNull.Value)
+            new MySqlParameter("@p0", request.Text ?? ""),
+            new MySqlParameter("@p1", DateTime.UtcNow),
+            new MySqlParameter("@p2", userId.Value),
+            new MySqlParameter("@p3", request.ChatId),
+            new MySqlParameter("@p4", request.ReplyToId ?? (object)DBNull.Value),
+            new MySqlParameter("@p5", firstAttachment?.FileName ?? (object)DBNull.Value),
+            new MySqlParameter("@p6", firstAttachment?.FileSize ?? (object)DBNull.Value),
+            new MySqlParameter("@p7", firstAttachment?.FileType ?? (object)DBNull.Value),
+            new MySqlParameter("@p8", firstAttachment?.FileUrl ?? (object)DBNull.Value),
+            new MySqlParameter("@p9", attachmentsJson ?? (object)DBNull.Value)
         };
 
                 // Выполняем SQL и получаем результат
@@ -1337,18 +1335,18 @@ namespace TripWise.Controllers
                     : $"Пользователь {userName} добавлен в чат";
 
                 var insertMessageSql = @"
-    INSERT INTO [ChatMessages] 
-    ([message], [sentAt], [idUser], [idChat])
-    VALUES 
-    (@message, @sentAt, @senderId, @chatId)";
+INSERT INTO `ChatMessages` 
+(`message`, `sentAt`, `idUser`, `idChat`)
+VALUES 
+(@message, @sentAt, @senderId, @chatId);";
 
                 using (var command = _context.Database.GetDbConnection().CreateCommand())
                 {
                     command.CommandText = insertMessageSql;
-                    command.Parameters.Add(new SqlParameter("@message", systemMessage));
-                    command.Parameters.Add(new SqlParameter("@sentAt", DateTime.UtcNow));
-                    command.Parameters.Add(new SqlParameter("@senderId", currentUserId.Value));
-                    command.Parameters.Add(new SqlParameter("@chatId", request.ChatId));
+                    command.Parameters.Add(new MySqlParameter("@message", systemMessage));
+                    command.Parameters.Add(new MySqlParameter("@sentAt", DateTime.UtcNow));
+                    command.Parameters.Add(new MySqlParameter("@senderId", currentUserId.Value));
+                    command.Parameters.Add(new MySqlParameter("@chatId", request.ChatId));
 
                     await _context.Database.OpenConnectionAsync();
                     await command.ExecuteNonQueryAsync();
@@ -1462,18 +1460,18 @@ namespace TripWise.Controllers
                         var systemMessage = $"Пользователь {leavingUserName} покинул чат. Новым администратором назначен {newAdminName}";
 
                         var insertMessageSql = @"
-            INSERT INTO [ChatMessages] 
-            ([message], [sentAt], [idUser], [idChat])
-            VALUES 
-            (@message, @sentAt, @senderId, @chatId)";
+INSERT INTO `ChatMessages` 
+(`message`, `sentAt`, `idUser`, `idChat`)
+VALUES 
+(@message, @sentAt, @senderId, @chatId);";
 
                         using (var command = _context.Database.GetDbConnection().CreateCommand())
                         {
                             command.CommandText = insertMessageSql;
-                            command.Parameters.Add(new SqlParameter("@message", systemMessage));
-                            command.Parameters.Add(new SqlParameter("@sentAt", DateTime.UtcNow));
-                            command.Parameters.Add(new SqlParameter("@senderId", userId.Value));
-                            command.Parameters.Add(new SqlParameter("@chatId", chatId));
+                            command.Parameters.Add(new MySqlParameter("@message", systemMessage));
+                            command.Parameters.Add(new MySqlParameter("@sentAt", DateTime.UtcNow));
+                            command.Parameters.Add(new MySqlParameter("@senderId", userId.Value));
+                            command.Parameters.Add(new MySqlParameter("@chatId", chatId));
 
                             await _context.Database.OpenConnectionAsync();
                             await command.ExecuteNonQueryAsync();
@@ -1518,14 +1516,14 @@ namespace TripWise.Controllers
                     using (var command = _context.Database.GetDbConnection().CreateCommand())
                     {
                         command.CommandText = @"
-            INSERT INTO [ChatMessages] 
-            ([message], [sentAt], [idUser], [idChat])
-            VALUES 
-            (@message, @sentAt, @senderId, @chatId)";
-                        command.Parameters.Add(new SqlParameter("@message", leaveMessage));
-                        command.Parameters.Add(new SqlParameter("@sentAt", DateTime.UtcNow));
-                        command.Parameters.Add(new SqlParameter("@senderId", userId.Value));
-                        command.Parameters.Add(new SqlParameter("@chatId", chatId));
+INSERT INTO `ChatMessages` 
+(`message`, `sentAt`, `idUser`, `idChat`)
+VALUES 
+(@message, @sentAt, @senderId, @chatId);";
+                        command.Parameters.Add(new MySqlParameter("@message", leaveMessage));
+                        command.Parameters.Add(new MySqlParameter("@sentAt", DateTime.UtcNow));
+                        command.Parameters.Add(new MySqlParameter("@senderId", userId.Value));
+                        command.Parameters.Add(new MySqlParameter("@chatId", chatId));
 
                         await _context.Database.OpenConnectionAsync();
                         await command.ExecuteNonQueryAsync();
@@ -1550,14 +1548,14 @@ namespace TripWise.Controllers
                     using (var command = _context.Database.GetDbConnection().CreateCommand())
                     {
                         command.CommandText = @"
-            INSERT INTO [ChatMessages] 
-            ([message], [sentAt], [idUser], [idChat])
-            VALUES 
-            (@message, @sentAt, @senderId, @chatId)";
-                        command.Parameters.Add(new SqlParameter("@message", leaveMessage));
-                        command.Parameters.Add(new SqlParameter("@sentAt", DateTime.UtcNow));
-                        command.Parameters.Add(new SqlParameter("@senderId", userId.Value));
-                        command.Parameters.Add(new SqlParameter("@chatId", chatId));
+INSERT INTO `ChatMessages` 
+(`message`, `sentAt`, `idUser`, `idChat`)
+VALUES 
+(@message, @sentAt, @senderId, @chatId);";
+                        command.Parameters.Add(new MySqlParameter("@message", leaveMessage));
+                        command.Parameters.Add(new MySqlParameter("@sentAt", DateTime.UtcNow));
+                        command.Parameters.Add(new MySqlParameter("@senderId", userId.Value));
+                        command.Parameters.Add(new MySqlParameter("@chatId", chatId));
 
                         await _context.Database.OpenConnectionAsync();
                         await command.ExecuteNonQueryAsync();
@@ -2109,16 +2107,16 @@ namespace TripWise.Controllers
 
                 // Проверяем существование сообщения и права через прямой SQL запрос с возвратом результата
                 var checkSql = @"
-    SELECT COUNT(*) 
-    FROM [ChatMessages] 
-    WHERE [idMessage] = @messageId AND [idUser] = @userId";
+SELECT COUNT(*) 
+FROM `ChatMessages` 
+WHERE `idMessage` = @messageId AND `idUser` = @userId;";
 
                 int exists = 0;
                 using (var command = _context.Database.GetDbConnection().CreateCommand())
                 {
                     command.CommandText = checkSql;
-                    command.Parameters.Add(new SqlParameter("@messageId", request.MessageId));
-                    command.Parameters.Add(new SqlParameter("@userId", userId.Value));
+                    command.Parameters.Add(new MySqlParameter("@messageId", request.MessageId));
+                    command.Parameters.Add(new MySqlParameter("@userId", userId.Value));
 
                     await _context.Database.OpenConnectionAsync();
                     var result = await command.ExecuteScalarAsync();
@@ -2140,12 +2138,12 @@ namespace TripWise.Controllers
                 }
 
                 // Получаем chatId до удаления сообщения
-                var getChatIdSql = "SELECT [idChat] FROM [ChatMessages] WHERE [idMessage] = @messageId";
+                var getChatIdSql = "SELECT `idChat` FROM `ChatMessages` WHERE `idMessage` = @messageId;";
                 int chatId = 0;
                 using (var command = _context.Database.GetDbConnection().CreateCommand())
                 {
                     command.CommandText = getChatIdSql;
-                    command.Parameters.Add(new SqlParameter("@messageId", request.MessageId));
+                    command.Parameters.Add(new MySqlParameter("@messageId", request.MessageId));
 
                     var result = await command.ExecuteScalarAsync();
                     if (result != null)
@@ -2156,40 +2154,40 @@ namespace TripWise.Controllers
 
                 // СНИМАЕМ ГЛОБАЛЬНОЕ ЗАКРЕПЛЕНИЕ, если сообщение закреплено для всех
                 var updateChatSql = @"
-    UPDATE [Chats] 
-    SET [pinnedMessageId] = NULL, 
-        [pinnedAt] = NULL, 
-        [pinnedById] = NULL 
-    WHERE [idChat] = @chatId AND [pinnedMessageId] = @messageId";
+UPDATE `Chats` 
+SET `pinnedMessageId` = NULL, 
+    `pinnedAt` = NULL, 
+    `pinnedById` = NULL 
+WHERE `idChat` = @chatId AND `pinnedMessageId` = @messageId;";
 
                 using (var command = _context.Database.GetDbConnection().CreateCommand())
                 {
                     command.CommandText = updateChatSql;
-                    command.Parameters.Add(new SqlParameter("@chatId", chatId));
-                    command.Parameters.Add(new SqlParameter("@messageId", request.MessageId));
+                    command.Parameters.Add(new MySqlParameter("@chatId", chatId));
+                    command.Parameters.Add(new MySqlParameter("@messageId", request.MessageId));
                     await command.ExecuteNonQueryAsync();
                 }
 
                 // УДАЛЯЕМ ЛИЧНЫЕ ЗАКРЕПЛЕНИЯ этого сообщения у всех пользователей
                 var deleteUserPinsSql = @"
-    DELETE FROM [UserPinnedMessages] 
-    WHERE [messageId] = @messageId";
+DELETE FROM `UserPinnedMessages` 
+WHERE `messageId` = @messageId;";
 
                 using (var command = _context.Database.GetDbConnection().CreateCommand())
                 {
                     command.CommandText = deleteUserPinsSql;
                     command.Parameters.Clear();
-                    command.Parameters.Add(new SqlParameter("@messageId", request.MessageId));
+                    command.Parameters.Add(new MySqlParameter("@messageId", request.MessageId));
                     await command.ExecuteNonQueryAsync();
                 }
 
                 // Удаляем сообщение
-                var deleteSql = "DELETE FROM [ChatMessages] WHERE [idMessage] = @messageId";
+                var deleteSql = "DELETE FROM `ChatMessages` WHERE `idMessage` = @messageId;";
                 using (var command = _context.Database.GetDbConnection().CreateCommand())
                 {
                     command.CommandText = deleteSql;
                     command.Parameters.Clear();
-                    command.Parameters.Add(new SqlParameter("@messageId", request.MessageId));
+                    command.Parameters.Add(new MySqlParameter("@messageId", request.MessageId));
                     await command.ExecuteNonQueryAsync();
                 }
 
@@ -2197,19 +2195,19 @@ namespace TripWise.Controllers
                 if (chatId > 0)
                 {
                     var updateLastMessageSql = @"
-        UPDATE [Chats] 
-        SET [lastMessageAt] = (
-            SELECT MAX([sentAt]) 
-            FROM [ChatMessages] 
-            WHERE [idChat] = @chatId
-        )
-        WHERE [idChat] = @chatId";
+UPDATE `Chats` 
+SET `lastMessageAt` = (
+    SELECT MAX(`sentAt`) 
+    FROM `ChatMessages` 
+    WHERE `idChat` = @chatId
+)
+WHERE `idChat` = @chatId;";
 
                     using (var command = _context.Database.GetDbConnection().CreateCommand())
                     {
                         command.CommandText = updateLastMessageSql;
                         command.Parameters.Clear();
-                        command.Parameters.Add(new SqlParameter("@chatId", chatId));
+                        command.Parameters.Add(new MySqlParameter("@chatId", chatId));
                         await command.ExecuteNonQueryAsync();
                     }
                 }
@@ -2257,8 +2255,8 @@ namespace TripWise.Controllers
                 int chatId = 0;
                 using (var command = _context.Database.GetDbConnection().CreateCommand())
                 {
-                    command.CommandText = "SELECT [idChat] FROM [ChatMessages] WHERE [idMessage] = @messageId";
-                    command.Parameters.Add(new SqlParameter("@messageId", request.MessageId));
+                    command.CommandText = "SELECT `idChat` FROM `ChatMessages` WHERE `idMessage` = @messageId;";
+                    command.Parameters.Add(new MySqlParameter("@messageId", request.MessageId));
 
                     await _context.Database.OpenConnectionAsync();
                     try
@@ -2292,9 +2290,9 @@ namespace TripWise.Controllers
                     int isAdmin = 0;
                     using (var command = _context.Database.GetDbConnection().CreateCommand())
                     {
-                        command.CommandText = "SELECT COUNT(*) FROM [ChatMembers] WHERE [idChat] = @chatId AND [idUser] = @userId AND [role] = 'admin'";
-                        command.Parameters.Add(new SqlParameter("@chatId", chatId));
-                        command.Parameters.Add(new SqlParameter("@userId", userId.Value));
+                        command.CommandText = "SELECT COUNT(*) FROM `ChatMembers` WHERE `idChat` = @chatId AND `idUser` = @userId AND `role` = 'admin';";
+                        command.Parameters.Add(new MySqlParameter("@chatId", chatId));
+                        command.Parameters.Add(new MySqlParameter("@userId", userId.Value));
 
                         await _context.Database.OpenConnectionAsync();
                         try
@@ -2323,11 +2321,11 @@ namespace TripWise.Controllers
                     // Обновляем чат - закрепляем сообщение для всех
                     using (var command = _context.Database.GetDbConnection().CreateCommand())
                     {
-                        command.CommandText = "UPDATE [Chats] SET [pinnedMessageId] = @messageId, [pinnedAt] = @pinnedAt, [pinnedById] = @userId WHERE [idChat] = @chatId";
-                        command.Parameters.Add(new SqlParameter("@messageId", request.MessageId));
-                        command.Parameters.Add(new SqlParameter("@pinnedAt", DateTime.UtcNow));
-                        command.Parameters.Add(new SqlParameter("@userId", userId.Value));
-                        command.Parameters.Add(new SqlParameter("@chatId", chatId));
+                        command.CommandText = "UPDATE `Chats` SET `pinnedMessageId` = @messageId, `pinnedAt` = @pinnedAt, `pinnedById` = @userId WHERE `idChat` = @chatId;";
+                        command.Parameters.Add(new MySqlParameter("@messageId", request.MessageId));
+                        command.Parameters.Add(new MySqlParameter("@pinnedAt", DateTime.UtcNow));
+                        command.Parameters.Add(new MySqlParameter("@userId", userId.Value));
+                        command.Parameters.Add(new MySqlParameter("@chatId", chatId));
 
                         await _context.Database.OpenConnectionAsync();
                         try
@@ -2364,9 +2362,9 @@ namespace TripWise.Controllers
                     int existingPin = 0;
                     using (var command = _context.Database.GetDbConnection().CreateCommand())
                     {
-                        command.CommandText = "SELECT COUNT(*) FROM [UserPinnedMessages] WHERE [userId] = @userId AND [chatId] = @chatId";
-                        command.Parameters.Add(new SqlParameter("@userId", userId.Value));
-                        command.Parameters.Add(new SqlParameter("@chatId", chatId));
+                        command.CommandText = "SELECT COUNT(*) FROM `UserPinnedMessages` WHERE `userId` = @userId AND `chatId` = @chatId;";
+                        command.Parameters.Add(new MySqlParameter("@userId", userId.Value));
+                        command.Parameters.Add(new MySqlParameter("@chatId", chatId));
 
                         await _context.Database.OpenConnectionAsync();
                         try
@@ -2388,11 +2386,11 @@ namespace TripWise.Controllers
                         // Обновляем существующее закрепление
                         using (var command = _context.Database.GetDbConnection().CreateCommand())
                         {
-                            command.CommandText = "UPDATE [UserPinnedMessages] SET [messageId] = @messageId, [pinnedAt] = @pinnedAt WHERE [userId] = @userId AND [chatId] = @chatId";
-                            command.Parameters.Add(new SqlParameter("@messageId", request.MessageId));
-                            command.Parameters.Add(new SqlParameter("@pinnedAt", DateTime.UtcNow));
-                            command.Parameters.Add(new SqlParameter("@userId", userId.Value));
-                            command.Parameters.Add(new SqlParameter("@chatId", chatId));
+                            command.CommandText = "UPDATE `UserPinnedMessages` SET `messageId` = @messageId, `pinnedAt` = @pinnedAt WHERE `userId` = @userId AND `chatId` = @chatId;";
+                            command.Parameters.Add(new MySqlParameter("@messageId", request.MessageId));
+                            command.Parameters.Add(new MySqlParameter("@pinnedAt", DateTime.UtcNow));
+                            command.Parameters.Add(new MySqlParameter("@userId", userId.Value));
+                            command.Parameters.Add(new MySqlParameter("@chatId", chatId));
 
                             await _context.Database.OpenConnectionAsync();
                             try
@@ -2410,11 +2408,11 @@ namespace TripWise.Controllers
                         // Создаем новое закрепление
                         using (var command = _context.Database.GetDbConnection().CreateCommand())
                         {
-                            command.CommandText = "INSERT INTO [UserPinnedMessages] ([userId], [chatId], [messageId], [pinnedAt]) VALUES (@userId, @chatId, @messageId, @pinnedAt)";
-                            command.Parameters.Add(new SqlParameter("@userId", userId.Value));
-                            command.Parameters.Add(new SqlParameter("@chatId", chatId));
-                            command.Parameters.Add(new SqlParameter("@messageId", request.MessageId));
-                            command.Parameters.Add(new SqlParameter("@pinnedAt", DateTime.UtcNow));
+                            command.CommandText = "INSERT INTO `UserPinnedMessages` (`userId`, `chatId`, `messageId`, `pinnedAt`) VALUES (@userId, @chatId, @messageId, @pinnedAt);";
+                            command.Parameters.Add(new MySqlParameter("@userId", userId.Value));
+                            command.Parameters.Add(new MySqlParameter("@chatId", chatId));
+                            command.Parameters.Add(new MySqlParameter("@messageId", request.MessageId));
+                            command.Parameters.Add(new MySqlParameter("@pinnedAt", DateTime.UtcNow));
 
                             await _context.Database.OpenConnectionAsync();
                             try
@@ -2484,9 +2482,9 @@ namespace TripWise.Controllers
                     int isAdmin = 0;
                     using (var command = _context.Database.GetDbConnection().CreateCommand())
                     {
-                        command.CommandText = "SELECT COUNT(*) FROM [ChatMembers] WHERE [idChat] = @chatId AND [idUser] = @userId AND [role] = 'admin'";
-                        command.Parameters.Add(new SqlParameter("@chatId", request.ChatId));
-                        command.Parameters.Add(new SqlParameter("@userId", userId.Value));
+                        command.CommandText = "SELECT COUNT(*) FROM `ChatMembers` WHERE `idChat` = @chatId AND `idUser` = @userId AND `role` = 'admin';";
+                        command.Parameters.Add(new MySqlParameter("@chatId", request.ChatId));
+                        command.Parameters.Add(new MySqlParameter("@userId", userId.Value));
 
                         await _context.Database.OpenConnectionAsync();
                         try
@@ -2515,8 +2513,8 @@ namespace TripWise.Controllers
                     // Открепляем сообщение для всех
                     using (var command = _context.Database.GetDbConnection().CreateCommand())
                     {
-                        command.CommandText = "UPDATE [Chats] SET [pinnedMessageId] = NULL, [pinnedAt] = NULL, [pinnedById] = NULL WHERE [idChat] = @chatId";
-                        command.Parameters.Add(new SqlParameter("@chatId", request.ChatId));
+                        command.CommandText = "UPDATE `Chats` SET `pinnedMessageId` = NULL, `pinnedAt` = NULL, `pinnedById` = NULL WHERE `idChat` = @chatId;";
+                        command.Parameters.Add(new MySqlParameter("@chatId", request.ChatId));
 
                         await _context.Database.OpenConnectionAsync();
                         try
@@ -2536,9 +2534,9 @@ namespace TripWise.Controllers
                     // Личное открепление (доступно всем)
                     using (var command = _context.Database.GetDbConnection().CreateCommand())
                     {
-                        command.CommandText = "DELETE FROM [UserPinnedMessages] WHERE [userId] = @userId AND [chatId] = @chatId";
-                        command.Parameters.Add(new SqlParameter("@userId", userId.Value));
-                        command.Parameters.Add(new SqlParameter("@chatId", request.ChatId));
+                        command.CommandText = "DELETE FROM `UserPinnedMessages` WHERE `userId` = @userId AND `chatId` = @chatId;";
+                        command.Parameters.Add(new MySqlParameter("@userId", userId.Value));
+                        command.Parameters.Add(new MySqlParameter("@chatId", request.ChatId));
 
                         await _context.Database.OpenConnectionAsync();
                         try
@@ -2589,31 +2587,31 @@ namespace TripWise.Controllers
                 }
 
                 var sql = @"
-            SELECT 
-                c.pinnedMessageId,
-                c.pinnedAt,
-                c.pinnedById,
-                m.[idMessage],
-                m.[message],
-                m.[sentAt],
-                m.[idUser] as SenderId,
-                m.[attachmentType],
-                m.[attachmentUrl],
-                m.[attachmentName],
-                u.[last_name] as SenderLastName,
-                u.[first_name] as SenderFirstName,
-                pu.[last_name] as PinnedByLastName,
-                pu.[first_name] as PinnedByFirstName
-            FROM [Chats] c
-            LEFT JOIN [ChatMessages] m ON c.pinnedMessageId = m.[idMessage]
-            LEFT JOIN [Users] u ON m.[idUser] = u.[idUser]
-            LEFT JOIN [Users] pu ON c.pinnedById = pu.[idUser]
-            WHERE c.[idChat] = @chatId AND c.pinnedMessageId IS NOT NULL";
+SELECT 
+    c.pinnedMessageId,
+    c.pinnedAt,
+    c.pinnedById,
+    m.`idMessage`,
+    m.`message`,
+    m.`sentAt`,
+    m.`idUser` as SenderId,
+    m.`attachmentType`,
+    m.`attachmentUrl`,
+    m.`attachmentName`,
+    u.`last_name` as SenderLastName,
+    u.`first_name` as SenderFirstName,
+    pu.`last_name` as PinnedByLastName,
+    pu.`first_name` as PinnedByFirstName
+FROM `Chats` c
+LEFT JOIN `ChatMessages` m ON c.pinnedMessageId = m.`idMessage`
+LEFT JOIN `Users` u ON m.`idUser` = u.`idUser`
+LEFT JOIN `Users` pu ON c.pinnedById = pu.`idUser`
+WHERE c.`idChat` = @chatId AND c.pinnedMessageId IS NOT NULL;";
 
                 using (var command = _context.Database.GetDbConnection().CreateCommand())
                 {
                     command.CommandText = sql;
-                    command.Parameters.Add(new SqlParameter("@chatId", chatId));
+                    command.Parameters.Add(new MySqlParameter("@chatId", chatId));
 
                     await _context.Database.OpenConnectionAsync();
                     using (var reader = await command.ExecuteReaderAsync())
@@ -2676,28 +2674,28 @@ namespace TripWise.Controllers
                 }
 
                 var sql = @"
-            SELECT 
-                up.[messageId],
-                up.[pinnedAt],
-                m.[idMessage],
-                m.[message],
-                m.[sentAt],
-                m.[idUser] as SenderId,
-                m.[attachmentType],
-                m.[attachmentUrl],
-                m.[attachmentName],
-                u.[last_name] as SenderLastName,
-                u.[first_name] as SenderFirstName
-            FROM [UserPinnedMessages] up
-            INNER JOIN [ChatMessages] m ON up.[messageId] = m.[idMessage]
-            LEFT JOIN [Users] u ON m.[idUser] = u.[idUser]
-            WHERE up.[chatId] = @chatId AND up.[userId] = @userId";
+SELECT 
+    up.`messageId`,
+    up.`pinnedAt`,
+    m.`idMessage`,
+    m.`message`,
+    m.`sentAt`,
+    m.`idUser` as SenderId,
+    m.`attachmentType`,
+    m.`attachmentUrl`,
+    m.`attachmentName`,
+    u.`last_name` as SenderLastName,
+    u.`first_name` as SenderFirstName
+FROM `UserPinnedMessages` up
+INNER JOIN `ChatMessages` m ON up.`messageId` = m.`idMessage`
+LEFT JOIN `Users` u ON m.`idUser` = u.`idUser`
+WHERE up.`chatId` = @chatId AND up.`userId` = @userId;";
 
                 using (var command = _context.Database.GetDbConnection().CreateCommand())
                 {
                     command.CommandText = sql;
-                    command.Parameters.Add(new SqlParameter("@chatId", chatId));
-                    command.Parameters.Add(new SqlParameter("@userId", userId.Value));
+                    command.Parameters.Add(new MySqlParameter("@chatId", chatId));
+                    command.Parameters.Add(new MySqlParameter("@userId", userId.Value));
 
                     await _context.Database.OpenConnectionAsync();
                     using (var reader = await command.ExecuteReaderAsync())
@@ -3044,30 +3042,30 @@ namespace TripWise.Controllers
 
                 // Используем сырой SQL для получения голосований
                 var sql = @"
-            SELECT 
-                v.IdVote,
-                v.question,
-                v.createdAt,
-                v.expiresAt,
-                v.idTrip,
-                v.createdById,
-                v.idPoint,
-                v.idChat,
-                u.last_name as CreatorLastName,
-                u.first_name as CreatorFirstName,
-                t.title as TripTitle
-            FROM [votingSystems] v
-            LEFT JOIN [Users] u ON v.createdById = u.idUser
-            LEFT JOIN [Trips] t ON v.idTrip = t.idTrip
-            WHERE v.idChat = @chatId
-            ORDER BY v.createdAt DESC";
+SELECT 
+    v.IdVote,
+    v.question,
+    v.createdAt,
+    v.expiresAt,
+    v.idTrip,
+    v.createdById,
+    v.idPoint,
+    v.idChat,
+    u.last_name as CreatorLastName,
+    u.first_name as CreatorFirstName,
+    t.title as TripTitle
+FROM `votingsystems` v
+LEFT JOIN `Users` u ON v.createdById = u.idUser
+LEFT JOIN `Trips` t ON v.idTrip = t.idTrip
+WHERE v.idChat = @chatId
+ORDER BY v.createdAt DESC;";
 
                 var votes = new List<VotingSystemDto>();
 
                 using (var command = _context.Database.GetDbConnection().CreateCommand())
                 {
                     command.CommandText = sql;
-                    command.Parameters.Add(new SqlParameter("@chatId", chatId));
+                    command.Parameters.Add(new MySqlParameter("@chatId", chatId));
 
                     if (_context.Database.GetDbConnection().State != System.Data.ConnectionState.Open)
                     {
@@ -3105,9 +3103,9 @@ namespace TripWise.Controllers
                 {
                     // Получаем варианты ответов
                     var optionsSql = @"
-                SELECT o.idVoteOption, o.optionText
-                FROM [VoteOptions] o
-                WHERE o.idVote = @voteId";
+SELECT o.idVoteOption, o.optionText
+FROM `VoteOptions` o
+WHERE o.idVote = @voteId;";
 
                     var options = new List<VoteOptionDto>();
 
@@ -3115,7 +3113,7 @@ namespace TripWise.Controllers
                     {
                         command.CommandText = optionsSql;
                         command.Parameters.Clear();
-                        command.Parameters.Add(new SqlParameter("@voteId", vote.IdVote));
+                        command.Parameters.Add(new MySqlParameter("@voteId", vote.IdVote));
 
                         using (var reader = await command.ExecuteReaderAsync())
                         {
@@ -3137,15 +3135,15 @@ namespace TripWise.Controllers
                     foreach (var option in options)
                     {
                         var votesSql = @"
-                    SELECT uv.idUser
-                    FROM [UserVotes] uv
-                    WHERE uv.idVoteOption = @optionId";
+SELECT uv.idUser
+FROM `UserVotes` uv
+WHERE uv.idVoteOption = @optionId;";
 
                         using (var command = _context.Database.GetDbConnection().CreateCommand())
                         {
                             command.CommandText = votesSql;
                             command.Parameters.Clear();
-                            command.Parameters.Add(new SqlParameter("@optionId", option.Id));
+                            command.Parameters.Add(new MySqlParameter("@optionId", option.Id));
 
                             using (var reader = await command.ExecuteReaderAsync())
                             {
@@ -3337,22 +3335,22 @@ namespace TripWise.Controllers
 
                     // Вставляем голосование
                     var insertVoteSql = @"
-                INSERT INTO [votingSystems] 
-                ([question], [createdAt], [expiresAt], [idTrip], [createdById], [idPoint], [idChat])
-                VALUES 
-                (@question, @createdAt, @expiresAt, @idTrip, @createdById, @idPoint, @idChat);
-                SELECT CAST(SCOPE_IDENTITY() AS INT);";
+INSERT INTO `votingsystems` 
+(`question`, `createdAt`, `expiresAt`, `idTrip`, `createdById`, `idPoint`, `idChat`)
+VALUES 
+(@question, @createdAt, @expiresAt, @idTrip, @createdById, @idPoint, @idChat);
+SELECT LAST_INSERT_ID();";
 
                     using (var command = connection.CreateCommand())
                     {
                         command.CommandText = insertVoteSql;
-                        command.Parameters.Add(new SqlParameter("@question", request.Question.Trim()));
-                        command.Parameters.Add(new SqlParameter("@createdAt", DateTime.UtcNow));
-                        command.Parameters.Add(new SqlParameter("@expiresAt", request.ExpiresAt?.ToUniversalTime() ?? (object)DBNull.Value));
-                        command.Parameters.Add(new SqlParameter("@idTrip", DBNull.Value));
-                        command.Parameters.Add(new SqlParameter("@createdById", userId.Value));
-                        command.Parameters.Add(new SqlParameter("@idPoint", DBNull.Value));
-                        command.Parameters.Add(new SqlParameter("@idChat", request.ChatId));
+                        command.Parameters.Add(new MySqlParameter("@question", request.Question.Trim()));
+                        command.Parameters.Add(new MySqlParameter("@createdAt", DateTime.UtcNow));
+                        command.Parameters.Add(new MySqlParameter("@expiresAt", request.ExpiresAt?.ToUniversalTime() ?? (object)DBNull.Value));
+                        command.Parameters.Add(new MySqlParameter("@idTrip", DBNull.Value));
+                        command.Parameters.Add(new MySqlParameter("@createdById", userId.Value));
+                        command.Parameters.Add(new MySqlParameter("@idPoint", DBNull.Value));
+                        command.Parameters.Add(new MySqlParameter("@idChat", request.ChatId));
 
                         var result = await command.ExecuteScalarAsync();
                         if (result != null && result != DBNull.Value)
@@ -3374,17 +3372,17 @@ namespace TripWise.Controllers
                     foreach (var optionText in validOptions)
                     {
                         var insertOptionSql = @"
-                    INSERT INTO [VoteOptions] 
-                    ([optionText], [idVote])
-                    VALUES 
-                    (@optionText, @voteId)";
+INSERT INTO `VoteOptions` 
+(`optionText`, `idVote`)
+VALUES 
+(@optionText, @voteId);";
 
                         using (var command = connection.CreateCommand())
                         {
                             command.CommandText = insertOptionSql;
                             command.Parameters.Clear();
-                            command.Parameters.Add(new SqlParameter("@optionText", optionText.Trim()));
-                            command.Parameters.Add(new SqlParameter("@voteId", voteId));
+                            command.Parameters.Add(new MySqlParameter("@optionText", optionText.Trim()));
+                            command.Parameters.Add(new MySqlParameter("@voteId", voteId));
                             await command.ExecuteNonQueryAsync();
                         }
                     }
@@ -3406,11 +3404,11 @@ namespace TripWise.Controllers
 
                     // ОТПРАВЛЯЕМ СООБЩЕНИЕ В ЧАТ
                     var insertMessageSql = @"
-                INSERT INTO [ChatMessages] 
-                ([message], [sentAt], [idUser], [idChat], [attachmentType], [attachmentsJson])
-                VALUES 
-                (@message, @sentAt, @senderId, @chatId, @attachmentType, @attachmentsJson);
-                SELECT CAST(SCOPE_IDENTITY() AS INT);";
+INSERT INTO `ChatMessages` 
+(`message`, `sentAt`, `idUser`, `idChat`, `attachmentType`, `attachmentsJson`)
+VALUES 
+(@message, @sentAt, @senderId, @chatId, @attachmentType, @attachmentsJson);
+SELECT LAST_INSERT_ID();";
 
                     int messageId = 0;
 
@@ -3418,12 +3416,12 @@ namespace TripWise.Controllers
                     {
                         command.CommandText = insertMessageSql;
                         command.Parameters.Clear();
-                        command.Parameters.Add(new SqlParameter("@message", messageText));
-                        command.Parameters.Add(new SqlParameter("@sentAt", DateTime.UtcNow));
-                        command.Parameters.Add(new SqlParameter("@senderId", userId.Value));
-                        command.Parameters.Add(new SqlParameter("@chatId", request.ChatId));
-                        command.Parameters.Add(new SqlParameter("@attachmentType", "vote"));
-                        command.Parameters.Add(new SqlParameter("@attachmentsJson", attachmentsJson));
+                        command.Parameters.Add(new MySqlParameter("@message", messageText));
+                        command.Parameters.Add(new MySqlParameter("@sentAt", DateTime.UtcNow));
+                        command.Parameters.Add(new MySqlParameter("@senderId", userId.Value));
+                        command.Parameters.Add(new MySqlParameter("@chatId", request.ChatId));
+                        command.Parameters.Add(new MySqlParameter("@attachmentType", "vote"));
+                        command.Parameters.Add(new MySqlParameter("@attachmentsJson", attachmentsJson));
 
                         var result = await command.ExecuteScalarAsync();
                         if (result != null)
@@ -3459,7 +3457,7 @@ namespace TripWise.Controllers
                     // Не закрываем соединение, оно управляется контекстом
                 }
             }
-            catch (SqlException ex)
+            catch (MySqlException ex)
             {
                 _logger.LogError(ex, "SQL ошибка при создании голосования: {Message}", ex.Message);
                 return Json(new ApiResponse<object>
@@ -3496,9 +3494,9 @@ namespace TripWise.Controllers
 
                 // Получаем информацию о голосовании
                 var voteSql = @"
-            SELECT v.IdVote, v.question, v.idChat
-            FROM [votingSystems] v
-            WHERE v.IdVote = @voteId";
+SELECT v.IdVote, v.question, v.idChat
+FROM `votingsystems` v
+WHERE v.IdVote = @voteId;";
 
                 int chatId = 0;
                 string question = "";
@@ -3506,7 +3504,7 @@ namespace TripWise.Controllers
                 using (var command = _context.Database.GetDbConnection().CreateCommand())
                 {
                     command.CommandText = voteSql;
-                    command.Parameters.Add(new SqlParameter("@voteId", voteId));
+                    command.Parameters.Add(new MySqlParameter("@voteId", voteId));
 
                     await _context.Database.OpenConnectionAsync();
                     using (var reader = await command.ExecuteReaderAsync())
@@ -3544,17 +3542,17 @@ namespace TripWise.Controllers
 
                 // Получаем варианты и голоса
                 var optionsSql = @"
-            SELECT 
-                o.idVoteOption,
-                o.optionText,
-                STRING_AGG(CONCAT(u.last_name, ' ', u.first_name), ', ') AS VotersNames,
-                COUNT(uv.idUser) AS VotesCount
-            FROM [VoteOptions] o
-            LEFT JOIN [UserVotes] uv ON o.idVoteOption = uv.idVoteOption
-            LEFT JOIN [Users] u ON uv.idUser = u.idUser
-            WHERE o.idVote = @voteId
-            GROUP BY o.idVoteOption, o.optionText
-            ORDER BY o.idVoteOption";
+SELECT 
+    o.idVoteOption,
+    o.optionText,
+    GROUP_CONCAT(CONCAT(u.last_name, ' ', u.first_name) SEPARATOR ', ') AS VotersNames,
+    COUNT(uv.idUser) AS VotesCount
+FROM `VoteOptions` o
+LEFT JOIN `UserVotes` uv ON o.idVoteOption = uv.idVoteOption
+LEFT JOIN `Users` u ON uv.idUser = u.idUser
+WHERE o.idVote = @voteId
+GROUP BY o.idVoteOption, o.optionText
+ORDER BY o.idVoteOption;";
 
                 var options = new List<VoteDetailsDto>();
 
@@ -3562,7 +3560,7 @@ namespace TripWise.Controllers
                 {
                     command.CommandText = optionsSql;
                     command.Parameters.Clear();
-                    command.Parameters.Add(new SqlParameter("@voteId", voteId));
+                    command.Parameters.Add(new MySqlParameter("@voteId", voteId));
 
                     using (var reader = await command.ExecuteReaderAsync())
                     {
@@ -3622,10 +3620,10 @@ namespace TripWise.Controllers
 
                 // Проверяем существование варианта и не истекло ли голосование
                 var checkSql = @"
-            SELECT v.IdVote, v.expiresAt 
-            FROM [VoteOptions] o
-            INNER JOIN [votingSystems] v ON o.idVote = v.IdVote
-            WHERE o.idVoteOption = @optionId";
+SELECT v.IdVote, v.expiresAt 
+FROM `VoteOptions` o
+INNER JOIN `votingsystems` v ON o.idVote = v.IdVote
+WHERE o.idVoteOption = @optionId;";
 
                 int voteId = 0;
                 DateTime? expiresAt = null;
@@ -3633,7 +3631,7 @@ namespace TripWise.Controllers
                 using (var command = _context.Database.GetDbConnection().CreateCommand())
                 {
                     command.CommandText = checkSql;
-                    command.Parameters.Add(new SqlParameter("@optionId", request.OptionId));
+                    command.Parameters.Add(new MySqlParameter("@optionId", request.OptionId));
 
                     await _context.Database.OpenConnectionAsync();
                     using (var reader = await command.ExecuteReaderAsync())
@@ -3667,15 +3665,15 @@ namespace TripWise.Controllers
 
                 // Проверяем, голосовал ли уже пользователь
                 var checkVoteSql = @"
-            SELECT COUNT(*) FROM [UserVotes] 
-            WHERE idVoteOption = @optionId AND idUser = @userId";
+SELECT COUNT(*) FROM `UserVotes` 
+WHERE idVoteOption = @optionId AND idUser = @userId;";
 
                 int existingVoteCount = 0;
                 using (var command = _context.Database.GetDbConnection().CreateCommand())
                 {
                     command.CommandText = checkVoteSql;
-                    command.Parameters.Add(new SqlParameter("@optionId", request.OptionId));
-                    command.Parameters.Add(new SqlParameter("@userId", userId.Value));
+                    command.Parameters.Add(new MySqlParameter("@optionId", request.OptionId));
+                    command.Parameters.Add(new MySqlParameter("@userId", userId.Value));
 
                     var result = await command.ExecuteScalarAsync();
                     existingVoteCount = result != null ? Convert.ToInt32(result) : 0;
@@ -3684,29 +3682,29 @@ namespace TripWise.Controllers
                 // Если голосовал - удаляем старый голос
                 if (existingVoteCount > 0)
                 {
-                    var deleteSql = "DELETE FROM [UserVotes] WHERE idVoteOption = @optionId AND idUser = @userId";
+                    var deleteSql = "DELETE FROM `UserVotes` WHERE idVoteOption = @optionId AND idUser = @userId;";
                     using (var command = _context.Database.GetDbConnection().CreateCommand())
                     {
                         command.CommandText = deleteSql;
-                        command.Parameters.Add(new SqlParameter("@optionId", request.OptionId));
-                        command.Parameters.Add(new SqlParameter("@userId", userId.Value));
+                        command.Parameters.Add(new MySqlParameter("@optionId", request.OptionId));
+                        command.Parameters.Add(new MySqlParameter("@userId", userId.Value));
                         await command.ExecuteNonQueryAsync();
                     }
                 }
 
                 // Добавляем новый голос
                 var insertSql = @"
-            INSERT INTO [UserVotes] 
-            ([idVoteOption], [idUser], [votedAt])
-            VALUES 
-            (@optionId, @userId, @votedAt)";
+INSERT INTO `UserVotes` 
+(`idVoteOption`, `idUser`, `votedAt`)
+VALUES 
+(@optionId, @userId, @votedAt);";
 
                 using (var command = _context.Database.GetDbConnection().CreateCommand())
                 {
                     command.CommandText = insertSql;
-                    command.Parameters.Add(new SqlParameter("@optionId", request.OptionId));
-                    command.Parameters.Add(new SqlParameter("@userId", userId.Value));
-                    command.Parameters.Add(new SqlParameter("@votedAt", DateTime.UtcNow));
+                    command.Parameters.Add(new MySqlParameter("@optionId", request.OptionId));
+                    command.Parameters.Add(new MySqlParameter("@userId", userId.Value));
+                    command.Parameters.Add(new MySqlParameter("@votedAt", DateTime.UtcNow));
                     await command.ExecuteNonQueryAsync();
                 }
 
@@ -3716,7 +3714,7 @@ namespace TripWise.Controllers
                     Message = "Ваш голос учтен"
                 });
             }
-            catch (SqlException ex)
+            catch (MySqlException ex)
             {
                 _logger.LogError(ex, "SQL ошибка при голосовании");
                 return Json(new ApiResponse<object>
@@ -3853,18 +3851,18 @@ namespace TripWise.Controllers
                     : $"Пользователь {removedUserName} был удален из чата администратором {currentMember.User?.LastName} {currentMember.User?.FirstName}".Trim();
 
                 var insertMessageSql = @"
-    INSERT INTO [ChatMessages] 
-    ([message], [sentAt], [idUser], [idChat])
-    VALUES 
-    (@message, @sentAt, @senderId, @chatId)";
+INSERT INTO `ChatMessages` 
+(`message`, `sentAt`, `idUser`, `idChat`)
+VALUES 
+(@message, @sentAt, @senderId, @chatId);";
 
                 using (var command = _context.Database.GetDbConnection().CreateCommand())
                 {
                     command.CommandText = insertMessageSql;
-                    command.Parameters.Add(new SqlParameter("@message", systemMessage));
-                    command.Parameters.Add(new SqlParameter("@sentAt", DateTime.UtcNow));
-                    command.Parameters.Add(new SqlParameter("@senderId", userId.Value));
-                    command.Parameters.Add(new SqlParameter("@chatId", request.ChatId));
+                    command.Parameters.Add(new MySqlParameter("@message", systemMessage));
+                    command.Parameters.Add(new MySqlParameter("@sentAt", DateTime.UtcNow));
+                    command.Parameters.Add(new MySqlParameter("@senderId", userId.Value));
+                    command.Parameters.Add(new MySqlParameter("@chatId", request.ChatId));
 
                     await _context.Database.OpenConnectionAsync();
                     await command.ExecuteNonQueryAsync();

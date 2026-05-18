@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TripWise.Models;
 using TripWise.Models.DTOs;
 using System.Security.Claims;
-using Microsoft.Data.SqlClient;
+//using Microsoft.Data.SqlClient;
 
 namespace TripWise.Controllers
 {
