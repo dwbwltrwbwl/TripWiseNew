@@ -466,20 +466,11 @@ namespace TripWise.Controllers
             <div style='background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;'>
                 <h3 style='color: #333; margin-top: 0;'>Что вас ждет?</h3>
                 <ul style='color: #555; line-height: 1.6; padding-left: 20px;'>
-                    <li>🔥 Лучшие предложения на авиабилеты и отели</li>
-                    <li>📅 Уведомления о скидках и акциях</li>
-                    <li>🗺️ Полезные советы для путешественников</li>
-                    <li>👥 Идеи для групповых поездок</li>
+                    <li>✈️ Сравнение цен на авиабилеты, ЖД билеты и отели</li>
+                    <li>💰 Учет расходов и управление бюджетом поездки</li>
+                    <li>👥 Совместное планирование с друзьями в чатах</li>
+                    <li>📊 Голосования для выбора маршрутов и развлечений</li>
                 </ul>
-            </div>
-            
-            <div style='text-align: center; margin: 30px 0;'>
-                <a href='{Url.Action("Index", "Home", null, "https")}' 
-                   style='display: inline-block; background: #0379D9; color: white; 
-                          padding: 12px 30px; border-radius: 8px; text-decoration: none; 
-                          font-weight: bold;'>
-                    Начать планирование
-                </a>
             </div>
             
             <div style='border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px;'>

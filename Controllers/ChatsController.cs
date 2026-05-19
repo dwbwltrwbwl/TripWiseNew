@@ -3054,7 +3054,7 @@ SELECT
     u.last_name as CreatorLastName,
     u.first_name as CreatorFirstName,
     t.title as TripTitle
-FROM `votingsystems` v
+FROM `votingSystems` v
 LEFT JOIN `Users` u ON v.createdById = u.idUser
 LEFT JOIN `Trips` t ON v.idTrip = t.idTrip
 WHERE v.idChat = @chatId
@@ -3332,10 +3332,8 @@ WHERE uv.idVoteOption = @optionId;";
                     {
                         await connection.OpenAsync();
                     }
-
-                    // Вставляем голосование
                     var insertVoteSql = @"
-INSERT INTO `votingsystems` 
+INSERT INTO `votingSystems` 
 (`question`, `createdAt`, `expiresAt`, `idTrip`, `createdById`, `idPoint`, `idChat`)
 VALUES 
 (@question, @createdAt, @expiresAt, @idTrip, @createdById, @idPoint, @idChat);
@@ -3495,7 +3493,7 @@ SELECT LAST_INSERT_ID();";
                 // Получаем информацию о голосовании
                 var voteSql = @"
 SELECT v.IdVote, v.question, v.idChat
-FROM `votingsystems` v
+FROM `votingSystems` v
 WHERE v.IdVote = @voteId;";
 
                 int chatId = 0;
@@ -3622,7 +3620,7 @@ ORDER BY o.idVoteOption;";
                 var checkSql = @"
 SELECT v.IdVote, v.expiresAt 
 FROM `VoteOptions` o
-INNER JOIN `votingsystems` v ON o.idVote = v.IdVote
+INNER JOIN `votingSystems` v ON o.idVote = v.IdVote
 WHERE o.idVoteOption = @optionId;";
 
                 int voteId = 0;
