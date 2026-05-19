@@ -278,11 +278,12 @@
 
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="agreeTerms" name="agreeTerms"
-                                   @(ViewData["AgreeTerms"]?.ToString() == "on" ? "checked" : "") required>
+                            @(ViewData["AgreeTerms"]?.ToString() == "on" ? "checked" : "") required>
                             <label class="form-check-label" for="agreeTerms">
                                 Я соглашаюсь с <a asp-controller="Home" asp-action="Terms" class="text-decoration-none" style="color: #047bd6;" target="_blank">условиями использования</a>
+                                и даю согласие на <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal" class="text-decoration-none" style="color: #047bd6;">обработку персональных данных</a>
                             </label>
-                            <div class="invalid-feedback" id="agreeTermsError">Необходимо согласиться с условиями использования</div>
+                            <div class="invalid-feedback" id="agreeTermsError">Необходимо согласиться с условиями использования и дать согласие на обработку персональных данных</div>
                         </div>
 
                         <!-- Вывод ошибок валидации -->
@@ -581,3 +582,91 @@
         }
     });
 </script>
+
+<!-- Модальное окно с политикой обработки персональных данных -->
+<div class="modal fade" id="privacyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-0" style="background: linear-gradient(135deg, #0379D9, #40B624);">
+                <h5 class="modal-title text-white">
+                    <i class="fas fa-shield-alt me-2"></i>Обработка персональных данных
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
+                <div class="privacy-content">
+                    <h6 class="fw-bold text-primary mb-3">1. Общие положения</h6>
+                    <p class="small text-muted mb-3">1.1. Настоящая Политика обработки персональных данных определяет порядок обработки и защиты информации о пользователях сервиса "Вместе В Путь".</p>
+                    <p class="small text-muted mb-3">1.2. Регистрируясь и используя сервис, вы даете согласие на обработку своих персональных данных в соответствии с настоящей Политикой.</p>
+
+                    <h6 class="fw-bold text-primary mb-3 mt-4">2. Какие данные мы собираем</h6>
+                    <p class="small text-muted mb-3">2.1. При регистрации и бронировании мы можем собирать следующие персональные данные:</p>
+                    <ul class="small text-muted mb-3">
+                        <li>Фамилия, имя, отчество;</li>
+                        <li>Адрес электронной почты (email);</li>
+                        <li>Номер телефона;</li>
+                        <li>Дата рождения;</li>
+                        <li>Паспортные данные (серия, номер);</li>
+                        <li>Данные загранпаспорта (при необходимости);</li>
+                        <li>Информация о бронированиях и поездках;</li>
+                        <li>Платежная информация.</li>
+                    </ul>
+
+                    <h6 class="fw-bold text-primary mb-3 mt-4">3. Цели обработки персональных данных</h6>
+                    <p class="small text-muted mb-3">3.1. Ваши персональные данные используются для:</p>
+                    <ul class="small text-muted mb-3">
+                        <li>Оформления авиабилетов, ж/д билетов и бронирования отелей;</li>
+                        <li>Идентификации пользователя при входе в систему;</li>
+                        <li>Связи с вами по вопросам бронирования и возвратов;</li>
+                        <li>Отправки подтверждений и электронных билетов на email;</li>
+                        <li>Улучшения качества обслуживания;</li>
+                        <li>Предотвращения мошенничества и обеспечения безопасности.</li>
+                    </ul>
+
+                    <h6 class="fw-bold text-primary mb-3 mt-4">4. Правовые основания обработки</h6>
+                    <p class="small text-muted mb-3">4.1. Мы обрабатываем ваши персональные данные на основании:</p>
+                    <ul class="small text-muted mb-3">
+                        <li>Вашего согласия, выраженного при регистрации и использовании сервиса;</li>
+                        <li>Необходимости исполнения договора перевозки и оказания услуг бронирования;</li>
+                        <li>Требований законодательства РФ, в том числе транспортного законодательства.</li>
+                    </ul>
+
+                    <h6 class="fw-bold text-primary mb-3 mt-4">5. Передача данных третьим лицам</h6>
+                    <p class="small text-muted mb-3">5.1. Ваши персональные данные могут быть переданы:</p>
+                    <ul class="small text-muted mb-3">
+                        <li>Авиакомпаниям, ж/д перевозчикам и отелям для оформления бронирования;</li>
+                        <li>Платежным системам для обработки оплаты;</li>
+                        <li>Государственным органам в случаях, предусмотренных законодательством РФ.</li>
+                    </ul>
+                    <p class="small text-muted mb-3">5.2. Мы не передаем ваши персональные данные третьим лицам в коммерческих целях без вашего согласия.</p>
+
+                    <h6 class="fw-bold text-primary mb-3 mt-4">6. Сроки хранения</h6>
+                    <p class="small text-muted mb-3">6.1. Ваши персональные данные хранятся в течение срока действия договора и 5 лет после его окончания в соответствии с требованиями законодательства РФ.</p>
+                    <p class="small text-muted mb-3">6.2. Вы можете запросить удаление своих персональных данных, обратившись в службу поддержки.</p>
+
+                    <h6 class="fw-bold text-primary mb-3 mt-4">7. Ваши права</h6>
+                    <p class="small text-muted mb-3">7.1. Вы имеете право:</p>
+                    <ul class="small text-muted mb-3">
+                        <li>Получать информацию о том, какие ваши персональные данные хранятся;</li>
+                        <li>Требовать исправления неточных или устаревших данных;</li>
+                        <li>Отозвать согласие на обработку персональных данных;</li>
+                        <li>Требовать удаления ваших персональных данных (за исключением случаев, когда хранение обязательно по закону).</li>
+                    </ul>
+
+                    <h6 class="fw-bold text-primary mb-3 mt-4">8. Защита данных</h6>
+                    <p class="small text-muted mb-3">8.1. Мы принимаем организационные и технические меры для защиты ваших персональных данных от несанкционированного доступа, уничтожения, изменения и распространения.</p>
+                    <p class="small text-muted mb-3">8.2. Все данные передаются по защищенному соединению (SSL/TLS).</p>
+
+                    <h6 class="fw-bold text-primary mb-3 mt-4">9. Контактная информация</h6>
+                    <p class="small text-muted mb-3">9.1. По всем вопросам, связанным с обработкой персональных данных, вы можете обратиться по адресу: <strong>privacy@tripwise.ru</strong></p>
+                    <p class="small text-muted mb-3">9.2. Ответ на обращение предоставляется в течение 30 дней.</p>
+                </div>
+            </div>
+            <div class="modal-footer border-0 justify-content-center">
+                <button type="button" class="btn btn-primary btn-lg px-5" data-bs-dismiss="modal">
+                    <i class="fas fa-check me-2"></i>Принимаю
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

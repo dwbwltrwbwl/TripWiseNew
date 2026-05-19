@@ -843,29 +843,81 @@ namespace TripWise.Controllers
         [HttpGet("GetTopUsers")]
         public async Task<IActionResult> GetTopUsers()
         {
+            // 1. Авиабилеты - количество бронирований
             var flightUsers = await _context.FlightBookings
-                .GroupBy(f => f.ContactName)
-                .Select(g => new { UserName = g.Key, Total = g.Sum(f => f.Price) })
+                .GroupBy(f => f.UserId)
+                .Select(g => new { UserId = g.Key, Actions = g.Count() })
                 .ToListAsync();
 
+            // 2. ЖД билеты - количество заказов
             var trainUsers = await _context.TrainOrders
-                .GroupBy(t => t.PassengerFullName)
-                .Select(g => new { UserName = g.Key, Total = g.Sum(t => t.TotalPrice) })
+                .GroupBy(t => t.UserId)
+                .Select(g => new { UserId = g.Key, Actions = g.Count() })
                 .ToListAsync();
 
+            // 3. Отели - количество бронирований
             var hotelUsers = await _context.HotelBookings
-                .GroupBy(h => h.ContactName)
-                .Select(g => new { UserName = g.Key, Total = g.Sum(h => h.TotalPrice) })
+                .GroupBy(h => h.UserId)
+                .Select(g => new { UserId = g.Key, Actions = g.Count() })
                 .ToListAsync();
 
-            var allUsers = flightUsers.Concat(trainUsers).Concat(hotelUsers)
-                .GroupBy(u => u.UserName)
-                .Select(g => new { UserName = g.Key, TotalSpent = g.Sum(x => x.Total) })
-                .OrderByDescending(u => u.TotalSpent)
+            // 4. Участие в поездках - количество уникальных поездок
+            var tripUsers = await _context.TripParticipants
+                .GroupBy(tp => tp.IdUser)
+                .Select(g => new { UserId = g.Key, Actions = g.Select(tp => tp.IdTrip).Distinct().Count() })
+                .ToListAsync();
+
+            // 5. Отзывы - количество написанных отзывов
+            var reviewUsers = await _context.Reviews
+                .Where(r => !r.IsDeleted && r.IsApproved)
+                .GroupBy(r => r.UserId)
+                .Select(g => new { UserId = g.Key, Actions = g.Count() })
+                .ToListAsync();
+
+            // 6. Создание поездок - сколько поездок создал пользователь
+            var createdTrips = await _context.Trips
+                .Where(t => t.CreatedById.HasValue)
+                .GroupBy(t => t.CreatedById.Value)
+                .Select(g => new { UserId = g.Key, Actions = g.Count() })
+                .ToListAsync();
+
+            // 7. Создание чатов - сколько чатов создал пользователь
+            var createdChats = await _context.Chats
+                .GroupBy(c => c.CreatedById)
+                .Select(g => new { UserId = g.Key, Actions = g.Count() })
+                .ToListAsync();
+
+            // Объединяем все действия
+            var allActions = flightUsers
+                .Concat(trainUsers)
+                .Concat(hotelUsers)
+                .Concat(tripUsers)
+                .Concat(reviewUsers)
+                .Concat(createdTrips)
+                .Concat(createdChats)
+                .GroupBy(u => u.UserId)
+                .Select(g => new
+                {
+                    UserId = g.Key,
+                    TotalActions = g.Sum(x => x.Actions)
+                })
+                .OrderByDescending(u => u.TotalActions)
                 .Take(5)
                 .ToList();
 
-            return Ok(allUsers.Select(u => new { userName = u.UserName, totalSpent = u.TotalSpent }));
+            // Получаем имена пользователей
+            var userIds = allActions.Select(a => a.UserId).Distinct().ToList();
+            var users = await _context.Users
+                .Where(u => userIds.Contains(u.IdUser))
+                .ToDictionaryAsync(u => u.IdUser, u => $"{u.LastName} {u.FirstName}".Trim());
+
+            var result = allActions.Select(a => new
+            {
+                userName = users.ContainsKey(a.UserId) ? users[a.UserId] : "Пользователь",
+                totalSpent = a.TotalActions  // Переименовано, но на фронте используется totalSpent
+            }).ToList();
+
+            return Ok(result);
         }
 
         [HttpGet("GetHotelTypes")]
