@@ -207,7 +207,7 @@
 
                     <form method="post" asp-action="Register" id="registerForm">
                         <div class="row">
-                            <div class="col-md-4 mb-3">
+                            <div class="mb-3">
                                 <label for="lastName" class="form-label">Фамилия <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control form-control-lg" id="lastName" name="lastName"
                                        placeholder="Иванов" maxlength="100"
@@ -216,7 +216,8 @@
                                 <div class="char-counter" id="lastNameCounter">0/100 символов</div>
                                 <div class="invalid-feedback" id="lastNameError"></div>
                             </div>
-                            <div class="col-md-4 mb-3">
+
+                            <div class="mb-3">
                                 <label for="firstName" class="form-label">Имя <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control form-control-lg" id="firstName" name="firstName"
                                        placeholder="Иван" maxlength="100"
@@ -225,7 +226,8 @@
                                 <div class="char-counter" id="firstNameCounter">0/100 символов</div>
                                 <div class="invalid-feedback" id="firstNameError"></div>
                             </div>
-                            <div class="col-md-4 mb-3">
+
+                            <div class="mb-3">
                                 <label for="middleName" class="form-label">Отчество</label>
                                 <input type="text" class="form-control form-control-lg" id="middleName" name="middleName"
                                        placeholder="Иванович" maxlength="100"
