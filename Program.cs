@@ -2,11 +2,22 @@
 using Microsoft.EntityFrameworkCore;
 using TripWise.Models;
 using TripWise.Services;
-using TripWise.Hubs;  // ← ДОБАВЬТЕ ЭТУ СТРОКУ (создадим папку Hubs позже)
+using TripWise.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Конфигурация логгирования
+// ========== УВЕЛИЧЕНИЕ ЛИМИТА ДЛЯ ЗАГРУЗКИ ФАЙЛОВ ==========
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 50 * 1024 * 1024; // 50 MB
+});
+
+builder.Services.Configure<IISServerOptions>(options =>
+{
+    options.MaxRequestBodySize = 50 * 1024 * 1024; // 50 MB
+});
+
+// ========== КОНФИГУРАЦИЯ ЛОГГИРОВАНИЯ ==========
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
@@ -14,11 +25,11 @@ builder.Logging.AddDebug();
 // Добавление контроллеров
 builder.Services.AddControllersWithViews();
 
-// ========== ДОБАВЬТЕ SIGNALR ==========
+// ========== SIGNALR ==========
 builder.Services.AddSignalR(options =>
 {
-    options.EnableDetailedErrors = true; // Полезно для отладки
-    options.MaximumReceiveMessageSize = 102400; // 100KB, при необходимости увеличьте
+    options.EnableDetailedErrors = true;
+    options.MaximumReceiveMessageSize = 102400; // 100KB
 });
 
 builder.Services.AddAntiforgery(options =>
@@ -45,12 +56,11 @@ builder.Services.AddSession(options =>
     options.Cookie.SecurePolicy = CookieSecurePolicy.None;
 });
 
-// CORS - ВАЖНО для SignalR
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        // Для SignalR нужно разрешить конкретные методы и заголовки
         policy.AllowAnyOrigin()
               .AllowAnyMethod()
               .AllowAnyHeader();
@@ -59,7 +69,8 @@ builder.Services.AddCors(options =>
 
 // База данных
 builder.Services.AddDbContext<TripWiseContext>(options =>
-    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"), new MySqlServerVersion(new Version(8, 0, 0))));
+    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
+        new MySqlServerVersion(new Version(8, 0, 0))));
 
 // Регистрация сервисов
 builder.Services.AddScoped<IHotelService, HotelService>();
@@ -79,6 +90,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.ExpireTimeSpan = TimeSpan.FromDays(30);
         options.SlidingExpiration = true;
         options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+        options.Cookie.MaxAge = TimeSpan.FromDays(30);
     });
 
 // API сервисы
@@ -108,13 +120,12 @@ app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// ========== ДОБАВЬТЕ MAPHUB ==========
+// ========== MAPHUB ==========
 app.MapHub<ChatHub>("/chatHub");
 
 // Middleware для автоматического входа
 app.Use(async (context, next) =>
 {
-    // Безопасная проверка сессии
     if (context.Session != null && context.Session.GetInt32("UserId") == null)
     {
         var authToken = context.Request.Cookies["AuthToken"];
