@@ -3061,69 +3061,82 @@ function renderChatsList(chats) {
         // Отправка сообщения
                 const MAX_MESSAGE_LENGTH = 1000;
                         async function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const text = input.value.trim();
-                    if (text.length > MAX_MESSAGE_LENGTH) {
-                showNotification(`Сообщение не должно превышать ${MAX_MESSAGE_LENGTH} символов (сейчас ${text.length})`, 'danger');
-                return;
-            }
-            if ((!text || text === '') && selectedFiles.length === 0) {
-                console.log('Нет текста и не выбрано файлов');
-                return;
-            }
+    const input = document.getElementById('messageInput');
+    const text = input.value.trim();
 
-            if (!currentChatId) {
-                console.log('Не выбран чат');
-                return;
-            }
+    if (text.length > MAX_MESSAGE_LENGTH) {
+        showNotification(`Сообщение не должно превышать ${MAX_MESSAGE_LENGTH} символов (сейчас ${text.length})`, 'danger');
+        return;
+    }
+    if ((!text || text === '') && selectedFiles.length === 0) {
+        return;
+    }
 
-            try {
-                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+    if (!currentChatId) {
+        return;
+    }
 
-                if (!token) {
-                    console.error('Token не найден');
-                    showNotification('Ошибка аутентификации', 'danger');
-                    return;
-                }
-
-                const messageData = {
-                    chatId: currentChatId,
-                    text: text || '',
-                    attachments: selectedFiles
-                };
-
-                console.log('Отправка сообщения:', messageData);
-
-                const response = await fetch('/Chats/SendMessage', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'RequestVerificationToken': token
-                    },
-                    body: JSON.stringify(messageData)
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP ошибка: ${response.status}`);
-                }
-
-                const data = await response.json();
-
-                if (data.success) {
-                    input.value = '';
-                    clearAllFiles();
-
-                    // Не добавляем сообщение вручную - ждем checkNewMessages
-                    // Он придет с правильным UTC временем
-
-                } else {
-                    showNotification(data.message || 'Ошибка при отправке', 'danger');
-                }
-            } catch (error) {
-                console.error('Ошибка отправки сообщения:', error);
-                showNotification('Не удалось отправить сообщение: ' + error.message, 'danger');
-            }
+    try {
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+        if (!token) {
+            showNotification('Ошибка аутентификации', 'danger');
+            return;
         }
+
+        const messageData = {
+            chatId: currentChatId,
+            text: text || '',
+            attachments: selectedFiles
+        };
+
+        const response = await fetch('/Chats/SendMessage', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': token
+            },
+            body: JSON.stringify(messageData)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ошибка: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+            // ✅ МГНОВЕННО добавляем сообщение в UI
+            const tempMessage = {
+                id: data.data.messageId,
+                text: text,
+                senderId: currentUserId,
+                senderName: 'Вы',
+                sentAt: new Date().toISOString(),
+                attachments: selectedFiles,
+                isOutgoing: true
+            };
+            
+            appendMessageToUI(tempMessage);
+            
+            input.value = '';
+            clearAllFiles();
+            
+            // Обновляем lastMessageId для следующего опроса
+            if (data.data.messageId > lastMessageId) {
+                lastMessageId = data.data.messageId;
+            }
+            
+            // Прокручиваем вниз
+            scrollToBottom();
+            
+        } else {
+            showNotification(data.message || 'Ошибка при отправке', 'danger');
+        }
+    } catch (error) {
+        console.error('Ошибка отправки сообщения:', error);
+        showNotification('Не удалось отправить сообщение: ' + error.message, 'danger');
+    }
+}
 
         // Добавление сообщения в UI
                                                                 function appendMessageToUI(message) {
