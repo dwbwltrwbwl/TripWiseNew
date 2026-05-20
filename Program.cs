@@ -1,17 +1,26 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
+п»їusing Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using TripWise.Models;
 using TripWise.Services;
+using TripWise.Hubs;  // в†ђ Р”РћР‘РђР’Р¬РўР• Р­РўРЈ РЎРўР РћРљРЈ (СЃРѕР·РґР°РґРёРј РїР°РїРєСѓ Hubs РїРѕР·Р¶Рµ)
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Конфигурация логгирования
+// РљРѕРЅС„РёРіСѓСЂР°С†РёСЏ Р»РѕРіРіРёСЂРѕРІР°РЅРёСЏ
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 
-// Добавление контроллеров (убрал дублирующий AddControllers)
+// Р”РѕР±Р°РІР»РµРЅРёРµ РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРІ
 builder.Services.AddControllersWithViews();
+
+// ========== Р”РћР‘РђР’Р¬РўР• SIGNALR ==========
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = true; // РџРѕР»РµР·РЅРѕ РґР»СЏ РѕС‚Р»Р°РґРєРё
+    options.MaximumReceiveMessageSize = 102400; // 100KB, РїСЂРё РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚Рё СѓРІРµР»РёС‡СЊС‚Рµ
+});
+
 builder.Services.AddAntiforgery(options =>
 {
     options.HeaderName = "RequestVerificationToken";
@@ -20,38 +29,39 @@ builder.Services.AddAntiforgery(options =>
     options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 });
 
-// HTTP клиент
+// HTTP РєР»РёРµРЅС‚
 builder.Services.AddHttpClient();
 
-// Кэширование
+// РљСЌС€РёСЂРѕРІР°РЅРёРµ
 builder.Services.AddMemoryCache();
 
-// Сессии - исправлены настройки для разработки
+// РЎРµСЃСЃРёРё
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.None; // <-- ИЗМЕНЕНО для разработки
+    options.Cookie.SecurePolicy = CookieSecurePolicy.None;
 });
 
-// CORS
+// CORS - Р’РђР–РќРћ РґР»СЏ SignalR
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
+        // Р”Р»СЏ SignalR РЅСѓР¶РЅРѕ СЂР°Р·СЂРµС€РёС‚СЊ РєРѕРЅРєСЂРµС‚РЅС‹Рµ РјРµС‚РѕРґС‹ Рё Р·Р°РіРѕР»РѕРІРєРё
         policy.AllowAnyOrigin()
               .AllowAnyMethod()
               .AllowAnyHeader();
     });
 });
 
-// База данных
+// Р‘Р°Р·Р° РґР°РЅРЅС‹С…
 builder.Services.AddDbContext<TripWiseContext>(options =>
     options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"), new MySqlServerVersion(new Version(8, 0, 0))));
 
-// Регистрация сервисов
+// Р РµРіРёСЃС‚СЂР°С†РёСЏ СЃРµСЂРІРёСЃРѕРІ
 builder.Services.AddScoped<IHotelService, HotelService>();
 builder.Services.AddScoped<ICacheService, MemoryCacheService>();
 builder.Services.AddScoped<EmailService>();
@@ -59,7 +69,7 @@ builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 builder.Services.AddScoped<IFavoriteService, FavoriteService>();
 builder.Services.AddScoped<IFileService, FileService>();
 
-// Аутентификация - исправлены настройки для разработки
+// РђСѓС‚РµРЅС‚РёС„РёРєР°С†РёСЏ
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -68,19 +78,19 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.AccessDeniedPath = "/Account/AccessDenied";
         options.ExpireTimeSpan = TimeSpan.FromDays(30);
         options.SlidingExpiration = true;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.None; // <-- ИЗМЕНЕНО для разработки
+        options.Cookie.SecurePolicy = CookieSecurePolicy.None;
     });
 
-// API сервисы
+// API СЃРµСЂРІРёСЃС‹
 builder.Services.AddScoped<RzdApiService>();
 builder.Services.AddHttpClient<RzdApiService>();
 
-// Авиабилеты
+// РђРІРёР°Р±РёР»РµС‚С‹
 builder.Services.AddScoped<IFlightService, RealisticFlightService>();
 
 var app = builder.Build();
 
-// Конфигурация пайплайна
+// РљРѕРЅС„РёРіСѓСЂР°С†РёСЏ РїР°Р№РїР»Р°Р№РЅР°
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -93,15 +103,18 @@ app.UseRouting();
 
 app.UseCors("AllowAll");
 
-// ВАЖНО: правильный порядок middleware
+// Р’РђР–РќРћ: РїСЂР°РІРёР»СЊРЅС‹Р№ РїРѕСЂСЏРґРѕРє middleware
 app.UseSession();
-app.UseAuthentication(); // <-- ДОБАВЛЕНО!
+app.UseAuthentication();
 app.UseAuthorization();
 
-// Middleware для автоматического входа
+// ========== Р”РћР‘РђР’Р¬РўР• MAPHUB ==========
+app.MapHub<ChatHub>("/chatHub");
+
+// Middleware РґР»СЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ РІС…РѕРґР°
 app.Use(async (context, next) =>
 {
-    // Безопасная проверка сессии
+    // Р‘РµР·РѕРїР°СЃРЅР°СЏ РїСЂРѕРІРµСЂРєР° СЃРµСЃСЃРёРё
     if (context.Session != null && context.Session.GetInt32("UserId") == null)
     {
         var authToken = context.Request.Cookies["AuthToken"];
@@ -134,14 +147,14 @@ app.Use(async (context, next) =>
                         {
                             Expires = DateTime.Now.AddDays(30),
                             HttpOnly = true,
-                            IsEssential = true // для разработки
+                            IsEssential = true
                         });
                 }
             }
             catch (Exception ex)
             {
                 var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-                logger.LogError(ex, "Ошибка автоматического входа");
+                logger.LogError(ex, "РћС€РёР±РєР° Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ РІС…РѕРґР°");
             }
         }
     }
@@ -149,7 +162,7 @@ app.Use(async (context, next) =>
     await next();
 });
 
-// Маршруты
+// РњР°СЂС€СЂСѓС‚С‹
 app.MapControllerRoute(
     name: "flightBooking",
     pattern: "FlightBooking/{action=Index}/{id?}",

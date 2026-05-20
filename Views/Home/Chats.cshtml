@@ -2289,8 +2289,10 @@
 </style>
 
 @section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
     <script src="~/js/friends.js"></script>
     <script>
+        let connection = null;
         console.log('Chats script loaded');
         console.log('Current path:', window.location.pathname);
         console.log('Window width:', window.innerWidth);
@@ -2305,6 +2307,7 @@
         let isSelectingChat = false;
         let chatInfoModal = null;
                 let createVoteModal = null;
+        window.votesData = [];
 
         // Получаем chatId из URL если есть
         const urlParams = new URLSearchParams(window.location.search);
@@ -2371,8 +2374,90 @@
             } else {
                 console.log('User not logged in');
             }
+
+            if (currentUserId) {
+            initSignalR();
+        }
+        });
+        async function initSignalR() {
+        if (connection) {
+        try {
+        await connection.stop();
+        } catch(e) { console.log(e); }
+        }
+
+        connection = new signalR.HubConnectionBuilder()
+        .withUrl("/chatHub", {
+        accessTokenFactory: () => {
+        return document.querySelector('input[name="__RequestVerificationToken"]')?.value || "";
+        }
+        })
+        .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
+        .build();
+
+        // Обработка входящих сообщений
+        connection.on("ReceiveMessage", (message) => {
+        console.log("SignalR получил сообщение:", message);
+
+        // Если это текущий чат, добавляем сообщение в UI
+        if (currentChatId === message.chatId) {
+        appendMessageToUI(message);
+        markMessagesAsRead(currentChatId);
+
+        // Обновляем lastMessageId
+        if (message.id > lastMessageId) {
+        lastMessageId = message.id;
+        }
+        } else {
+        // Если сообщение из другого чата, обновляем список чатов
+        loadUserChats();
+        showNotification(`Новое сообщение от ${message.senderName}`, 'info');
+        }
         });
 
+        connection.onreconnecting((error) => {
+        console.log("SignalR переподключение...", error);
+        });
+
+        connection.onreconnected((connectionId) => {
+        console.log("SignalR переподключен:", connectionId);
+        // После переподключения присоединяемся к текущему чату
+        if (currentChatId) {
+        connection.invoke("JoinChat", currentChatId).catch(err => console.error(err));
+        }
+        });
+
+        connection.onclose((error) => {
+        console.log("SignalR отключен:", error);
+        });
+
+        try {
+        await connection.start();
+        console.log("SignalR подключен");
+
+        // Если есть текущий чат, присоединяемся к нему
+        if (currentChatId) {
+        await connection.invoke("JoinChat", currentChatId);
+        }
+        } catch (err) {
+        console.error("SignalR ошибка подключения:", err);
+        setTimeout(() => initSignalR(), 5000);
+        }
+        }
+
+        // Присоединение к чату
+        async function joinChat(chatId) {
+        if (connection && connection.state === signalR.HubConnectionState.Connected) {
+        await connection.invoke("JoinChat", chatId);
+        }
+        }
+
+        // Выход из чата
+        async function leaveChatSignalR(chatId) {
+        if (connection && connection.state === signalR.HubConnectionState.Connected) {
+        await connection.invoke("LeaveChat", chatId);
+        }
+        }
         // ==================== ЧАТЫ ====================
 
         // Загрузка чатов пользователя
@@ -2646,102 +2731,111 @@ function renderChatsList(chats) {
                 throw error;
             }
         }
-                        // Выбор чата
-        async function selectChat(chatId, event, element) {
-            // Защита от повторных вызовов
-            if (isSelectingChat) {
-                console.log('Уже выбираем чат, пропускаем');
-                return;
-            }
+                        async function selectChat(chatId, event, element) {
+    // Защита от повторных вызовов
+    if (isSelectingChat) {
+        console.log('Уже выбираем чат, пропускаем');
+        return;
+    }
 
-            // ВАЖНО: проверяем chatId
-            if (!chatId || chatId === undefined || chatId === null) {
-                console.error('selectChat: chatId не передан или равен null/undefined');
-                showNotification('Ошибка: ID чата не указан', 'danger');
-                return;
-            }
+    // ВАЖНО: проверяем chatId
+    if (!chatId || chatId === undefined || chatId === null) {
+        console.error('selectChat: chatId не передан или равен null/undefined');
+        showNotification('Ошибка: ID чата не указан', 'danger');
+        return;
+    }
 
-            console.log('selectChat вызван с chatId:', chatId, 'тип:', typeof chatId);
+    console.log('selectChat вызван с chatId:', chatId, 'тип:', typeof chatId);
 
-            // Предотвращаем стандартное поведение ссылки
-            if (event) event.preventDefault();
+    // Предотвращаем стандартное поведение ссылки
+    if (event) event.preventDefault();
 
-            // Проверяем, не выбран ли уже этот чат
-            if (currentChatId === chatId) {
-                console.log('Чат уже выбран');
-                return;
-            }
+    // Проверяем, не выбран ли уже этот чат
+    if (currentChatId === chatId) {
+        console.log('Чат уже выбран');
+        return;
+    }
 
-            isSelectingChat = true;
+    isSelectingChat = true;
 
-            try {
-                // Проверяем, существует ли элемент чата в DOM
-                const chatElement = element || document.querySelector(`[data-chat-id="${chatId}"]`);
-                if (!chatElement) {
-                    console.error('Чат с ID', chatId, 'не найден в DOM');
-                    showNotification('Чат не найден', 'warning');
-                    return;
-                }
+    try {
+        // Проверяем, существует ли элемент чата в DOM
+        const chatElement = element || document.querySelector(`[data-chat-id="${chatId}"]`);
+        if (!chatElement) {
+            console.error('Чат с ID', chatId, 'не найден в DOM');
+            showNotification('Чат не найден', 'warning');
+            return;
+        }
 
-                // Обновляем URL без перезагрузки страницы
-                const url = new URL(window.location);
-                url.searchParams.set('chatId', chatId);
-                window.history.pushState({}, '', url);
+        // Выходим из предыдущего чата в SignalR
+        if (currentChatId) {
+            await leaveChatSignalR(currentChatId);
+        }
 
-                // Убираем активный класс у всех чатов
-                document.querySelectorAll('.chat-item').forEach(el => {
-                    el.classList.remove('active');
-                });
+        // Обновляем URL без перезагрузки страницы
+        const url = new URL(window.location);
+        url.searchParams.set('chatId', chatId);
+        window.history.pushState({}, '', url);
 
-                // Добавляем активный класс выбранному
-                chatElement.classList.add('active');
+        // Убираем активный класс у всех чатов
+        document.querySelectorAll('.chat-item').forEach(el => {
+            el.classList.remove('active');
+        });
 
-                // Устанавливаем currentChatId и обновляем видимость
-                currentChatId = chatId;
-                updateChatVisibility();
+        // Добавляем активный класс выбранному
+        chatElement.classList.add('active');
 
-                // Показываем индикатор загрузки
-                document.getElementById('chatTitle').textContent = 'Загрузка...';
-                document.getElementById('chatMembers').textContent = '';
-                document.getElementById('messagesList').innerHTML = `
-                    <div class="text-center py-5">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Загрузка...</span>
-                        </div>
-                        <p class="mt-2 text-muted">Загрузка чата...</p>
-                    </div>
-                `;
+        // Устанавливаем currentChatId и обновляем видимость
+        currentChatId = chatId;
+        updateChatVisibility();
 
-                // Загружаем информацию о чате и проверяем ответ
-                const chatInfo = await loadChatInfo(chatId);
+        // Показываем индикатор загрузки
+        document.getElementById('chatTitle').textContent = 'Загрузка...';
+        document.getElementById('chatMembers').textContent = '';
+        document.getElementById('messagesList').innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
+                <p class="mt-2 text-muted">Загрузка чата...</p>
+            </div>
+        `;
 
-                // Если чат не найден или нет доступа - возвращаемся к заглушке
-                if (!chatInfo || !chatInfo.success) {
-                    console.log('Чат недоступен, возвращаемся к списку');
+        // Загружаем информацию о чате
+        const chatInfo = await loadChatInfo(chatId);
+        
+        // Присоединяемся к чату в SignalR
+        await joinChat(chatId);
+        
+        // ✅ ЗАГРУЖАЕМ ГОЛОСОВАНИЯ ДЛЯ ЧАТА (ВАЖНО!)
+        await loadVotesForChat(chatId);
+        
+        // Если чат не найден или нет доступа - возвращаемся к заглушке
+        if (!chatInfo || !chatInfo.success) {
+            console.log('Чат недоступен, возвращаемся к списку');
 
-                    // Сбрасываем currentChatId
-                    currentChatId = null;
-                    updateChatVisibility();
+            // Сбрасываем currentChatId
+            currentChatId = null;
+            updateChatVisibility();
 
-                    // Убираем активный класс
-                    chatElement.classList.remove('active');
+            // Убираем активный класс
+            chatElement.classList.remove('active');
 
-                    // Удаляем chatId из URL
-                    removeChatFromUrl();
+            // Удаляем chatId из URL
+            removeChatFromUrl();
 
-                    // Показываем уведомление об ошибке
-                    showNotification(chatInfo?.message || 'Чат недоступен', 'warning');
-                    return;
-                }
+            // Показываем уведомление об ошибке
+            showNotification(chatInfo?.message || 'Чат недоступен', 'warning');
+            return;
+        }
 
-                // Проверяем, существует ли функция loadChatMessages
-                        // Проверяем, существует ли функция loadChatMessages
-                if (typeof loadChatMessages === 'function') {
+        // Загружаем сообщения (они будут использовать загруженные голосования)
+        if (typeof loadChatMessages === 'function') {
             console.log('Загружаем сообщения...');
             await loadChatMessages(chatId);
             await loadPinnedMessages(chatId);
 
-            // ОТМЕЧАЕМ ВСЕ СООБЩЕНИЯ КАК ПРОЧИТАННЫЕ СРАЗУ ПОСЛЕ ЗАГРУЗКИ ЧАТА
+            // Отмечаем все сообщения как прочитанные
             await markMessagesAsRead(chatId);
             await checkAndUpdateAdminStatus(chatId);
         } else {
@@ -2749,130 +2843,126 @@ function renderChatsList(chats) {
             showNotification('Ошибка: функция загрузки сообщений не найдена', 'danger');
         }
 
-                // Начинаем периодическое обновление сообщений
-                startMessagesRefresh(chatId);
+        // Начинаем периодическое обновление сообщений
+        startMessagesRefresh(chatId);
 
-            } catch (error) {
-                console.error('Ошибка при выборе чата:', error);
-                showNotification('Ошибка при загрузке чата', 'danger');
+    } catch (error) {
+        console.error('Ошибка при выборе чата:', error);
+        showNotification('Ошибка при загрузке чата: ' + error.message, 'danger');
 
-                // В случае ошибки возвращаемся к заглушке
-                currentChatId = null;
-                updateChatVisibility();
-                removeChatFromUrl();
-
-            } finally {
-                // Сбрасываем флаг выбора чата через небольшую задержку
-                setTimeout(() => {
-                    isSelectingChat = false;
-                }, 500);
-            }
+        // В случае ошибки возвращаемся к заглушке
+        if (currentChatId === chatId) {
+            currentChatId = null;
+            updateChatVisibility();
+            removeChatFromUrl();
         }
+    } finally {
+        // Сбрасываем флаг выбора чата через небольшую задержку
+        setTimeout(() => {
+            isSelectingChat = false;
+        }, 500);
+    }
+}
 
                                 async function loadChatMessages(chatId) {
-            try {
-                console.log('Загрузка сообщений чата:', chatId);
-                const response = await fetch(`/Chats/GetChatMessages?chatId=${chatId}`);
-                const data = await response.json();
-                console.log('Сообщения чата (сырые):', data);
+    try {
+        console.log('Загрузка сообщений чата:', chatId);
+        
+        // ✅ СНАЧАЛА загружаем голосования для этого чата
+        await loadVotesForChat(chatId);
+        
+        const response = await fetch(`/Chats/GetChatMessages?chatId=${chatId}`);
+        const data = await response.json();
+        console.log('Сообщения чата (сырые):', data);
 
-                if (data.success) {
-                    // Сначала загружаем голосования для этого чата
-                    await loadVotesForChat(chatId);
-                    console.log('window.votesData после загрузки:', window.votesData);
-
-                    // Создаем карту голосований для быстрого доступа
-                    const votesMap = new Map();
-                    if (window.votesData && window.votesData.length) {
-                        window.votesData.forEach(vote => {
-                            votesMap.set(vote.id, vote);
-                            console.log(`Vote ${vote.id} has options:`, vote.options);
-                        });
-                    }
-                    console.log('votesMap:', votesMap);
-
-                    // Обрабатываем сообщения
-                    const processedMessages = data.data.map(msg => {
-                        const isVote = msg.attachmentType === 'vote';
-                        console.log(`Сообщение ${msg.id}: isVote=${isVote}, attachmentsJson=${msg.attachmentsJson?.substring(0, 100)}`);
-
-                        if (isVote && msg.attachmentsJson) {
-                            try {
-                                let voteInfo;
-                                if (typeof msg.attachmentsJson === 'string') {
-                                    voteInfo = JSON.parse(msg.attachmentsJson);
-                                } else {
-                                    voteInfo = msg.attachmentsJson;
-                                }
-
-                                console.log('Найдено голосование в сообщении:', voteInfo);
-                                console.log('voteInfo.voteId:', voteInfo.voteId);
-                                console.log('Ищем в votesMap с ключом:', voteInfo.voteId);
-
-                                const fullVote = votesMap.get(voteInfo.voteId);
-                                console.log('Полные данные голосования из votesMap:', fullVote);
-
-                                                if (fullVote && fullVote.options && fullVote.options.length > 0) {
-            // Убедитесь, что expiresAt передается как есть (строка ISO)
-            console.log('fullVote.expiresAt:', fullVote.expiresAt);
-            console.log('typeof fullVote.expiresAt:', typeof fullVote.expiresAt);
-    
-            return {
-                ...msg,
-                isVoteMessage: true,
-                text: msg.text || `📊 Голосование: ${fullVote.question}`,
-                voteData: {
-                    voteId: fullVote.id,
-                    question: fullVote.question,
-                    options: fullVote.options,
-                    expiresAt: fullVote.expiresAt, // Сохраняем как есть
-                    isExpired: fullVote.isExpired,
-                    userHasVoted: fullVote.userHasVoted,
-                    userVoteOptionId: fullVote.userVoteOptionId
-                }
-            };
-        } else {
-                                    console.warn('Голосование не найдено в votesMap или нет options');
-                                    return {
-                                        ...msg,
-                                        isVoteMessage: true,
-                                        voteData: {
-                                            voteId: voteInfo.voteId,
-                                            question: voteInfo.question,
-                                            options: [],
-                                            expiresAt: voteInfo.expiresAt,
-                                            isExpired: voteInfo.expiresAt ? new Date(voteInfo.expiresAt) < new Date() : false,
-                                            userHasVoted: false,
-                                            userVoteOptionId: null
-                                        }
-                                    };
-                                }
-                            } catch (e) {
-                                console.error('Error parsing vote data:', e);
-                                return msg;
-                            }
-                        }
-                        return msg;
-                    });
-
-                    console.log('Обработанные сообщения:', processedMessages);
-                    renderMessages(processedMessages);
-
-                    if (data.data && data.data.length > 0) {
-                        lastMessageId = Math.max(...data.data.map(m => m.id));
-                    }
-
-                    markMessagesAsRead(chatId);
-                    return { success: true };
-                } else {
-                    console.error('Ошибка загрузки сообщений:', data.message);
-                    return { success: false, message: data.message };
-                }
-            } catch (error) {
-                console.error('Ошибка загрузки сообщений:', error);
-                return { success: false, message: error.message };
+        if (data.success) {
+            // Создаем карту голосований для быстрого доступа
+            const votesMap = new Map();
+            if (window.votesData && window.votesData.length) {
+                window.votesData.forEach(vote => {
+                    votesMap.set(vote.id, vote);
+                    console.log(`Vote ${vote.id} has options:`, vote.options);
+                });
             }
+            console.log('votesMap:', votesMap);
+
+            // Обрабатываем сообщения
+            const processedMessages = data.data.map(msg => {
+                const isVote = msg.attachmentType === 'vote';
+                console.log(`Сообщение ${msg.id}: isVote=${isVote}`);
+
+                if (isVote && msg.attachmentsJson) {
+                    try {
+                        let voteInfo;
+                        if (typeof msg.attachmentsJson === 'string') {
+                            voteInfo = JSON.parse(msg.attachmentsJson);
+                        } else {
+                            voteInfo = msg.attachmentsJson;
+                        }
+
+                        console.log('Найдено голосование в сообщении:', voteInfo);
+                        console.log('voteInfo.voteId:', voteInfo.voteId);
+
+                        const fullVote = votesMap.get(voteInfo.voteId);
+                        console.log('Полные данные голосования из votesMap:', fullVote);
+
+                        if (fullVote && fullVote.options && fullVote.options.length > 0) {
+                            return {
+                                ...msg,
+                                isVoteMessage: true,
+                                text: msg.text || `📊 Голосование: ${fullVote.question}`,
+                                voteData: {
+                                    voteId: fullVote.id,
+                                    question: fullVote.question,
+                                    options: fullVote.options,
+                                    expiresAt: fullVote.expiresAt,
+                                    isExpired: fullVote.isExpired,
+                                    userHasVoted: fullVote.userHasVoted,
+                                    userVoteOptionId: fullVote.userVoteOptionId
+                                }
+                            };
+                        } else {
+                            console.warn('Голосование не найдено в votesMap или нет options');
+                            return {
+                                ...msg,
+                                isVoteMessage: true,
+                                voteData: {
+                                    voteId: voteInfo.voteId,
+                                    question: voteInfo.question,
+                                    options: [],
+                                    expiresAt: voteInfo.expiresAt,
+                                    isExpired: voteInfo.expiresAt ? new Date(voteInfo.expiresAt) < new Date() : false,
+                                    userHasVoted: false,
+                                    userVoteOptionId: null
+                                }
+                            };
+                        }
+                    } catch (e) {
+                        console.error('Error parsing vote data:', e);
+                        return msg;
+                    }
+                }
+                return msg;
+            });
+
+            console.log('Обработанные сообщения:', processedMessages);
+            renderMessages(processedMessages);
+
+            if (data.data && data.data.length > 0) {
+                lastMessageId = Math.max(...data.data.map(m => m.id));
+            }
+
+            markMessagesAsRead(chatId);
+            return { success: true };
+        } else {
+            console.error('Ошибка загрузки сообщений:', data.message);
+            return { success: false, message: data.message };
         }
+    } catch (error) {
+        console.error('Ошибка загрузки сообщений:', error);
+        return { success: false, message: error.message };
+    }
+}
         async function loadChatInfo(chatId) {
     try {
         // Добавьте проверку в самом начале
@@ -3060,83 +3150,83 @@ function renderChatsList(chats) {
 }
         // Отправка сообщения
                 const MAX_MESSAGE_LENGTH = 1000;
-                        async function sendMessage() {
-    const input = document.getElementById('messageInput');
-    const text = input.value.trim();
+        async function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const text = input.value.trim();
 
-    if (text.length > MAX_MESSAGE_LENGTH) {
+        if (text.length > MAX_MESSAGE_LENGTH) {
         showNotification(`Сообщение не должно превышать ${MAX_MESSAGE_LENGTH} символов (сейчас ${text.length})`, 'danger');
         return;
-    }
-    if ((!text || text === '') && selectedFiles.length === 0) {
+        }
+        if ((!text || text === '') && selectedFiles.length === 0) {
         return;
-    }
+        }
 
-    if (!currentChatId) {
+        if (!currentChatId) {
         return;
-    }
+        }
 
-    try {
+        try {
         const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
         if (!token) {
-            showNotification('Ошибка аутентификации', 'danger');
-            return;
+        showNotification('Ошибка аутентификации', 'danger');
+        return;
         }
 
         const messageData = {
-            chatId: currentChatId,
-            text: text || '',
-            attachments: selectedFiles
+        chatId: currentChatId,
+        text: text || '',
+        attachments: selectedFiles
         };
 
         const response = await fetch('/Chats/SendMessage', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'RequestVerificationToken': token
-            },
-            body: JSON.stringify(messageData)
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json',
+        'RequestVerificationToken': token
+        },
+        body: JSON.stringify(messageData)
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP ошибка: ${response.status}`);
+        throw new Error(`HTTP ошибка: ${response.status}`);
         }
 
         const data = await response.json();
 
         if (data.success) {
-            // ✅ МГНОВЕННО добавляем сообщение в UI
-            const tempMessage = {
-                id: data.data.messageId,
-                text: text,
-                senderId: currentUserId,
-                senderName: 'Вы',
-                sentAt: new Date().toISOString(),
-                attachments: selectedFiles,
-                isOutgoing: true
-            };
-            
-            appendMessageToUI(tempMessage);
-            
-            input.value = '';
-            clearAllFiles();
-            
-            // Обновляем lastMessageId для следующего опроса
-            if (data.data.messageId > lastMessageId) {
-                lastMessageId = data.data.messageId;
-            }
-            
-            // Прокручиваем вниз
-            scrollToBottom();
-            
-        } else {
-            showNotification(data.message || 'Ошибка при отправке', 'danger');
+        // ✅ МГНОВЕННО добавляем сообщение в UI
+        const tempMessage = {
+        id: data.data.messageId,
+        text: text,
+        senderId: currentUserId,
+        senderName: 'Вы',
+        sentAt: new Date().toISOString(),
+        attachments: selectedFiles,
+        isOutgoing: true
+        };
+
+        appendMessageToUI(tempMessage);
+
+        input.value = '';
+        clearAllFiles();
+
+        // Обновляем lastMessageId для следующего опроса
+        if (data.data.messageId > lastMessageId) {
+        lastMessageId = data.data.messageId;
         }
-    } catch (error) {
+
+        // Прокручиваем вниз
+        scrollToBottom();
+
+        } else {
+        showNotification(data.message || 'Ошибка при отправке', 'danger');
+        }
+        } catch (error) {
         console.error('Ошибка отправки сообщения:', error);
         showNotification('Не удалось отправить сообщение: ' + error.message, 'danger');
-    }
-}
+        }
+        }
 
         // Добавление сообщения в UI
                                                                 function appendMessageToUI(message) {
@@ -3534,15 +3624,16 @@ function renderChatsList(chats) {
 
         // Начать периодическое обновление сообщений
         function startMessagesRefresh(chatId) {
-            if (messagesRefreshInterval) {
-                clearInterval(messagesRefreshInterval);
-            }
+        if (messagesRefreshInterval) {
+        clearInterval(messagesRefreshInterval);
+        }
 
-            messagesRefreshInterval = setInterval(async () => {
-                if (currentChatId === chatId) {
-                    await checkNewMessages(chatId);
-                }
-            }, 3000);
+        // Увеличиваем интервал до 10 секунд, так как основная работа через SignalR
+        messagesRefreshInterval = setInterval(async () => {
+        if (currentChatId === chatId) {
+        await checkNewMessages(chatId);
+        }
+        }, 10000); // 10 секунд вместо 3
         }
 
                         async function checkNewMessages(chatId) {
@@ -3916,47 +4007,61 @@ function renderChatsList(chats) {
 
         // ==================== ДЕЙСТВИЯ С ЧАТОМ ====================
 
-                async function leaveChat() {
-            if (!currentChatId) return;
+        async function leaveChat() {
+        if (!currentChatId) return;
 
-            if (!confirm('Вы уверены, что хотите покинуть этот чат?')) return;
+        if (!confirm('Вы уверены, что хотите покинуть этот чат?')) return;
 
-            try {
-                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+        try {
+        // Сначала выходим из SignalR группы
+        await leaveChatSignalR(currentChatId);
 
-                const response = await fetch(`/Chats/LeaveChat?chatId=${currentChatId}`, {
-                    method: 'POST',
-                    headers: {
-                        'RequestVerificationToken': token
-                    }
-                });
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
 
-                const data = await response.json();
+        const response = await fetch(`/Chats/LeaveChat?chatId=${currentChatId}`, {
+        method: 'POST',
+        headers: {
+        'RequestVerificationToken': token
+        }
+        });
 
-                if (data.success) {
-                    if (data.data?.newAdminId) {
-                        showNotification(data.message || 'Вы покинули чат', 'info');
-                        // Можно показать уведомление о новом администраторе
-                        showNotification(`Новый администратор назначен`, 'success');
-                    } else {
-                        showNotification(data.message || 'Вы покинули чат', 'info');
-                    }
+        const data = await response.json();
 
-                    currentChatId = null;
-                    updateChatVisibility();
+        if (data.success) {
+        if (data.data?.newAdminId) {
+        showNotification(data.message || 'Вы покинули чат', 'info');
+        showNotification(`Новый администратор назначен`, 'success');
+        } else {
+        showNotification(data.message || 'Вы покинули чат', 'info');
+        }
 
-                    const url = new URL(window.location);
-                    url.searchParams.delete('chatId');
-                    window.history.replaceState({}, '', url);
+        // Останавливаем обновление сообщений
+        if (messagesRefreshInterval) {
+        clearInterval(messagesRefreshInterval);
+        messagesRefreshInterval = null;
+        }
 
-                    await loadUserChats();
-                } else {
-                    showNotification(data.message || 'Ошибка при выходе из чата', 'danger');
-                }
-            } catch (error) {
-                console.error('Ошибка при выходе из чата:', error);
-                showNotification('Не удалось покинуть чат: ' + error.message, 'danger');
-            }
+        // Сбрасываем текущий чат
+        currentChatId = null;
+        lastMessageId = 0;
+
+        // Обновляем видимость UI
+        updateChatVisibility();
+
+        // Удаляем chatId из URL
+        const url = new URL(window.location);
+        url.searchParams.delete('chatId');
+        window.history.replaceState({}, '', url);
+
+        // Перезагружаем список чатов
+        await loadUserChats();
+        } else {
+        showNotification(data.message || 'Ошибка при выходе из чата', 'danger');
+        }
+        } catch (error) {
+        console.error('Ошибка при выходе из чата:', error);
+        showNotification('Не удалось покинуть чат: ' + error.message, 'danger');
+        }
         }
 
         function showChatInfo() {
@@ -4475,74 +4580,9 @@ function normalizeDate(dateInput) {
                 </div>
             `;
         }
-        // Обновленная функция отправки сообщения с файлом
-                async function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const text = input.value.trim();
-
-            if ((!text || text === '') && selectedFiles.length === 0) {
-                console.log('Нет текста и не выбрано файлов');
-                return;
-            }
-
-            if (!currentChatId) {
-                console.log('Не выбран чат');
-                return;
-            }
-
-            try {
-                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
-
-                if (!token) {
-                    console.error('Token не найден');
-                    showNotification('Ошибка аутентификации', 'danger');
-                    return;
-                }
-
-                const messageData = {
-                    chatId: currentChatId,
-                    text: text || '',
-                    attachments: selectedFiles // Отправляем все файлы
-                };
-
-                console.log('Отправка сообщения с файлами:', messageData);
-
-                const response = await fetch('/Chats/SendMessage', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'RequestVerificationToken': token
-                    },
-                    body: JSON.stringify(messageData)
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP ошибка: ${response.status}`);
-                }
-
-                const data = await response.json();
-
-                if (data.success) {
-                    input.value = '';
-                    clearAllFiles(); // Очищаем все файлы
-                    // Сообщение придет через checkNewMessages
-                } else {
-                    showNotification(data.message || 'Ошибка при отправке', 'danger');
-                }
-            } catch (error) {
-                console.error('Ошибка отправки сообщения:', error);
-                showNotification('Не удалось отправить сообщение: ' + error.message, 'danger');
-            }
-        }
-                // ==================== ПЕРЕИМЕНОВАНИЕ ЧАТА ====================
-
                 async function renameChat() {
             if (!currentChatId) return;
-
-            // Получаем текущее название чата
             const currentTitle = document.getElementById('chatTitle').textContent;
-
-            // Создаем модальное окно для ввода нового названия
             const modalHtml = `
                 <div class="modal fade" id="renameChatModal" tabindex="-1">
                     <div class="modal-dialog">
@@ -4567,22 +4607,14 @@ function normalizeDate(dateInput) {
                     </div>
                 </div>
             `;
-
-            // Добавляем модальное окно в DOM
             const modalContainer = document.createElement('div');
             modalContainer.innerHTML = modalHtml;
             document.body.appendChild(modalContainer);
-
-            // Показываем модальное окно
             const modal = new bootstrap.Modal(document.getElementById('renameChatModal'));
             modal.show();
-
-            // Обработчик закрытия модального окна
             document.getElementById('renameChatModal').addEventListener('hidden.bs.modal', function() {
                 this.remove();
             });
-
-            // Автоматически выделяем текст для удобства
             setTimeout(() => {
                 const input = document.getElementById('newChatNameInput');
                 if (input) {
@@ -4591,9 +4623,6 @@ function normalizeDate(dateInput) {
                 }
             }, 500);
         }
-
-
-
         async function submitRenameChat() {
             const newName = document.getElementById('newChatNameInput').value.trim();
 
@@ -4601,7 +4630,6 @@ function normalizeDate(dateInput) {
                 showNotification('Введите название чата', 'warning');
                 return;
             }
-
             try {
                 const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
 
@@ -4622,14 +4650,8 @@ function normalizeDate(dateInput) {
 
                 if (data.success) {
                     showNotification('Название чата изменено', 'success');
-
-                    // Обновляем название в заголовке
                     document.getElementById('chatTitle').textContent = newName;
-
-                    // Обновляем название в списке чатов
                     updateChatNameInList(currentChatId, newName);
-
-                    // Закрываем модальное окно
                     const modal = bootstrap.Modal.getInstance(document.getElementById('renameChatModal'));
                     modal.hide();
                 } else {
@@ -4640,8 +4662,6 @@ function normalizeDate(dateInput) {
                 showNotification('Не удалось переименовать чат: ' + error.message, 'danger');
             }
         }
-
-        // Функция для обновления названия в списке чатов
         function updateChatNameInList(chatId, newName) {
             const chatElement = document.querySelector(`.chat-item[data-chat-id="${chatId}"]`);
             if (chatElement) {
@@ -6244,28 +6264,29 @@ async function checkAndUpdateAdminStatus(chatId) {
 
         // Загрузка голосований для чата
                                         // Загрузка голосований для чата
-                async function loadVotesForChat(chatId) {
-            try {
-                console.log('loadVotesForChat called with chatId:', chatId);
-                const response = await fetch(`/Chats/GetVotes?chatId=${chatId}`);
-                const data = await response.json();
+        // Загрузка голосований для чата
+        async function loadVotesForChat(chatId) {
+        try {
+        console.log('loadVotesForChat called with chatId:', chatId);
+        const response = await fetch(`/Chats/GetVotes?chatId=${chatId}`);
+        const data = await response.json();
 
-                console.log('loadVotesForChat response:', data);
+        console.log('loadVotesForChat response:', data);
 
-                if (data.success) {
-                    window.votesData = data.data;
-                    console.log('Загружено голосований:', window.votesData?.length || 0);
-                    return true;
-                } else {
-                    console.error('Error loading votes:', data.message);
-                    window.votesData = [];
-                    return false;
-                }
-            } catch (error) {
-                console.error('Error loading votes:', error);
-                window.votesData = [];
-                return false;
-            }
+        if (data.success) {
+        window.votesData = data.data || [];
+        console.log('Загружено голосований:', window.votesData.length);
+        return true;
+        } else {
+        console.error('Error loading votes:', data.message);
+        window.votesData = [];
+        return false;
+        }
+        } catch (error) {
+        console.error('Error loading votes:', error);
+        window.votesData = [];
+        return false;
+        }
         }
     </script>
 }

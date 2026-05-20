@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 //using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -7,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TripWise.Hubs;
 using TripWise.Models;
 using TripWise.Models.DTOs;
 
@@ -16,11 +18,13 @@ namespace TripWise.Controllers
     {
         private readonly TripWiseContext _context;
         private readonly ILogger<ChatsController> _logger;
+        private readonly IHubContext<ChatHub> _hubContext;
 
-        public ChatsController(TripWiseContext context, ILogger<ChatsController> logger)
+        public ChatsController(TripWiseContext context, ILogger<ChatsController> logger, IHubContext<ChatHub> hubContext)
         {
             _context = context;
             _logger = logger;
+            _hubContext = hubContext;
         }
 
         public IActionResult Index()
@@ -426,7 +430,7 @@ namespace TripWise.Controllers
             }
         }
 
-        // POST: /Chats/SendMessage - версия с прямым SQL
+        // POST: /Chats/SendMessage - версия с SignalR
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SendMessage([FromBody] SendMessageRequest request)
@@ -441,6 +445,7 @@ namespace TripWise.Controllers
                         Success = false,
                         Message = "Пользователь не авторизован"
                     });
+
                 const int MAX_MESSAGE_LENGTH = 1000;
 
                 if (!string.IsNullOrEmpty(request.Text) && request.Text.Length > MAX_MESSAGE_LENGTH)
@@ -451,6 +456,7 @@ namespace TripWise.Controllers
                         Message = $"Сообщение не должно превышать {MAX_MESSAGE_LENGTH} символов (сейчас {request.Text.Length})"
                     });
                 }
+
                 _logger.LogInformation("SendMessage: chatId={ChatId}, userId={UserId}, text={Text}, attachmentsCount={AttachmentsCount}",
                     request.ChatId, userId, request.Text, request.Attachments?.Count ?? 0);
 
@@ -514,6 +520,10 @@ SELECT LAST_INSERT_ID() AS Id;";
                     }
                 }
 
+                // Получаем имя отправителя
+                var sender = await _context.Users.FindAsync(userId.Value);
+                var senderName = sender != null ? $"{sender.LastName} {sender.FirstName}".Trim() : "Пользователь";
+
                 // Обновляем время последнего сообщения
                 var chat = await _context.Chats.FindAsync(request.ChatId);
                 if (chat != null)
@@ -521,6 +531,19 @@ SELECT LAST_INSERT_ID() AS Id;";
                     chat.LastMessageAt = DateTime.UtcNow;
                     await _context.SaveChangesAsync();
                 }
+
+                // ========== ОТПРАВКА ЧЕРЕЗ SIGNALR ==========
+                // Отправляем сообщение всем участникам чата в реальном времени
+                await _hubContext.Clients.Group($"chat_{request.ChatId}").SendAsync("ReceiveMessage", new
+                {
+                    id = messageId,
+                    text = request.Text,
+                    senderId = userId.Value,
+                    senderName = senderName,
+                    sentAt = DateTime.UtcNow,
+                    attachments = request.Attachments,
+                    chatId = request.ChatId
+                });
 
                 return Json(new ApiResponse<object>
                 {
@@ -530,7 +553,7 @@ SELECT LAST_INSERT_ID() AS Id;";
                         messageId = messageId,
                         text = request.Text,
                         senderId = userId.Value,
-                        sentAt = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Utc), // Явно указываем UTC
+                        sentAt = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Utc),
                         attachments = request.Attachments
                     }
                 });
