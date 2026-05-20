@@ -464,14 +464,13 @@ namespace TripWise.Controllers
             </div>
             
             <div style='background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;'>
-                <h3 style='color: #333; margin-top: 0;'>Что вас ждет?</h3>
-                <ul style='color: #555; line-height: 1.6; padding-left: 20px;'>
-                    <li>✈️ Сравнение цен на авиабилеты, ЖД билеты и отели</li>
-                    <li>💰 Учет расходов и управление бюджетом поездки</li>
-                    <li>👥 Совместное планирование с друзьями в чатах</li>
-                    <li>📊 Голосования для выбора маршрутов и развлечений</li>
-                </ul>
-            </div>
+    <h3 style='color: #333; margin-top: 0;'>Что вы будете получать в рассылке?</h3>
+    <ul style='color: #555; line-height: 1.6; padding-left: 20px;'>
+        <li>🎫 <strong>Электронные авиабилеты</strong> — сразу после бронирования на вашу почту</li>
+        <li>🚆 <strong>ЖД билеты</strong> — посадочные талоны и информацию о поездке</li>
+        <li>🏨 <strong>Подтверждения бронирования отелей</strong> — со всеми деталями заезда</li>
+    </ul>
+</div>
             
             <div style='border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px;'>
                 <p style='color: #888; font-size: 12px; text-align: center;'>
