@@ -4073,8 +4073,33 @@ function renderChatsList(chats) {
             showNotification(`Чат: ${chatTitle}\nУчастники: ${chatMembers}`, 'info');
         }
 
+        // Выбор файла
         function attachFile() {
-            showNotification('Функция загрузки файлов находится в разработке', 'info');
+        const maxFiles = 10;
+        const maxSizeMB = 10;
+
+        if (selectedFiles.length >= maxFiles) {
+        showNotification(`⚠️ Максимум можно прикрепить ${maxFiles} файлов`, 'warning');
+        return;
+        }
+
+        // Показываем подсказку о лимите
+        showNotification(`📎 Максимальный размер файла: ${maxSizeMB} МБ. Вы можете прикрепить до ${maxFiles} файлов.`, 'info', 3000);
+
+        // Создаем input для выбора файлов
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.style.display = 'none';
+        fileInput.multiple = true;
+        fileInput.accept = '.jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.rar,.7z';
+        fileInput.onchange = handleFileSelect;
+
+        document.body.appendChild(fileInput);
+        fileInput.click();
+
+        setTimeout(() => {
+        document.body.removeChild(fileInput);
+        }, 1000);
         }
 
         function handleMessageKeyPress(event) {
@@ -4321,97 +4346,76 @@ function normalizeDate(dateInput) {
                 }
             }, 3000);
         }
-
-                // ==================== РАБОТА С ФАЙЛАМИ ====================
-
-               let selectedFiles = []; // Массив выбранных файлов
+               let selectedFiles = [];
         const MAX_FILES = 10;
-
-        // Выбор файла
-                function attachFile() {
-            if (selectedFiles.length >= MAX_FILES) {
-                showNotification(`Максимум можно прикрепить ${MAX_FILES} файлов`, 'warning');
-                return;
-            }
-
-            // Создаем input для выбора файлов
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.style.display = 'none';
-            fileInput.multiple = true; // Разрешаем множественный выбор
-            fileInput.accept = '.jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.rar,.7z';
-            fileInput.onchange = handleFileSelect;
-
-            document.body.appendChild(fileInput);
-            fileInput.click();
-
-            setTimeout(() => {
-                document.body.removeChild(fileInput);
-            }, 1000);
-        }
-
-        // Обработка выбора файла
                 async function handleFileSelect(event) {
             const files = Array.from(event.target.files);
 
             if (files.length === 0) return;
-
-            // Проверяем общее количество
             if (selectedFiles.length + files.length > MAX_FILES) {
                 showNotification(`Максимум можно прикрепить ${MAX_FILES} файлов (сейчас ${selectedFiles.length})`, 'warning');
                 return;
             }
-
-            // Проверяем каждый файл
             for (const file of files) {
-                // Проверка размера (10 МБ)
                 if (file.size > 10 * 1024 * 1024) {
                     showNotification(`Файл "${file.name}" слишком большой (макс. 10 МБ)`, 'danger');
                     continue;
                 }
-
-                // Загружаем файл
                 await uploadFile(file);
             }
         }
-                // Загрузка одного файла
-        async function uploadFile(file) {
-            // Показываем индикатор загрузки
-            showNotification(`Загрузка "${file.name}"...`, 'info');
+async function uploadFile(file) {
+    if (file.size > 10 * 1024 * 1024) {
+        showNotification(`❌ Файл "${file.name}" слишком большой (макс. 10 МБ)`, 'danger');
+        return;
+    }
+    showNotification(`⏳ Загрузка "${file.name}"...`, 'info');
 
-            const formData = new FormData();
-            formData.append('file', file);
+    const formData = new FormData();
+    formData.append('file', file);
 
-            try {
-                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+    try {
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
 
-                const response = await fetch('/Chats/UploadFile', {
-                    method: 'POST',
-                    headers: {
-                        'RequestVerificationToken': token
-                    },
-                    body: formData
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    selectedFiles.push(data.data);
-                    showNotification(`Файл "${data.data.fileName}" загружен`, 'success');
-                    updateSelectedFilesIndicator();
-                } else {
-                    showNotification(data.message || `Ошибка при загрузке "${file.name}"`, 'danger');
-                }
-            } catch (error) {
-                console.error('Ошибка при загрузке файла:', error);
-                showNotification(`Не удалось загрузить "${file.name}": ` + error.message, 'danger');
-            }
+        const response = await fetch('/Chats/UploadFile', {
+            method: 'POST',
+            headers: {
+                'RequestVerificationToken': token
+            },
+            body: formData
+        });
+        if (response.status === 413) {
+            showNotification(`❌ Файл "${file.name}" слишком большой для загрузки на сервер. Максимальный размер: 10 МБ`, 'danger');
+            return;
         }
+
+        if (!response.ok) {
+            const text = await response.text();
+            console.error('Server response:', text);
+            throw new Error(`HTTP ошибка: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+            selectedFiles.push(data.data);
+            showNotification(`✅ Файл "${data.data.fileName}" загружен`, 'success');
+            updateSelectedFilesIndicator();
+        } else {
+            showNotification(`❌ Ошибка при загрузке "${file.name}": ${data.message}`, 'danger');
+        }
+    } catch (error) {
+        console.error('Ошибка при загрузке файла:', error);
+        if (error.message?.includes('413') || error.toString().includes('413')) {
+            showNotification(`❌ Файл "${file.name}" слишком большой. Максимальный размер: 10 МБ`, 'danger');
+        } else {
+            showNotification(`❌ Не удалось загрузить "${file.name}": ${error.message}`, 'danger');
+        }
+    }
+}
                 function updateSelectedFilesIndicator() {
             const container = document.getElementById('messageInputContainer');
             if (!container) return;
-
-            // Удаляем старый индикатор
             const oldIndicator = document.getElementById('selectedFilesIndicator');
             if (oldIndicator) oldIndicator.remove();
 
@@ -4454,7 +4458,6 @@ function normalizeDate(dateInput) {
             indicator.innerHTML = html;
             container.appendChild(indicator);
         }
-                // Удаление одного файла
         function removeFile(index) {
             selectedFiles.splice(index, 1);
             updateSelectedFilesIndicator();

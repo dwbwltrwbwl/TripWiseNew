@@ -1,9 +1,7 @@
-﻿// Controllers/FriendsController.cs
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TripWise.Models;
 using TripWise.Models.DTOs;
-using System.Text.Json;
 
 namespace TripWise.Controllers
 {
@@ -69,7 +67,7 @@ namespace TripWise.Controllers
                 return StatusCode(500, new ApiResponse<List<FriendDto>>
                 {
                     Success = false,
-                    Message = "Ошибка при загрузке друзей"
+                    Message = "Ошибка при загрузке друзей: " + ex.Message
                 });
             }
         }
@@ -118,7 +116,7 @@ namespace TripWise.Controllers
                 return StatusCode(500, new ApiResponse<List<FriendRequestDto>>
                 {
                     Success = false,
-                    Message = "Ошибка при загрузке запросов"
+                    Message = "Ошибка при загрузке запросов: " + ex.Message
                 });
             }
         }
@@ -164,7 +162,7 @@ namespace TripWise.Controllers
                     });
                 }
 
-                // Проверяем, есть ли уже запрос (только pending)
+                // Проверяем, есть ли уже запрос
                 var existingRequest = await _context.FriendRequests
                     .FirstOrDefaultAsync(r =>
                         (r.SenderId == userId && r.ReceiverId == friendId) ||
@@ -175,8 +173,33 @@ namespace TripWise.Controllers
                     // Если запрос от другого пользователя к вам - автоматически принимаем
                     if (existingRequest.SenderId == friendId && existingRequest.ReceiverId == userId)
                     {
-                        // Автоматически принимаем запрос
-                        return await AcceptFriendRequest(existingRequest.Id);
+                        // Создаем двустороннюю дружбу
+                        _context.Friends.Add(new Friend
+                        {
+                            UserId = existingRequest.SenderId,
+                            FriendId = existingRequest.ReceiverId,
+                            Status = "accepted",
+                            CreatedAt = DateTime.UtcNow,
+                            AcceptedAt = DateTime.UtcNow
+                        });
+
+                        _context.Friends.Add(new Friend
+                        {
+                            UserId = existingRequest.ReceiverId,
+                            FriendId = existingRequest.SenderId,
+                            Status = "accepted",
+                            CreatedAt = DateTime.UtcNow,
+                            AcceptedAt = DateTime.UtcNow
+                        });
+
+                        _context.FriendRequests.Remove(existingRequest);
+                        await _context.SaveChangesAsync();
+
+                        return Ok(new ApiResponse<object>
+                        {
+                            Success = true,
+                            Message = "Запрос автоматически принят"
+                        });
                     }
 
                     return BadRequest(new ApiResponse<object>
@@ -191,7 +214,8 @@ namespace TripWise.Controllers
                 {
                     SenderId = userId.Value,
                     ReceiverId = friendId,
-                    SentAt = DateTime.UtcNow
+                    SentAt = DateTime.UtcNow,
+                    Status = "pending"
                 };
 
                 _context.FriendRequests.Add(request);
@@ -209,7 +233,7 @@ namespace TripWise.Controllers
                 return StatusCode(500, new ApiResponse<object>
                 {
                     Success = false,
-                    Message = "Ошибка при отправке запроса"
+                    Message = "Ошибка при отправке запроса: " + ex.Message
                 });
             }
         }
@@ -262,9 +286,7 @@ namespace TripWise.Controllers
                     AcceptedAt = DateTime.UtcNow
                 });
 
-                // УДАЛЯЕМ ЗАПРОС (вместо обновления статуса)
                 _context.FriendRequests.Remove(request);
-
                 await _context.SaveChangesAsync();
 
                 return Ok(new ApiResponse<object>
@@ -279,7 +301,7 @@ namespace TripWise.Controllers
                 return StatusCode(500, new ApiResponse<object>
                 {
                     Success = false,
-                    Message = "Ошибка при принятии запроса"
+                    Message = "Ошибка при принятии запроса: " + ex.Message
                 });
             }
         }
@@ -302,7 +324,7 @@ namespace TripWise.Controllers
                 }
 
                 var request = await _context.FriendRequests
-                    .FirstOrDefaultAsync(r => r.Id == requestId && r.ReceiverId == userId);
+                    .FirstOrDefaultAsync(r => r.Id == requestId && r.ReceiverId == userId && r.Status == "pending");
 
                 if (request == null)
                 {
@@ -313,9 +335,7 @@ namespace TripWise.Controllers
                     });
                 }
 
-                // УДАЛЯЕМ ЗАПРОС (вместо обновления статуса)
                 _context.FriendRequests.Remove(request);
-
                 await _context.SaveChangesAsync();
 
                 return Ok(new ApiResponse<object>
@@ -330,7 +350,7 @@ namespace TripWise.Controllers
                 return StatusCode(500, new ApiResponse<object>
                 {
                     Success = false,
-                    Message = "Ошибка при отклонении запроса"
+                    Message = "Ошибка при отклонении запроса: " + ex.Message
                 });
             }
         }
@@ -363,7 +383,7 @@ namespace TripWise.Controllers
                     _context.Friends.RemoveRange(friendships);
                 }
 
-                // НАХОДИМ И УДАЛЯЕМ ЗАПРОС В ДРУЗЬЯ (если есть)
+                // Удаляем запрос в друзья (если есть)
                 var friendRequest = await _context.FriendRequests
                     .FirstOrDefaultAsync(r =>
                         (r.SenderId == userId && r.ReceiverId == friendId) ||
@@ -388,7 +408,7 @@ namespace TripWise.Controllers
                 return StatusCode(500, new ApiResponse<object>
                 {
                     Success = false,
-                    Message = "Ошибка при удалении друга"
+                    Message = "Ошибка при удалении друга: " + ex.Message
                 });
             }
         }
@@ -418,19 +438,16 @@ namespace TripWise.Controllers
                     });
                 }
 
-                // Получаем всех друзей пользователя
                 var friendIds = await _context.Friends
                     .Where(f => f.UserId == userId && f.Status == "accepted")
                     .Select(f => f.FriendId)
                     .ToListAsync();
 
-                // Получаем отправленные запросы
                 var sentRequests = await _context.FriendRequests
                     .Where(r => r.SenderId == userId && r.Status == "pending")
                     .Select(r => r.ReceiverId)
                     .ToListAsync();
 
-                // Получаем полученные запросы
                 var receivedRequests = await _context.FriendRequests
                     .Where(r => r.ReceiverId == userId && r.Status == "pending")
                     .Select(r => r.SenderId)
@@ -471,7 +488,7 @@ namespace TripWise.Controllers
                 return StatusCode(500, new ApiResponse<List<SearchUsersResponse>>
                 {
                     Success = false,
-                    Message = "Ошибка при поиске пользователей"
+                    Message = "Ошибка при поиске пользователей: " + ex.Message
                 });
             }
         }
