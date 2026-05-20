@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TripWise.Models;
 using TripWise.Services;
 using TripWise.Hubs;
+using Microsoft.AspNetCore.Http.Features; // ДОБАВИТЬ
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,14 @@ builder.WebHost.ConfigureKestrel(options =>
 builder.Services.Configure<IISServerOptions>(options =>
 {
     options.MaxRequestBodySize = 50 * 1024 * 1024; // 50 MB
+});
+
+// ========== ВАЖНО: НАСТРОЙКА ДЛЯ ЗАГРУЗКИ ФАЙЛОВ ==========
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.ValueLengthLimit = int.MaxValue;
+    options.MultipartBodyLengthLimit = 50 * 1024 * 1024; // 50 MB
+    options.MemoryBufferThreshold = int.MaxValue;
 });
 
 // ========== КОНФИГУРАЦИЯ ЛОГГИРОВАНИЯ ==========

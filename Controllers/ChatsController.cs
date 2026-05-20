@@ -1861,6 +1861,8 @@ VALUES
         // POST: /Chats/UploadFile
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [RequestSizeLimit(50_000_000)] // 50 MB
+        [RequestFormLimits(MultipartBodyLengthLimit = 50_000_000)]
         public async Task<IActionResult> UploadFile(IFormFile file)
         {
             try
@@ -1887,13 +1889,14 @@ VALUES
                 _logger.LogInformation("UploadFile: userId={UserId}, fileName={FileName}, fileSize={FileSize}, contentType={ContentType}",
                     userId, file.FileName, file.Length, file.ContentType);
 
-                // Проверка размера файла (максимум 10 МБ)
-                if (file.Length > 10 * 1024 * 1024)
+                // Проверка размера файла (максимум 50 МБ)
+                const long maxFileSize = 50 * 1024 * 1024; // 50 MB
+                if (file.Length > maxFileSize)
                 {
                     return Json(new ApiResponse<FileUploadResponse>
                     {
                         Success = false,
-                        Message = "Размер файла не должен превышать 10 МБ"
+                        Message = $"Размер файла не должен превышать {maxFileSize / 1024 / 1024} МБ"
                     });
                 }
 
@@ -1902,12 +1905,9 @@ VALUES
 
                 // Проверка типа файла (разрешенные расширения)
                 var allowedExtensions = new[] {
-            ".jpg", ".jpeg", ".png", ".gif", ".webp",  // изображения
-            ".pdf",                                     // документы
-            ".doc", ".docx",                            // Word
-            ".xls", ".xlsx",                             // Excel
-            ".txt",                                      // текст
-            ".zip", ".rar", ".7z"                        // архивы
+            ".jpg", ".jpeg", ".png", ".gif", ".webp",
+            ".pdf", ".doc", ".docx", ".xls", ".xlsx",
+            ".txt", ".zip", ".rar", ".7z"
         };
 
                 if (!allowedExtensions.Contains(fileExtension))
@@ -1919,7 +1919,7 @@ VALUES
                     });
                 }
 
-                // Определяем КОРОТКИЙ тип файла по расширению (максимум 20 символов)
+                // Определяем тип файла
                 string fileType = fileExtension switch
                 {
                     ".jpg" or ".jpeg" => "image/jpeg",
@@ -1928,9 +1928,9 @@ VALUES
                     ".webp" => "image/webp",
                     ".pdf" => "application/pdf",
                     ".doc" => "application/msword",
-                    ".docx" => "application/docx",  // Короткий вариант
+                    ".docx" => "application/docx",
                     ".xls" => "application/xls",
-                    ".xlsx" => "application/xlsx",   // Короткий вариант
+                    ".xlsx" => "application/xlsx",
                     ".txt" => "text/plain",
                     ".zip" => "application/zip",
                     ".rar" => "application/rar",
@@ -1955,7 +1955,7 @@ VALUES
                 _logger.LogInformation("Saving file to: {FilePath}", filePath);
 
                 // Сохраняем файл
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                await using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await file.CopyToAsync(stream);
                 }
@@ -1974,7 +1974,7 @@ VALUES
                     FileName = file.FileName,
                     FileUrl = fileUrl,
                     FileSize = file.Length,
-                    FileType = fileType  // Используем КОРОТКИЙ тип
+                    FileType = fileType
                 };
 
                 _logger.LogInformation("File uploaded successfully: {FileName}, URL: {FileUrl}, Type: {FileType}",
