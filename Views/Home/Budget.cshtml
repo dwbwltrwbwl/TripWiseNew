@@ -61,7 +61,8 @@
                 <div class="row">
                     <div class="col-md-8">
                         <!-- Общая статистика -->
-                        <div class="row g-4 mb-4" id="summaryStats">
+                        <!-- Блок с моими расходами - добавить после статистики -->
+                        <div class="row g-4 mb-4">
                             <div class="col-md-4">
                                 <div class="stat-card text-center p-3">
                                     <div class="stat-icon mb-2">
@@ -77,7 +78,7 @@
                                         <i class="fas fa-shopping-cart fa-2x text-warning"></i>
                                     </div>
                                     <h3 class="text-warning mb-1" id="totalSpent">0 ₽</h3>
-                                    <p class="text-muted mb-0">Потрачено</p>
+                                    <p class="text-muted mb-0">Общие расходы</p>
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -87,6 +88,37 @@
                                     </div>
                                     <h3 class="text-primary mb-1" id="remainingBudget">0 ₽</h3>
                                     <p class="text-muted mb-0">Осталось</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- НОВЫЙ РЯД - Мои расходы -->
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-4">
+                                <div class="stat-card text-center p-3" style="background: linear-gradient(135deg, #e3f2fd, #f8fafc);">
+                                    <div class="stat-icon mb-2">
+                                        <i class="fas fa-user-circle fa-2x text-info"></i>
+                                    </div>
+                                    <h3 class="text-info mb-1" id="mySpent">0 ₽</h3>
+                                    <p class="text-muted mb-0">Мои расходы</p>
+                                    <small class="text-muted" id="mySharePercent">0% от бюджета</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Блок моих расходов по категориям (добавить в правую колонку под долгами) -->
+                        <div class="card border-0 shadow-sm mt-4">
+                            <div class="card-header bg-white border-0 py-3">
+                                <h5 class="section-subtitle mb-0">
+                                    <i class="fas fa-chart-pie text-primary me-2"></i>
+                                    Мои расходы по категориям
+                                </h5>
+                            </div>
+                            <div class="card-body p-0" id="myCategoriesContainer">
+                                <div class="text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Загрузка...</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1572,11 +1604,12 @@
 
             categorySelect.innerHTML = options;
         }
-        function renderBudgetData() {
+                function renderBudgetData() {
             if (!budgetData) return;
 
             let totalBudget = budgetData.totalBudget;
             let totalSpent = budgetData.totalSpent;
+            let myTotalSpent = budgetData.myTotalSpent;  // НОВОЕ
             let categories = [...budgetData.categories];
             let recentExpenses = [...budgetData.recentExpenses];
 
@@ -1588,10 +1621,12 @@
                 if (selectedTrip) {
                     totalBudget = selectedTrip.totalBudget;
                     totalSpent = selectedTrip.totalSpent;
+                    myTotalSpent = selectedTrip.mySpent || 0;  // НОВОЕ - личные расходы в этой поездке
+
                     const tripExpenses = budgetData.recentExpenses.filter(e => e.tripId === tripId);
                     recentExpenses = tripExpenses;
 
-                    // Пересчет категорий для выбранной поездки
+                    // Пересчет категорий для выбранной поездки с учетом личных расходов
                     const categoryMap = new Map();
                     budgetData.categories.forEach(cat => {
                         categoryMap.set(cat.id, {
@@ -1599,6 +1634,7 @@
                             name: cat.name,
                             budget: 0,
                             spent: 0,
+                            mySpent: 0,  // НОВОЕ
                             color: cat.color,
                             expenseCount: 0
                         });
@@ -1606,14 +1642,18 @@
 
                     tripExpenses.forEach(exp => {
                         let catId = exp.categoryId || 0;
+                        const myShare = exp.myShareAmount || 0;  // НОВОЕ - личная доля в этом расходе
+
                         if (categoryMap.has(catId)) {
                             const cat = categoryMap.get(catId);
                             cat.spent += exp.amount;
+                            cat.mySpent += myShare;  // НОВОЕ
                             cat.expenseCount++;
                         } else {
                             const otherCat = categoryMap.get(0);
                             if (otherCat) {
                                 otherCat.spent += exp.amount;
+                                otherCat.mySpent += myShare;  // НОВОЕ
                                 otherCat.expenseCount++;
                             }
                         }
@@ -1625,12 +1665,24 @@
                 }
             }
 
-            // Обновляем статистику
+            // Обновляем статистику (ДОБАВЛЯЕМ МОИ РАСХОДЫ)
             document.getElementById('totalBudget').textContent = formatMoney(totalBudget);
             document.getElementById('totalSpent').textContent = formatMoney(totalSpent);
             document.getElementById('remainingBudget').textContent = formatMoney(totalBudget - totalSpent);
 
-            // Отображаем категории
+            // НОВЫЙ БЛОК - если есть элемент для отображения моих расходов
+            const mySpentElement = document.getElementById('mySpent');
+            if (mySpentElement) {
+                mySpentElement.textContent = formatMoney(myTotalSpent);
+
+                const percent = totalBudget > 0 ? (myTotalSpent / totalBudget * 100).toFixed(1) : 0;
+                const mySharePercentElement = document.getElementById('mySharePercent');
+                if (mySharePercentElement) {
+                    mySharePercentElement.textContent = `${percent}% от бюджета`;
+                }
+            }
+
+            // Отображаем категории (с учетом личных расходов)
             renderCategories(categories);
 
             // Фильтруем и сортируем расходы
@@ -1643,6 +1695,7 @@
             // Отображаем долги для выбранной поездки
             if (selectedTripId !== 'all') {
                 renderDebts(parseInt(selectedTripId));
+                renderMyCategoryExpenses(parseInt(selectedTripId));  // НОВОЕ - мои расходы по категориям
             } else {
                 document.getElementById('debtsContainer').innerHTML = `
                     <div class="text-center py-3">
@@ -1650,7 +1703,67 @@
                         <p class="text-muted mb-0">Выберите поездку для просмотра долгов</p>
                     </div>
                 `;
+                const myCategoriesContainer = document.getElementById('myCategoriesContainer');
+                if (myCategoriesContainer) {
+                    myCategoriesContainer.innerHTML = `
+                        <div class="text-center py-3">
+                            <i class="fas fa-chart-pie fa-2x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">Выберите поездку для просмотра</p>
+                        </div>
+                    `;
+                }
             }
+        }
+
+        // НОВАЯ ФУНКЦИЯ - отображение моих расходов по категориям
+        function renderMyCategoryExpenses(tripId) {
+            const container = document.getElementById('myCategoriesContainer');
+            if (!container) return;
+
+            const tripExpenses = budgetData.recentExpenses.filter(e => e.tripId === tripId);
+
+            // Группируем по категориям (только мои доли)
+            const categoryMySpent = new Map();
+
+            tripExpenses.forEach(exp => {
+                const myShare = exp.myShareAmount || 0;
+                if (myShare > 0) {
+                    const catName = exp.categoryName;
+                    categoryMySpent.set(catName, (categoryMySpent.get(catName) || 0) + myShare);
+                }
+            });
+
+            if (categoryMySpent.size === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-coins fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">У вас нет расходов в этой поездке</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Сортируем по сумме (от больших к меньшим)
+            const sortedCategories = Array.from(categoryMySpent.entries())
+                .sort((a, b) => b[1] - a[1]);
+
+            let html = '<div class="list-group list-group-flush">';
+            sortedCategories.forEach(([category, amount]) => {
+                html += `
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-tag me-2 text-primary"></i>
+                            <span class="fw-semibold">${escapeHtml(category)}</span>
+                        </div>
+                        <div>
+                            <span class="fw-bold text-danger">${formatMoney(amount)} ₽</span>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+
+            container.innerHTML = html;
         }
 
                 async function loadExpenseFilterCategories() {

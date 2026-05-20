@@ -62,6 +62,7 @@ namespace TripWise.Controllers
                         {
                             TotalBudget = 0,
                             TotalSpent = 0,
+                            MyTotalSpent = 0,
                             TripCount = 0,
                             Categories = new List<BudgetCategoryDto>(),
                             RecentExpenses = new List<RecentExpenseDto>(),
@@ -81,12 +82,22 @@ namespace TripWise.Controllers
                     .OrderByDescending(e => e.ExpenseDate)
                     .ToListAsync();
 
+                // РАССЧИТЫВАЕМ ЛИЧНЫЕ РАСХОДЫ ПОЛЬЗОВАТЕЛЯ (ВСЕГО)
+                decimal myTotalSpent = 0;
+                foreach (var expense in expenses)
+                {
+                    var myShare = expense.ExpenseShares
+                        .Where(es => es.IdUser == userId)
+                        .Sum(es => es.ShareAmount);
+                    myTotalSpent += myShare;
+                }
+
                 // Получаем категории расходов
                 var categories = await _context.ExpenseCategories
-    .Where(c => c.TripId == null || userTrips.Contains(c.TripId.Value))
-    .ToListAsync();
+                    .Where(c => c.TripId == null || userTrips.Contains(c.TripId.Value))
+                    .ToListAsync();
 
-                // Информация о поездках
+                // Информация о поездках (с личными расходами для каждой)
                 var trips = new List<TripBudgetDto>();
                 foreach (var tripId in userTrips)
                 {
@@ -99,6 +110,16 @@ namespace TripWise.Controllers
                             .Select(tp => tp.IdUserNavigation.LastName + " " + tp.IdUserNavigation.FirstName)
                             .ToListAsync();
 
+                        // ЛИЧНЫЕ РАСХОДЫ ПОЛЬЗОВАТЕЛЯ В ЭТОЙ ПОЕЗДКЕ
+                        decimal myTripSpent = 0;
+                        foreach (var expense in tripExpenses)
+                        {
+                            var myShare = expense.ExpenseShares
+                                .Where(es => es.IdUser == userId)
+                                .Sum(es => es.ShareAmount);
+                            myTripSpent += myShare;
+                        }
+
                         trips.Add(new TripBudgetDto
                         {
                             Id = trip.IdTrip,
@@ -107,13 +128,13 @@ namespace TripWise.Controllers
                             EndDate = trip.EndDate,
                             TotalBudget = trip.TotalBudget,
                             TotalSpent = tripExpenses.Sum(e => e.Amount),
+                            MySpent = myTripSpent,  // ДОБАВИТЬ В DTO
                             ParticipantCount = participants.Count,
                             Participants = participants
                         });
                     }
                 }
 
-                // Категории с суммами
                 // Категории с суммами
                 var categoryDtos = new List<BudgetCategoryDto>();
                 foreach (var cat in categories)
@@ -122,20 +143,30 @@ namespace TripWise.Controllers
                     var spent = categoryExpenses.Sum(e => e.Amount);
                     var expenseCount = categoryExpenses.Count;
 
+                    // ЛИЧНЫЕ РАСХОДЫ ПОЛЬЗОВАТЕЛЯ ПО КАТЕГОРИИ
+                    decimal myCategorySpent = 0;
+                    foreach (var expense in categoryExpenses)
+                    {
+                        var myShare = expense.ExpenseShares
+                            .Where(es => es.IdUser == userId)
+                            .Sum(es => es.ShareAmount);
+                        myCategorySpent += myShare;
+                    }
+
                     categoryDtos.Add(new BudgetCategoryDto
                     {
                         Id = cat.IdExpenseCategory,
                         Name = cat.ExpenseCategoryName ?? "Без категории",
                         Budget = 0,
                         Spent = spent,
+                        MySpent = myCategorySpent,  // ДОБАВИТЬ В DTO
                         Color = GetCategoryColor(cat.ExpenseCategoryName ?? ""),
                         ExpenseCount = expenseCount,
-                        TripId = cat.TripId  // ДОБАВЬТЕ ЭТО ПОЛЕ
+                        TripId = cat.TripId
                     });
                 }
 
-                // Последние расходы (все, сортировка будет на клиенте)
-                // Последние расходы (все, сортировка будет на клиенте)
+                // Последние расходы (с личной долей пользователя)
                 var recentExpenses = expenses.Select(e => new RecentExpenseDto
                 {
                     Id = e.IdExpense,
@@ -148,7 +179,8 @@ namespace TripWise.Controllers
                     TripId = e.IdTrip,
                     PaidByName = e.PaidBy != null ? $"{e.PaidBy.LastName} {e.PaidBy.FirstName}".Trim() : "Неизвестно",
                     PaidById = e.PaidById ?? 0,
-                    IsDebtPayment = e.Title != null && e.Title.StartsWith("💰") && e.IdExpenseCategory == 0, // Добавьте это
+                    IsDebtPayment = e.Title != null && e.Title.StartsWith("💰") && e.IdExpenseCategory == 0,
+                    MyShareAmount = e.ExpenseShares.Where(es => es.IdUser == userId).Sum(es => es.ShareAmount),  // ДОБАВИТЬ
                     Shares = e.ExpenseShares.Select(es => new ExpenseShareDto
                     {
                         UserId = es.IdUser,
@@ -162,6 +194,7 @@ namespace TripWise.Controllers
                 {
                     TotalBudget = trips.Sum(t => t.TotalBudget),
                     TotalSpent = expenses.Sum(e => e.Amount),
+                    MyTotalSpent = myTotalSpent,  // ДОБАВИТЬ
                     TripCount = trips.Count,
                     Categories = categoryDtos.OrderByDescending(c => c.Spent).ToList(),
                     RecentExpenses = recentExpenses,
