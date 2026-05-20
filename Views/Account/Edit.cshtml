@@ -560,6 +560,47 @@
 
 @section Scripts {
     <script>
+        const currentUserId = @Json.Serialize(Context.Session.GetInt32("UserId"));
+                // Асинхронная проверка email в реальном времени
+        let emailCheckTimeout;
+        const emailInput = document.getElementById('Email');
+
+        if (emailInput) {
+            emailInput.addEventListener('input', function() {
+                clearTimeout(emailCheckTimeout);
+                const email = this.value.trim();
+
+                if (email.length < 3) {
+                    clearFieldError(emailInput);
+                    return;
+                }
+
+                // Делаем паузу, чтобы пользователь закончил ввод
+                emailCheckTimeout = setTimeout(async () => {
+                    const emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+
+                    // Сначала проверяем формат
+                    if (!emailRegex.test(email)) {
+                        showFieldError(emailInput, 'Введите корректный email адрес');
+                        return;
+                    }
+
+                    // Проверяем на сервере
+                    try {
+                        const response = await fetch(`/Account/CheckEmailExists?email=${encodeURIComponent(email)}&userId=${currentUserId}`);
+                        const data = await response.json();
+
+                        if (data.exists) {
+                            showFieldError(emailInput, 'Пользователь с таким email уже существует');
+                        } else {
+                            clearFieldError(emailInput);
+                        }
+                    } catch (error) {
+                        console.error('Ошибка проверки email:', error);
+                    }
+                }, 500);
+            });
+        }
         // Счетчики символов (максимум 50 для ФИО)
                 function initCharCounters() {
             const lastNameInput = document.getElementById('LastName');

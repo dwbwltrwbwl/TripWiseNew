@@ -465,7 +465,12 @@ namespace TripWise.Controllers
 
             return View(model);
         }
-
+        // Проверка, существует ли email у другого пользователя
+        private async Task<bool> IsEmailTakenByOtherUser(string email, int currentUserId)
+        {
+            return await _context.Users
+                .AnyAsync(u => u.Email == email && u.IdUser != currentUserId);
+        }
         // POST: /Account/Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -485,6 +490,24 @@ namespace TripWise.Controllers
                 _logger.LogInformation("Имя файла: {FileName}", model.Avatar.FileName);
                 _logger.LogInformation("Размер: {FileSize} байт", model.Avatar.Length);
                 _logger.LogInformation("ContentType: {ContentType}", model.Avatar.ContentType);
+            }
+
+            // ========== ДОБАВЬТЕ ПРОВЕРКУ EMAIL ==========
+            if (!string.IsNullOrEmpty(model.Email))
+            {
+                // Проверка формата email
+                if (!IsValidEmail(model.Email))
+                {
+                    ModelState.AddModelError("Email", "Введите корректный email адрес");
+                    return View(model);
+                }
+
+                // Проверка на существование email у другого пользователя
+                if (await IsEmailTakenByOtherUser(model.Email.Trim().ToLower(), userId.Value))
+                {
+                    ModelState.AddModelError("Email", "Пользователь с таким email уже существует");
+                    return View(model);
+                }
             }
 
             if (!ModelState.IsValid)
@@ -558,7 +581,18 @@ namespace TripWise.Controllers
             TempData["SuccessMessage"] = "Профиль успешно обновлен";
             return RedirectToAction("Profile");
         }
+        // GET: /Account/CheckEmailExists
+        [HttpGet]
+        public async Task<IActionResult> CheckEmailExists(string email, int userId)
+        {
+            if (string.IsNullOrEmpty(email))
+                return Json(new { exists = false });
 
+            var exists = await _context.Users
+                .AnyAsync(u => u.Email == email.Trim().ToLower() && u.IdUser != userId);
+
+            return Json(new { exists = exists });
+        }
         // GET: /Account/ChangePassword
         [HttpGet]
         public IActionResult ChangePassword()
