@@ -693,15 +693,18 @@
             const today = new Date().toISOString().split('T')[0];
             documentDateInput.value = today;
 
-            documentDateInput.addEventListener('change', function() {
-                const selectedDate = new Date(this.value);
-                const todayDate = new Date();
-                todayDate.setHours(0, 0, 0, 0);
-                if (selectedDate > todayDate) {
-                    showNotification('Дата документа не может быть в будущем', 'warning');
-                    this.value = today;
-                }
-            });
+                documentDateInput.addEventListener('change', function() {
+        const selectedDate = new Date(this.value);
+        const todayDate = new Date();
+
+        selectedDate.setHours(0, 0, 0, 0);
+        todayDate.setHours(0, 0, 0, 0);
+
+        if (selectedDate > todayDate) {
+            showNotification('Дата документа не может быть в будущем', 'warning');
+            this.value = today;
+        }
+    });
         }
 
         initCharCounters();
@@ -987,12 +990,19 @@
         if (file.size > 10 * 1024 * 1024) { showNotification('Размер файла не должен превышать 10 МБ', 'warning'); return; }
         if (description.length > 500) { showNotification('Описание не может превышать 500 символов', 'warning'); return; }
         if (docNumber.length > 100) { showNotification('Номер документа не может превышать 100 символов', 'warning'); return; }
-        if (docDate) {
-            const selected = new Date(docDate);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            if (selected > today) { showNotification('Дата документа не может быть в будущем', 'warning'); return; }
+            if (docDate) {
+        const selectedDate = new Date(docDate);
+        const todayDate = new Date();
+
+        // Сбрасываем время у обеих дат для корректного сравнения
+        selectedDate.setHours(0, 0, 0, 0);
+        todayDate.setHours(0, 0, 0, 0);
+
+        if (selectedDate > todayDate) {
+            showNotification('Дата документа не может быть в будущем', 'warning');
+            return;
         }
+    }
 
         const formData = new FormData(form);
 
