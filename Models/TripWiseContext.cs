@@ -622,6 +622,8 @@ public partial class TripWiseContext : DbContext
 
         modelBuilder.Entity<VotingSystem>(entity =>
         {
+            entity.ToTable("votingSystems");  // ← ДОБАВИТЬ!
+
             entity.HasKey(e => e.IdVote);
             entity.Property(e => e.IdVote).HasColumnName("IdVote").ValueGeneratedOnAdd();
 
