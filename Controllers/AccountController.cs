@@ -76,7 +76,7 @@ namespace TripWise.Controllers
 
         // POST: /Account/Login
         [HttpPost]
-        public async Task<IActionResult> Login(string email, string password, string rememberMe)
+        public async Task<IActionResult> Login(string email, string password, bool rememberMe = false)
         {
             // Валидация
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
@@ -104,7 +104,7 @@ namespace TripWise.Controllers
 
                 if (user != null)
                 {
-                    // ========== ПРОВЕРКА БЛОКИРОВКИ ПОЛЬЗОВАТЕЛЯ ==========
+                    // Проверка блокировки пользователя
                     if (user.IsBlocked)
                     {
                         ModelState.AddModelError("", "Ваш аккаунт заблокирован. Обратитесь к администратору.");
@@ -112,17 +112,13 @@ namespace TripWise.Controllers
                     }
 
                     // Успешная авторизация
-                    // Сохраняем информацию о пользователе в сессии
                     HttpContext.Session.SetInt32("UserId", user.IdUser);
                     HttpContext.Session.SetString("UserName", GetFullUserName(user));
                     HttpContext.Session.SetString("UserEmail", user.Email);
                     HttpContext.Session.SetInt32("UserRole", user.IdRole);
 
-                    // РЕАЛЬНАЯ РАБОТА ЗАПОМНИТЬ МЕНЯ
                     // Если пользователь отметил "Запомнить меня"
-                    bool remember = !string.IsNullOrEmpty(rememberMe) && rememberMe == "true";
-
-                    if (remember)
+                    if (rememberMe)
                     {
                         // Создаем токен
                         var authToken = GenerateAuthToken(user.IdUser, user.Email);
@@ -146,7 +142,6 @@ namespace TripWise.Controllers
                     else
                     {
                         // Если не "запомнить", то только сессия
-                        // Удаляем старые куки если есть
                         Response.Cookies.Delete("AuthToken");
                         Response.Cookies.Delete("RememberMe");
                     }
@@ -164,8 +159,8 @@ namespace TripWise.Controllers
                     var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                     var authProperties = new AuthenticationProperties
                     {
-                        IsPersistent = remember,
-                        ExpiresUtc = remember ? DateTimeOffset.UtcNow.AddDays(30) : (DateTimeOffset?)null
+                        IsPersistent = rememberMe,
+                        ExpiresUtc = rememberMe ? DateTimeOffset.UtcNow.AddDays(30) : (DateTimeOffset?)null
                     };
 
                     await HttpContext.SignInAsync(
@@ -173,7 +168,6 @@ namespace TripWise.Controllers
                         new ClaimsPrincipal(claimsIdentity),
                         authProperties);
 
-                    // Редирект на главную страницу
                     return RedirectToAction("Index", "Home");
                 }
                 else
