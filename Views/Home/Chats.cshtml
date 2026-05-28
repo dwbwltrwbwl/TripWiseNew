@@ -1267,32 +1267,53 @@
 }
 
 /* Стили для голосований в исходящих сообщениях */
-.message-outgoing .vote-message {
-    background: rgba(3, 121, 217, 0.1);
-    border-left-color: #0379D9;
-}
+    /* Стили для голосований в исходящих сообщениях */
+    .message-outgoing .vote-message {
+        background: #0379D9;
+        border-left-color: #ffffff;
+    }
 
-.message-outgoing .vote-option {
-    background: rgba(255, 255, 255, 0.9);
-    border-color: rgba(255, 255, 255, 0.3);
-}
+    .message-outgoing .vote-question {
+        color: #ffffff;
+    }
 
-.message-outgoing .vote-option .option-text {
-    color: #333;
-}
+    .message-outgoing .vote-option {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
 
-.message-outgoing .vote-option .vote-count {
-    color: #666;
-}
+        .message-outgoing .vote-option .option-text {
+            color: #ffffff;
+        }
 
-.message-outgoing .vote-total {
-    color: rgba(255, 255, 255, 0.7);
-}
+        .message-outgoing .vote-option .vote-count {
+            color: rgba(255, 255, 255, 0.8);
+        }
 
-.message-outgoing .vote-option.selected {
-    background: rgba(40, 167, 69, 0.2);
-    border-color: #28a745;
-}
+    .message-outgoing .vote-total {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .message-outgoing .vote-option.selected {
+        background: rgba(40, 167, 69, 0.3);
+        border-color: #28a745;
+    }
+
+    .message-outgoing .vote-option .progress-bar {
+        background-color: #ffffff;
+    }
+
+    .message-outgoing .vote-option .btn-link {
+        color: rgba(255, 255, 255, 0.8) !important;
+    }
+
+        .message-outgoing .vote-option .btn-link:hover {
+            color: #ffffff !important;
+        }
+
+    .message-outgoing .vote-expired {
+        color: rgba(255, 255, 255, 0.7);
+    }
 
 /* Стили для голосований во входящих сообщениях */
 .message-incoming .vote-message {
@@ -6038,9 +6059,9 @@ async function checkAndUpdateAdminStatus(chatId) {
                 </div>
                 ${hasVotes ? `
                 <div class="text-end mt-1">
-                    <button class="btn btn-sm btn-link text-muted p-0" onclick="showVoteDetails(${voteData.voteId}, ${option.id}, '${escapeHtml(option.text)}', event)">
-                        <i class="fas fa-users me-1"></i>Кто голосовал?
-                    </button>
+        <button class="btn btn-sm btn-link p-0" onclick="showVoteDetails(${voteData.voteId}, ${option.id}, '${escapeHtml(option.text)}', event)">
+        <i class="fas fa-users me-1"></i>Кто голосовал?
+        </button>
                 </div>
                 ` : ''}
             </div>
