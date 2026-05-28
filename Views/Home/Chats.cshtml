@@ -2341,6 +2341,45 @@
         max-width: 90px !important;
     }
 }
+
+.message-outgoing .attachment-item.file-item .file-preview {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.message-outgoing .attachment-item.file-item .file-preview:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.message-outgoing .file-icon {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.message-outgoing .file-name {
+    color: #90caf9;  /* Синий цвет для названия файла */
+    font-weight: 500;
+}
+
+.message-outgoing .file-size {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.message-outgoing .file-download i {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.message-outgoing .file-preview:hover .file-download i {
+    color: #ffffff;
+}
+
+/* Для изображений в исходящих сообщениях */
+.message-outgoing .attachment-item.image-item .attachment-overlay {
+    background: rgba(3, 121, 217, 0.7);
+}
+
+.message-outgoing .attachment-item.image-item .attachment-count-badge {
+    background: rgba(3, 121, 217, 0.9);
+    color: white;
+}
 </style>
 
 @section Scripts {
