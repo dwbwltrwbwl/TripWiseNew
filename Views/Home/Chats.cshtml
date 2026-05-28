@@ -189,28 +189,30 @@
                                     </div>
                                 </div>
                             </div>
-
                             <!-- Поле ввода сообщения -->
-                            <div class="card-footer" id="messageInputContainer" style="display: none;">
-                                <div class="input-group">
-                                    <button class="btn btn-outline-secondary" type="button" onclick="attachFile()">
-                                        <i class="fas fa-paperclip"></i>
-                                    </button>
-                                    <button class="btn btn-outline-secondary" type="button" onclick="showCreateVoteModal()">
-                                        <i class="fas fa-poll"></i>
-                                    </button>
-                                    <input type="text"
-       class="form-control"
-       placeholder="Введите сообщение..."
-       id="messageInput"
-       maxlength="1000"
-       onkeypress="handleMessageKeyPress(event)"
-       style="flex: 1 1 auto; min-width: 0;">
-                                    <button class="btn btn-primary" type="button" onclick="sendMessage()">
-                                        <i class="fas fa-arrow-right"></i>
-                                    </button>
-                                </div>
-                            </div>
+<div class="card-footer" id="messageInputContainer" style="display: none;">
+    <!-- Индикатор выбранных файлов теперь будет ВНЕ input-group -->
+    <div id="selectedFilesIndicator" style="margin-bottom: 8px;"></div>
+    
+    <div class="input-group">
+        <button class="btn btn-outline-secondary" type="button" onclick="attachFile()">
+            <i class="fas fa-paperclip"></i>
+        </button>
+        <button class="btn btn-outline-secondary" type="button" onclick="showCreateVoteModal()">
+            <i class="fas fa-poll"></i>
+        </button>
+        <input type="text"
+               class="form-control"
+               placeholder="Введите сообщение..."
+               id="messageInput"
+               maxlength="1000"
+               onkeypress="handleMessageKeyPress(event)"
+               style="flex: 1 1 auto; min-width: 0;">
+        <button class="btn btn-primary" type="button" onclick="sendMessage()">
+            <i class="fas fa-arrow-right"></i>
+        </button>
+    </div>
+</div>
                         </div>
 
                         <!-- Заглушка, когда чат не выбран (показана по умолчанию) -->
@@ -2305,6 +2307,38 @@
     
     .vote-expired {
         text-align: left;
+    }
+}
+
+#selectedFilesIndicator {
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+.selected-files-indicator {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 8px;
+}
+
+.selected-files-indicator .d-flex.flex-wrap {
+    max-height: 80px;
+    overflow-y: auto;
+}
+
+/* Компактный вид на мобильных */
+@@media (max-width: 768px) {
+    .selected-files-indicator .d-flex.flex-wrap {
+        max-height: 60px;
+    }
+    
+    .selected-files-indicator .d-inline-flex {
+        max-width: 150px !important;
+        font-size: 0.75rem;
+    }
+    
+    .selected-files-indicator .d-inline-flex span {
+        max-width: 90px !important;
     }
 }
 </style>
@@ -4429,51 +4463,58 @@ async function uploadFile(file) {
             showNotification(`❌ Не удалось загрузить "${file.name}": ${error.message}`, 'danger');
         }
     }
-}
-                function updateSelectedFilesIndicator() {
-            const container = document.getElementById('messageInputContainer');
-            if (!container) return;
-            const oldIndicator = document.getElementById('selectedFilesIndicator');
-            if (oldIndicator) oldIndicator.remove();
+        }
+        function updateSelectedFilesIndicator() {
+        const container = document.getElementById('selectedFilesIndicator');
+        if (!container) return;
 
-            if (selectedFiles.length === 0) return;
+        if (selectedFiles.length === 0) {
+        container.innerHTML = '';
+        return;
+        }
 
-            const indicator = document.createElement('div');
-            indicator.id = 'selectedFilesIndicator';
-            indicator.className = 'selected-files-indicator mt-2';
+        let html = '<div class="selected-files-indicator mb-2 p-2 bg-light rounded border">';
+        html += '<div class="d-flex justify-content-between align-items-center mb-2">';
+        html += `<span class="fw-bold small">Прикреплено файлов: ${selectedFiles.length}/${MAX_FILES}</span>`;
+        html += '<button class="btn btn-sm btn-link text-danger p-0" onclick="clearAllFiles()">Очистить все</button>';
+        html += '</div>';
+        html += '<div class="d-flex flex-wrap gap-2" style="max-height: 100px; overflow-y: auto;">';
 
-            let html = '<div class="bg-light rounded p-2">';
-            html += '<div class="d-flex justify-content-between align-items-center mb-2">';
-            html += `<span class="fw-bold">Прикреплено файлов: ${selectedFiles.length}/${MAX_FILES}</span>`;
-            html += '<button class="btn btn-sm btn-link text-danger" onclick="clearAllFiles()">Очистить все</button>';
-            html += '</div>';
-            html += '<div class="file-list" style="max-height: 200px; overflow-y: auto;">';
+        selectedFiles.forEach((file, index) => {
+        const fileExt = file.fileName.split('.').pop()?.toLowerCase();
+        let fileIcon = 'fa-file';
+        let fileColor = '';
 
-            selectedFiles.forEach((file, index) => {
-                const fileExt = file.fileName.split('.').pop()?.toLowerCase();
-                let fileIcon = 'fa-file';
+        if (file.fileType.includes('image')) {
+        fileIcon = 'fa-file-image';
+        fileColor = 'text-primary';
+        } else if (file.fileType.includes('pdf')) {
+        fileIcon = 'fa-file-pdf';
+        fileColor = 'text-danger';
+        } else if (file.fileType.includes('doc')) {
+        fileIcon = 'fa-file-word';
+        fileColor = 'text-primary';
+        } else if (file.fileType.includes('xls')) {
+        fileIcon = 'fa-file-excel';
+        fileColor = 'text-success';
+        } else {
+        fileIcon = 'fa-file-alt';
+        fileColor = 'text-secondary';
+        }
 
-                if (file.fileType.includes('image')) fileIcon = 'fa-file-image';
-                else if (file.fileType.includes('pdf')) fileIcon = 'fa-file-pdf';
-                else if (file.fileType.includes('doc')) fileIcon = 'fa-file-word';
-                else if (file.fileType.includes('xls')) fileIcon = 'fa-file-excel';
-                else if (file.fileType.includes('zip') || file.fileType.includes('rar')) fileIcon = 'fa-file-archive';
+        html += `
+        <div class="d-inline-flex align-items-center bg-white rounded p-1 pe-2 border" style="max-width: 200px;">
+        <i class="fas ${fileIcon} ${fileColor} me-1"></i>
+        <span class="small text-truncate" style="max-width: 120px;" title="${escapeHtml(file.fileName)}">${escapeHtml(file.fileName)}</span>
+        <button class="btn btn-sm btn-link text-danger p-0 ms-1" onclick="removeFile(${index})">
+        <i class="fas fa-times fa-xs"></i>
+        </button>
+        </div>
+        `;
+        });
 
-                html += `
-                    <div class="d-flex align-items-center p-1 border-bottom">
-                        <i class="fas ${fileIcon} me-2"></i>
-                        <span class="flex-grow-1 text-truncate" style="max-width: 200px;">${escapeHtml(file.fileName)}</span>
-                        <small class="text-muted me-2">${formatFileSize(file.fileSize)}</small>
-                        <button class="btn btn-sm btn-link text-danger" onclick="removeFile(${index})">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                `;
-            });
-
-            html += '</div></div>';
-            indicator.innerHTML = html;
-            container.appendChild(indicator);
+        html += '</div></div>';
+        container.innerHTML = html;
         }
         function removeFile(index) {
             selectedFiles.splice(index, 1);
