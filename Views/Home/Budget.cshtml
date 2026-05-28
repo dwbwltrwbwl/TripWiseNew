@@ -61,9 +61,10 @@
                 <div class="row">
                     <div class="col-md-8">
                         <!-- Общая статистика - 4 блока в одном ряду -->
+                        <!-- Общая статистика - 4 блока в одном ряду -->
                         <div class="row g-4 mb-4">
                             <div class="col-md-3 col-sm-6">
-                                <div class="stat-card text-center p-3">
+                                <div class="stat-card text-center p-3 h-100">
                                     <div class="stat-icon mb-2">
                                         <i class="fas fa-chart-line fa-2x text-primary"></i>
                                     </div>
@@ -72,7 +73,7 @@
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-6">
-                                <div class="stat-card text-center p-3">
+                                <div class="stat-card text-center p-3 h-100">
                                     <div class="stat-icon mb-2">
                                         <i class="fas fa-shopping-cart fa-2x text-warning"></i>
                                     </div>
@@ -81,7 +82,7 @@
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-6">
-                                <div class="stat-card text-center p-3">
+                                <div class="stat-card text-center p-3 h-100">
                                     <div class="stat-icon mb-2">
                                         <i class="fas fa-piggy-bank fa-2x text-primary"></i>
                                     </div>
@@ -90,13 +91,13 @@
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-6">
-                                <div class="stat-card text-center p-3">
+                                <div class="stat-card text-center p-3 h-100">
                                     <div class="stat-icon mb-2">
                                         <i class="fas fa-user-circle fa-2x text-info"></i>
                                     </div>
                                     <h3 class="text-info mb-1" id="mySpent">0 ₽</h3>
                                     <p class="text-muted mb-0">Мои расходы</p>
-                                    <small class="text-muted d-block" id="mySharePercent">0% от бюджета</small>
+                                    <small class="text-muted d-block mt-1" id="mySharePercent">0% от бюджета</small>
                                 </div>
                             </div>
                         </div>
@@ -1168,6 +1169,91 @@
         .expense-item .text-muted span {
             max-width: 120px;
         }
+    }
+
+    /* Фиксированная высота для блоков статистики */
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        height: 100%; /* Растягиваем на всю высоту родителя */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    /* Гарантируем одинаковую высоту для всех блоков в ряду */
+    .row.g-4.mb-4 .col-md-3,
+    .row.g-4.mb-4 .col-md-4,
+    .row.g-4.mb-4 > [class*="col-"] {
+        display: flex;
+    }
+
+    .stat-card h3 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        white-space: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        max-width: 100%;
+        scrollbar-width: thin;
+    }
+
+    /* Для десктопа - фиксированная минимальная высота */
+    @@media (min-width: 769px) {
+        .stat-card {
+            min-height: 140px;
+        }
+
+            .stat-card h3 {
+                font-size: 1.5rem;
+                white-space: nowrap;
+            }
+    }
+
+    /* Для мобильных устройств */
+    @@media (max-width: 768px) {
+        .stat-card {
+            min-height: 120px;
+            padding: 12px !important;
+        }
+
+            .stat-card h3 {
+                font-size: 1.2rem;
+            }
+
+            .stat-card .stat-icon {
+                width: 40px;
+                height: 40px;
+            }
+
+                .stat-card .stat-icon i {
+                    font-size: 1.3rem;
+                }
+
+            .stat-card p {
+                font-size: 0.8rem;
+                margin-bottom: 0;
+            }
+
+            .stat-card small {
+                font-size: 0.7rem;
+            }
+    }
+
+    @@media (max-width: 480px) {
+        .stat-card {
+            min-height: 110px;
+            padding: 10px !important;
+        }
+
+            .stat-card h3 {
+                font-size: 1rem;
+                white-space: normal;
+                word-break: break-word;
+            }
     }
 </style>
 @section Scripts {
