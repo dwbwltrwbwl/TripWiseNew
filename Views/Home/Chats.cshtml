@@ -2399,6 +2399,13 @@
         connection.on("ReceiveMessage", (message) => {
         console.log("SignalR получил сообщение:", message);
 
+        // ✅ Проверяем, не существует ли уже это сообщение в UI
+        const existingMessage = document.querySelector(`.message[data-message-id="${message.id}"]`);
+        if (existingMessage) {
+        console.log('Сообщение уже есть в UI, пропускаем');
+        return;
+        }
+
         // Если это текущий чат, добавляем сообщение в UI
         if (currentChatId === message.chatId) {
         appendMessageToUI(message);
@@ -3151,82 +3158,71 @@ function renderChatsList(chats) {
         // Отправка сообщения
                 const MAX_MESSAGE_LENGTH = 1000;
         async function sendMessage() {
-        const input = document.getElementById('messageInput');
-        const text = input.value.trim();
+    const input = document.getElementById('messageInput');
+    const text = input.value.trim();
 
-        if (text.length > MAX_MESSAGE_LENGTH) {
+    if (text.length > MAX_MESSAGE_LENGTH) {
         showNotification(`Сообщение не должно превышать ${MAX_MESSAGE_LENGTH} символов (сейчас ${text.length})`, 'danger');
         return;
-        }
-        if ((!text || text === '') && selectedFiles.length === 0) {
+    }
+    if ((!text || text === '') && selectedFiles.length === 0) {
         return;
-        }
+    }
 
-        if (!currentChatId) {
+    if (!currentChatId) {
         return;
-        }
+    }
 
-        try {
+    try {
         const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
         if (!token) {
-        showNotification('Ошибка аутентификации', 'danger');
-        return;
+            showNotification('Ошибка аутентификации', 'danger');
+            return;
         }
 
         const messageData = {
-        chatId: currentChatId,
-        text: text || '',
-        attachments: selectedFiles
+            chatId: currentChatId,
+            text: text || '',
+            attachments: selectedFiles
         };
 
         const response = await fetch('/Chats/SendMessage', {
-        method: 'POST',
-        headers: {
-        'Content-Type': 'application/json',
-        'RequestVerificationToken': token
-        },
-        body: JSON.stringify(messageData)
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': token
+            },
+            body: JSON.stringify(messageData)
         });
 
         if (!response.ok) {
-        throw new Error(`HTTP ошибка: ${response.status}`);
+            throw new Error(`HTTP ошибка: ${response.status}`);
         }
 
         const data = await response.json();
 
         if (data.success) {
-        // ✅ МГНОВЕННО добавляем сообщение в UI
-        const tempMessage = {
-        id: data.data.messageId,
-        text: text,
-        senderId: currentUserId,
-        senderName: 'Вы',
-        sentAt: new Date().toISOString(),
-        attachments: selectedFiles,
-        isOutgoing: true
-        };
-
-        appendMessageToUI(tempMessage);
-
-        input.value = '';
-        clearAllFiles();
-
-        // Обновляем lastMessageId для следующего опроса
-        if (data.data.messageId > lastMessageId) {
-        lastMessageId = data.data.messageId;
-        }
-
-        // Прокручиваем вниз
-        scrollToBottom();
-
+            // ✅ УБИРАЕМ ЭТУ СТРОКУ - не добавляем сообщение вручную
+            // appendMessageToUI(tempMessage);
+            
+            input.value = '';
+            clearAllFiles();
+            
+            // Обновляем lastMessageId для следующего опроса
+            if (data.data.messageId > lastMessageId) {
+                lastMessageId = data.data.messageId;
+            }
+            
+            // ✅ Просто прокручиваем вниз (сообщение добавится через SignalR)
+            scrollToBottom();
         } else {
-        showNotification(data.message || 'Ошибка при отправке', 'danger');
+            showNotification(data.message || 'Ошибка при отправке', 'danger');
         }
-        } catch (error) {
+    } catch (error) {
         console.error('Ошибка отправки сообщения:', error);
         showNotification('Не удалось отправить сообщение: ' + error.message, 'danger');
-        }
-        }
+    }
+}
 
         // Добавление сообщения в UI
                                                                 function appendMessageToUI(message) {
@@ -5637,7 +5633,7 @@ function updateChatTypeBasedUI(chatType) {
                     ${!isGroupOrTripChat && chat.type === 'private' ? `
                     <div class="alert alert-info mt-3">
                         <i class="fas fa-info-circle me-2"></i>
-                        <small>В личном чате нельзя удалять участников. Чтобы добавить больше участников, чат автоматически станет групповым.</small>
+                        <small>В личном чате нельзя удалять участников.</small>
                     </div>
                     ` : ''}
                     
