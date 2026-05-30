@@ -521,6 +521,15 @@ namespace TripWise.Controllers
         public string Aircraft { get; set; }
         public bool IsReturn { get; set; }
         public string BookingUrl { get; set; }
+
+        // ✅ ДОБАВЬТЕ ЭТИ ПОЛЯ ДЛЯ ОБРАТНОГО РЕЙСА
+        public string? ReturnFlightId { get; set; }
+        public string? ReturnAirline { get; set; }
+        public string? ReturnFlightNumber { get; set; }
+        public DateTime? ReturnDepartureDateTime { get; set; }
+        public DateTime? ReturnArrivalDateTime { get; set; }
+        public int? ReturnDuration { get; set; }
+        public int? ReturnTransfers { get; set; }
     }
 
     public class RemoveFavoriteRequest

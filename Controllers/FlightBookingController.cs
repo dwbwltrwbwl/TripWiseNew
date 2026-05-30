@@ -31,37 +31,39 @@ namespace TripWise.Controllers
         // GET: /FlightBooking/Book
         [HttpGet]
         public IActionResult Book(
-            string flightId,
-            string airline,
-            string airlineCode,
-            string airlineLogo,
-            string flightNumber,
-            string departureCity,
-            string arrivalCity,
-            string departureAirport,
-            string arrivalAirport,
-            DateTime departureDateTime,
-            DateTime arrivalDateTime,
-            decimal price,
-            int duration,
-            int transfers,
-            string aircraft,
-            string baggage,
-            string handLuggage,
-            string meal,
-            string flightClass,
-            bool isRoundTrip,
-            int passengers,
-            // Параметры обратного рейса
-            string returnFlightId = null,
-            string returnAirline = null,
-            string returnFlightNumber = null,
-            DateTime? returnDepartureDateTime = null,
-            DateTime? returnArrivalDateTime = null,
-            int? returnDuration = null,
-            int? returnTransfers = null)
+    string flightId,
+    string airline,
+    string airlineCode,
+    string airlineLogo,
+    string flightNumber,
+    string departureCity,
+    string arrivalCity,
+    string departureAirport,
+    string arrivalAirport,
+    DateTime departureDateTime,
+    DateTime arrivalDateTime,
+    decimal price,
+    int duration,
+    int transfers,
+    string aircraft,
+    string baggage,
+    string handLuggage,
+    string meal,
+    string flightClass,
+    bool isRoundTrip,
+    int passengers,
+    // ✅ ДОБАВЬТЕ ПАРАМЕТРЫ ДЛЯ ОБРАТНОГО РЕЙСА (убедитесь, что они есть)
+    string returnFlightId = null,
+    string returnAirline = null,
+    string returnFlightNumber = null,
+    DateTime? returnDepartureDateTime = null,
+    DateTime? returnArrivalDateTime = null,
+    int? returnDuration = null,
+    int? returnTransfers = null)
         {
             _logger.LogInformation("=== GET BOOK METHOD CALLED ===");
+            _logger.LogInformation($"isRoundTrip: {isRoundTrip}");
+            _logger.LogInformation($"returnFlightNumber: {returnFlightNumber}");
             _logger.LogInformation($"flightId: {flightId}");
             _logger.LogInformation($"airline: {airline}");
             _logger.LogInformation($"flightNumber: {flightNumber}");
@@ -70,10 +72,8 @@ namespace TripWise.Controllers
             _logger.LogInformation($"departureDateTime: {departureDateTime}");
             _logger.LogInformation($"arrivalDateTime: {arrivalDateTime}");
             _logger.LogInformation($"price: {price}");
-            _logger.LogInformation($"isRoundTrip: {isRoundTrip}");
             _logger.LogInformation($"passengers: {passengers}");
             _logger.LogInformation($"returnFlightId: {returnFlightId}");
-            _logger.LogInformation($"returnFlightNumber: {returnFlightNumber}");
             _logger.LogInformation($"returnDepartureDateTime: {returnDepartureDateTime}");
 
             // Проверяем, что обязательные параметры есть
