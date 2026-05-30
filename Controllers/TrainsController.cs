@@ -154,26 +154,22 @@ namespace TripWise.Controllers
                     foreach (var returnTrain in returnTrains)
                     {
                         if (comboCount >= 15) break;
-
-                        // Не комбинируем одинаковые номера поездов
                         if (forwardTrain.TrainNumber == returnTrain.TrainNumber) continue;
 
-                        // Цена: минимальная цена туда + минимальная цена обратно
                         var forwardPrice = GetMinPrice(forwardTrain.Categories);
                         var returnPrice = GetMinPrice(returnTrain.Categories);
-                        var totalPrice = forwardPrice + returnPrice;
+                        var totalPrice = forwardPrice + returnPrice;  // ✅ СУММА, а не умножение
 
                         allTrainGroups.Add(new TrainGroupResponse
                         {
                             Id = $"{forwardTrain.TrainNumber}-{returnTrain.TrainNumber}",
                             ForwardTrain = forwardTrain,
                             ReturnTrain = returnTrain,
-                            TotalPrice = totalPrice,
+                            TotalPrice = totalPrice,  // ✅ ПРАВИЛЬНО: цена туда + цена обратно
                             IsRoundTrip = true
                         });
                         comboCount++;
                     }
-                    if (comboCount >= 15) break;
                 }
 
                 // Если комбинаций мало, добавляем одиночные варианты

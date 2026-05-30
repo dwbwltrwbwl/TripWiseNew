@@ -1141,6 +1141,7 @@ function viewDetails(groupId) {
 
 function bookTickets(group) {
     console.log('=== НАЧАЛО БРОНИРОВАНИЯ ===');
+    console.log('group:', group);
 
     if (!group.forwardTrain) {
         console.error('Ошибка: нет данных о поезде');
@@ -1156,6 +1157,48 @@ function bookTickets(group) {
         showNotification('Пожалуйста, выберите дату отправления', 'warning');
         return;
     }
+
+    // ✅ ПРАВИЛЬНО ПОЛУЧАЕМ ЦЕНУ
+    // Для туда-обратно - берем общую цену из group.totalPrice или группируем
+    let forwardPrice = 0;
+    let returnPrice = 0;
+    let totalPrice = 0;
+
+    // Получаем цену туда
+    if (group.forwardTrain?.price) {
+        forwardPrice = group.forwardTrain.price;
+    } else if (group.forwardTrain?.categories && group.forwardTrain.categories.length > 0) {
+        forwardPrice = group.forwardTrain.categories[0].price;
+    }
+
+    // Если есть обратный рейс
+    if (group.isRoundTrip && group.returnTrain) {
+        if (group.returnTrain?.price) {
+            returnPrice = group.returnTrain.price;
+        } else if (group.returnTrain?.categories && group.returnTrain.categories.length > 0) {
+            returnPrice = group.returnTrain.categories[0].price;
+        }
+    }
+
+    // ✅ ВАЖНО: totalPrice - это ЦЕНА ТУДА + ЦЕНА ОБРАТНО (за одного пассажира)
+    if (group.isRoundTrip) {
+        if (group.totalPrice && group.totalPrice > 0) {
+            // Используем totalPrice из группы (если есть)
+            totalPrice = group.totalPrice;
+        } else if (forwardPrice > 0 && returnPrice > 0) {
+            totalPrice = forwardPrice + returnPrice;
+        } else if (forwardPrice > 0) {
+            // Если обратная цена не определена, удваиваем цену туда
+            totalPrice = forwardPrice * 2;
+        }
+    } else {
+        totalPrice = forwardPrice;
+    }
+
+    console.log('=== ЦЕНЫ ===');
+    console.log('forwardPrice:', forwardPrice);
+    console.log('returnPrice:', returnPrice);
+    console.log('totalPrice (за пассажира):', totalPrice);
 
     // Формируем дату и время отправления (локальное время)
     const departureTime = group.forwardTrain.departureTime || '00:00';
@@ -1185,9 +1228,6 @@ function bookTickets(group) {
         arrivalDateTime = new Date(departureDateTime.getTime() + duration * 60 * 1000);
     }
 
-    console.log('Departure DateTime (local):', departureDateTime.toString());
-    console.log('Arrival DateTime (local):', arrivalDateTime.toString());
-
     // Форматируем для URL
     const formatForUrl = (date) => {
         const year = date.getFullYear();
@@ -1197,12 +1237,6 @@ function bookTickets(group) {
         const minutes = String(date.getMinutes()).padStart(2, '0');
         return `${year}-${month}-${day}T${hours}:${minutes}`;
     };
-
-    // Получаем цену
-    let price = group.totalPrice || 0;
-    if (price === 0 && group.forwardTrain?.categories?.length > 0) {
-        price = group.forwardTrain.categories[0].price;
-    }
 
     // Получаем тип вагона
     let carType = 'coupe';
@@ -1238,14 +1272,14 @@ function bookTickets(group) {
     params.append('arrivalStationName', arrivalStationName);
     params.append('departureDateTime', formatForUrl(departureDateTime));
     params.append('arrivalDateTime', formatForUrl(arrivalDateTime));
-    params.append('price', price.toString());
+    // ✅ ИСПРАВЛЕНО: передаем totalPrice (цена туда+обратно за одного пассажира)
+    params.append('price', totalPrice.toString());
     params.append('passengers', passengersCount);
     params.append('carType', carType);
     params.append('carClass', carClass);
     params.append('duration', duration.toString());
     params.append('isRoundTrip', (group.isRoundTrip || false).toString());
 
-    // ✅ ДОБАВЛЯЕМ returnDuration ДЛЯ ОБРАТНОГО РЕЙСА
     if (group.isRoundTrip && group.returnTrain) {
         const returnDateInput = document.getElementById('railwayReturnDate');
         let returnDateStr = returnDateInput?.value;
@@ -1261,15 +1295,30 @@ function bookTickets(group) {
                 parseInt(retMinutes)
             );
 
+            // Рассчитываем дату прибытия обратного рейса
+            let returnArrivalDateTime;
+            if (group.returnTrain.arrivalDate && group.returnTrain.arrivalTime) {
+                const [arrDay, arrMonth, arrYear] = group.returnTrain.arrivalDate.split('.');
+                const [arrHours, arrMinutes] = group.returnTrain.arrivalTime.split(':');
+                returnArrivalDateTime = new Date(
+                    parseInt(arrYear),
+                    parseInt(arrMonth) - 1,
+                    parseInt(arrDay),
+                    parseInt(arrHours),
+                    parseInt(arrMinutes)
+                );
+            } else {
+                const returnDuration = parseDuration(group.returnTrain.travelTime);
+                returnArrivalDateTime = new Date(returnDepartureDateTime.getTime() + returnDuration * 60 * 1000);
+            }
+
             const returnDuration = parseDuration(group.returnTrain.travelTime || '0:00');
-            const returnArrivalDateTime = new Date(returnDepartureDateTime.getTime() + returnDuration * 60 * 1000);
 
             params.append('returnTrainNumber', group.returnTrain.trainNumber);
             params.append('returnDepartureDateTime', formatForUrl(returnDepartureDateTime));
             params.append('returnArrivalDateTime', formatForUrl(returnArrivalDateTime));
-            params.append('returnDuration', returnDuration.toString());  // ← ДОБАВЛЕНО
+            params.append('returnDuration', returnDuration.toString());
         } else {
-            // Если дата возврата не выбрана, но isRoundTrip=true - показываем ошибку
             showNotification('Пожалуйста, выберите дату обратного отправления', 'warning');
             return;
         }
@@ -1277,7 +1326,10 @@ function bookTickets(group) {
 
     const url = '/TrainBooking/Book?' + params.toString();
     console.log('=== ПЕРЕХОД ПО URL ===');
-    console.log(url);
+    console.log('url:', url);
+    console.log('Цена (за пассажира):', totalPrice);
+    console.log('Количество пассажиров:', passengersCount);
+    console.log('Общая сумма:', totalPrice * parseInt(passengersCount));
 
     window.location.replace(url);
 }
