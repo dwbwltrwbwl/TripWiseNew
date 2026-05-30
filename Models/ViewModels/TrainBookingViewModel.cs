@@ -117,9 +117,11 @@ namespace TripWise.Models.ViewModels
     public class CompleteBookingViewModel
     {
         public TrainBookingViewModel TrainInfo { get; set; }
-        public List<PassengerInfoViewModel> Passengers { get; set; } = new List<PassengerInfoViewModel>(); // ← Изменено на список
+        public List<PassengerInfoViewModel> Passengers { get; set; } = new List<PassengerInfoViewModel>();
         public ContactInfoViewModel Contact { get; set; }
 
-        public decimal TotalPrice => (TrainInfo?.Price ?? 0) * (TrainInfo?.Passengers ?? 0) * ((TrainInfo?.IsRoundTrip ?? false) ? 2 : 1);
+        // ✅ ИСПРАВЛЕНО: Price уже содержит стоимость туда+обратно (если IsRoundTrip = true)
+        // Не нужно умножать на 2 еще раз!
+        public decimal TotalPrice => (TrainInfo?.Price ?? 0) * (TrainInfo?.Passengers ?? 0);
     }
 }
