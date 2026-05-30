@@ -484,6 +484,7 @@
     <script>
         $(document).ready(function() {
             let passengerCount = $('.passenger-card').length;
+        updateTotalPrice();
             const totalPassengersLimit = 4;
 
             // Маска телефона
@@ -789,19 +790,41 @@
                 });
             });
 
-            // ================= УДАЛЕНИЕ ПАССАЖИРА =================
-            $(document).on('click', '.remove-passenger', function() {
-                if ($('.passenger-card').length > 1) {
-                    $(this).closest('.passenger-card').remove();
-                    passengerCount--;
-                    $('.passenger-card').each(function(idx) {
-                        $(this).find('h5').text('Пассажир ' + (idx + 1));
-                        $(this).attr('data-passenger-index', idx);
-                    });
-                } else {
-                    showMessage('warning', 'Должен быть хотя бы один пассажир');
-                }
-            });
+        // ================= УДАЛЕНИЕ ПАССАЖИРА =================
+        $(document).on('click', '.remove-passenger', function() {
+        const currentPassengerCount = $('.passenger-card').length;
+
+        if (currentPassengerCount > 1) {
+        $(this).closest('.passenger-card').remove();
+        passengerCount--;
+
+        // Обновляем номера пассажиров
+        $('.passenger-card').each(function(idx) {
+        $(this).find('h5').text('Пассажир ' + (idx + 1));
+        $(this).attr('data-passenger-index', idx);
+        });
+
+        // Обновляем поле количества пассажиров
+        $('#passengersCount').val(passengerCount);
+        updateTotalPrice();
+
+        // Обновляем отображение цены
+        updateTotalPrice();
+        } else {
+        showMessage('warning', 'Должен быть хотя бы один пассажир');
+        // Не блокируем кнопку, просто показываем предупреждение
+        }
+        });
+
+        // Функция для обновления общей цены
+        function updateTotalPrice() {
+        const pricePerPassenger = parseFloat($('#price').val()) || 0;
+        const passengerCount = parseInt($('#passengersCount').val()) || 1;
+        const totalPrice = pricePerPassenger * passengerCount;
+
+        // Обновляем отображение цены в блоке
+        $('.alert-success .fw-bold.fs-4').text(totalPrice.toLocaleString('ru-RU') + ' ₽');
+        }
 
             // ================= ВАЛИДАЦИЯ КОНТАКТНЫХ ДАННЫХ =================
             function validateContact() {
