@@ -1012,53 +1012,7 @@ function generateCategoriesInfo(group) {
     }
 
     return html;
-} function generateCategoriesInfo(group) {
-    let html = '';
-    let forwardPrice = 0;
-    let returnPrice = 0;
-
-    if (group.forwardTrain?.price) {
-        forwardPrice = group.forwardTrain.price;
-    } else if (group.forwardTrain?.categories && group.forwardTrain.categories.length > 0) {
-        forwardPrice = group.forwardTrain.categories[0].price;
-    }
-
-    if (group.isRoundTrip && group.returnTrain?.price) {
-        returnPrice = group.returnTrain.price;
-    } else if (group.isRoundTrip && group.returnTrain?.categories && group.returnTrain.categories.length > 0) {
-        returnPrice = group.returnTrain.categories[0].price;
-    }
-
-    if (forwardPrice > 0) {
-        html += '<div class="mb-2">';
-        html += '<small class="text-muted d-block mb-1">🚆 Цена билета:</small>';
-        html += `<div class="bg-success bg-opacity-10 p-2 rounded d-inline-block">
-                    <strong style="color: #40B624; font-size: 1.2rem;">${forwardPrice.toLocaleString('ru-RU')} ₽</strong>
-                    <small class="text-muted"> за пассажира</small>
-                </div>`;
-        html += '</div>';
-    }
-
-    if (group.isRoundTrip && returnPrice > 0 && returnPrice !== forwardPrice) {
-        html += '<div class="mt-2">';
-        html += '<small class="text-muted d-block mb-1">🔄 Общая стоимость (туда и обратно):</small>';
-        html += `<div class="bg-success bg-opacity-10 p-2 rounded d-inline-block">
-                    <strong style="color: #40B624; font-size: 1.2rem;">${(forwardPrice + returnPrice).toLocaleString('ru-RU')} ₽</strong>
-                    <small class="text-muted"> за пассажира</small>
-                </div>`;
-        html += '</div>';
-    } else if (group.isRoundTrip && returnPrice > 0) {
-        html += '<div class="mt-2">';
-        html += '<small class="text-muted d-block mb-1">🔄 Общая стоимость (туда и обратно):</small>';
-        html += `<div class="bg-success bg-opacity-10 p-2 rounded d-inline-block">
-                    <strong style="color: #40B624; font-size: 1.2rem;">${(forwardPrice * 2).toLocaleString('ru-RU')} ₽</strong>
-                    <small class="text-muted"> за пассажира</small>
-                </div>`;
-        html += '</div>';
-    }
-
-    return html;
-}
+} 
 
 // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
 function formatDateForDisplay(dateString) {

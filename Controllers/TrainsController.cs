@@ -82,7 +82,8 @@ namespace TripWise.Controllers
                         foreach (var returnTrain in returnForCombination)
                         {
                             var forwardMinPrice = forwardTrain.Categories?.Min(c => c.Price) ?? 0;
-                            var totalPrice = forwardMinPrice * 2;
+                            var returnMinPrice = returnTrain.Categories?.Min(c => c.Price) ?? 0;
+                            var totalPrice = forwardMinPrice + returnMinPrice;  // ✅ СУММА, а не умножение
 
                             allTrainGroups.Add(new TrainGroupResponse
                             {
