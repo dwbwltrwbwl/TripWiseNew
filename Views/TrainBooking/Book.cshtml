@@ -483,302 +483,207 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
     <script>
         $(document).ready(function() {
-            let passengerCount = $('.passenger-card').length;
+        let passengerCount = $('.passenger-card').length;
         updateTotalPrice();
-            const totalPassengersLimit = 4;
+        const totalPassengersLimit = 4;
 
-            // Маска телефона
-            $('#phone').mask('+7 (000) 000-00-00');
+        // Маска телефона
+        $('#phone').mask('+7 (000) 000-00-00');
 
-            // ================= ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =================
-            function hasDigits(str) {
-                return /\d/.test(str);
-            }
+        // ================= ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =================
+        function hasDigits(str) {
+        return /\d/.test(str);
+        }
 
-            function isValidName(str) {
-                return /^[a-zA-Zа-яА-ЯёЁ\s\-]+$/.test(str);
-            }
+        function isValidName(str) {
+        return /^[a-zA-Zа-яА-ЯёЁ\s\-]+$/.test(str);
+        }
 
-            // ================= ВАЛИДАЦИЯ ОТДЕЛЬНОГО ПАССАЖИРА =================
-            function validatePassenger(card) {
-                let isValid = true;
+        // ================= ВАЛИДАЦИЯ ОТДЕЛЬНОГО ПАССАЖИРА =================
+        function validatePassenger(card) {
+        let isValid = true;
 
-                // Фамилия
-                let lastName = card.find('.passenger-lastname').val().trim();
-                if (!lastName) {
-                    card.find('.passenger-lastname').addClass('is-invalid');
-                    isValid = false;
-                } else if (lastName.length < 2) {
-                    card.find('.passenger-lastname').addClass('is-invalid');
-                    isValid = false;
-                } else if (lastName.length > 100) {
-                    card.find('.passenger-lastname').addClass('is-invalid');
-                    isValid = false;
-                } else if (hasDigits(lastName)) {
-                    card.find('.passenger-lastname').addClass('is-invalid');
-                    isValid = false;
-                } else if (!isValidName(lastName)) {
-                    card.find('.passenger-lastname').addClass('is-invalid');
-                    isValid = false;
-                } else {
-                    card.find('.passenger-lastname').removeClass('is-invalid');
-                }
+        // Фамилия
+        let lastName = card.find('.passenger-lastname').val().trim();
+        if (!lastName) {
+        card.find('.passenger-lastname').addClass('is-invalid');
+        isValid = false;
+        } else if (lastName.length < 2) {
+        card.find('.passenger-lastname').addClass('is-invalid');
+        isValid = false;
+        } else if (lastName.length > 100) {
+        card.find('.passenger-lastname').addClass('is-invalid');
+        isValid = false;
+        } else if (hasDigits(lastName)) {
+        card.find('.passenger-lastname').addClass('is-invalid');
+        isValid = false;
+        } else if (!isValidName(lastName)) {
+        card.find('.passenger-lastname').addClass('is-invalid');
+        isValid = false;
+        } else {
+        card.find('.passenger-lastname').removeClass('is-invalid');
+        }
 
-                // Имя
-                let firstName = card.find('.passenger-firstname').val().trim();
-                if (!firstName) {
-                    card.find('.passenger-firstname').addClass('is-invalid');
-                    isValid = false;
-                } else if (firstName.length < 2) {
-                    card.find('.passenger-firstname').addClass('is-invalid');
-                    isValid = false;
-                } else if (firstName.length > 100) {
-                    card.find('.passenger-firstname').addClass('is-invalid');
-                    isValid = false;
-                } else if (hasDigits(firstName)) {
-                    card.find('.passenger-firstname').addClass('is-invalid');
-                    isValid = false;
-                } else if (!isValidName(firstName)) {
-                    card.find('.passenger-firstname').addClass('is-invalid');
-                    isValid = false;
-                } else {
-                    card.find('.passenger-firstname').removeClass('is-invalid');
-                }
+        // Имя
+        let firstName = card.find('.passenger-firstname').val().trim();
+        if (!firstName) {
+        card.find('.passenger-firstname').addClass('is-invalid');
+        isValid = false;
+        } else if (firstName.length < 2) {
+        card.find('.passenger-firstname').addClass('is-invalid');
+        isValid = false;
+        } else if (firstName.length > 100) {
+        card.find('.passenger-firstname').addClass('is-invalid');
+        isValid = false;
+        } else if (hasDigits(firstName)) {
+        card.find('.passenger-firstname').addClass('is-invalid');
+        isValid = false;
+        } else if (!isValidName(firstName)) {
+        card.find('.passenger-firstname').addClass('is-invalid');
+        isValid = false;
+        } else {
+        card.find('.passenger-firstname').removeClass('is-invalid');
+        }
 
-                // Отчество
-                let middleName = card.find('.passenger-middlename').val().trim();
-                if (middleName) {
-                    if (middleName.length > 100) {
-                        card.find('.passenger-middlename').addClass('is-invalid');
-                        isValid = false;
-                    } else if (hasDigits(middleName)) {
-                        card.find('.passenger-middlename').addClass('is-invalid');
-                        isValid = false;
-                    } else if (!isValidName(middleName)) {
-                        card.find('.passenger-middlename').addClass('is-invalid');
-                        isValid = false;
-                    } else {
-                        card.find('.passenger-middlename').removeClass('is-invalid');
-                    }
-                }
+        // Отчество
+        let middleName = card.find('.passenger-middlename').val().trim();
+        if (middleName) {
+        if (middleName.length > 100) {
+        card.find('.passenger-middlename').addClass('is-invalid');
+        isValid = false;
+        } else if (hasDigits(middleName)) {
+        card.find('.passenger-middlename').addClass('is-invalid');
+        isValid = false;
+        } else if (!isValidName(middleName)) {
+        card.find('.passenger-middlename').addClass('is-invalid');
+        isValid = false;
+        } else {
+        card.find('.passenger-middlename').removeClass('is-invalid');
+        }
+        }
 
-                // Дата рождения
-                let birthdate = card.find('.passenger-birthdate').val();
-                if (!birthdate) {
-                    card.find('.passenger-birthdate').addClass('is-invalid');
-                    isValid = false;
-                } else {
-                    let selectedDate = new Date(birthdate);
-                    let today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    if (selectedDate > today) {
-                        card.find('.passenger-birthdate').addClass('is-invalid');
-                        isValid = false;
-                    } else {
-                        card.find('.passenger-birthdate').removeClass('is-invalid');
-                    }
-                }
+        // Дата рождения
+        let birthdate = card.find('.passenger-birthdate').val();
+        if (!birthdate) {
+        card.find('.passenger-birthdate').addClass('is-invalid');
+        isValid = false;
+        } else {
+        let selectedDate = new Date(birthdate);
+        let today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (selectedDate > today) {
+        card.find('.passenger-birthdate').addClass('is-invalid');
+        isValid = false;
+        } else {
+        card.find('.passenger-birthdate').removeClass('is-invalid');
+        }
+        }
 
-                // Пол
-                let gender = card.find('.passenger-gender').val();
-                if (!gender) {
-                    card.find('.passenger-gender').addClass('is-invalid');
-                    isValid = false;
-                } else {
-                    card.find('.passenger-gender').removeClass('is-invalid');
-                }
+        // Пол
+        let gender = card.find('.passenger-gender').val();
+        if (!gender) {
+        card.find('.passenger-gender').addClass('is-invalid');
+        isValid = false;
+        } else {
+        card.find('.passenger-gender').removeClass('is-invalid');
+        }
 
-                // Гражданство
-                let nationality = card.find('.passenger-nationality').val().trim();
-                if (!nationality) {
-                    card.find('.passenger-nationality').addClass('is-invalid');
-                    isValid = false;
-                } else if (nationality.length < 2) {
-                    card.find('.passenger-nationality').addClass('is-invalid');
-                    isValid = false;
-                } else if (nationality.length > 50) {
-                    card.find('.passenger-nationality').addClass('is-invalid');
-                    isValid = false;
-                } else if (hasDigits(nationality)) {
-                    card.find('.passenger-nationality').addClass('is-invalid');
-                    isValid = false;
-                } else if (!isValidName(nationality)) {
-                    card.find('.passenger-nationality').addClass('is-invalid');
-                    isValid = false;
-                } else {
-                    card.find('.passenger-nationality').removeClass('is-invalid');
-                }
+        // Гражданство
+        let nationality = card.find('.passenger-nationality').val().trim();
+        if (!nationality) {
+        card.find('.passenger-nationality').addClass('is-invalid');
+        isValid = false;
+        } else if (nationality.length < 2) {
+        card.find('.passenger-nationality').addClass('is-invalid');
+        isValid = false;
+        } else if (nationality.length > 50) {
+        card.find('.passenger-nationality').addClass('is-invalid');
+        isValid = false;
+        } else if (hasDigits(nationality)) {
+        card.find('.passenger-nationality').addClass('is-invalid');
+        isValid = false;
+        } else if (!isValidName(nationality)) {
+        card.find('.passenger-nationality').addClass('is-invalid');
+        isValid = false;
+        } else {
+        card.find('.passenger-nationality').removeClass('is-invalid');
+        }
 
-                // Тип документа
-                let documentType = card.find('.passenger-document-type').val();
-                if (!documentType) {
-                    card.find('.passenger-document-type').addClass('is-invalid');
-                    isValid = false;
-                } else {
-                    card.find('.passenger-document-type').removeClass('is-invalid');
-                }
+        // Тип документа
+        let documentType = card.find('.passenger-document-type').val();
+        if (!documentType) {
+        card.find('.passenger-document-type').addClass('is-invalid');
+        isValid = false;
+        } else {
+        card.find('.passenger-document-type').removeClass('is-invalid');
+        }
 
-                // Номер документа
-                let docNumber = card.find('.passenger-document-number').val().trim();
-                if (!docNumber) {
-                    card.find('.passenger-document-number').addClass('is-invalid');
-                    isValid = false;
-                } else if (!/^\d+$/.test(docNumber)) {
-                    card.find('.passenger-document-number').addClass('is-invalid');
-                    isValid = false;
-                } else if (docNumber.length < 4) {
-                    card.find('.passenger-document-number').addClass('is-invalid');
-                    isValid = false;
-                } else if (docNumber.length > 10) {
-                    card.find('.passenger-document-number').addClass('is-invalid');
-                    isValid = false;
-                } else {
-                    card.find('.passenger-document-number').removeClass('is-invalid');
-                }
+        // Номер документа
+        let docNumber = card.find('.passenger-document-number').val().trim();
+        if (!docNumber) {
+        card.find('.passenger-document-number').addClass('is-invalid');
+        isValid = false;
+        } else if (!/^\d+$/.test(docNumber)) {
+        card.find('.passenger-document-number').addClass('is-invalid');
+        isValid = false;
+        } else if (docNumber.length < 4) {
+        card.find('.passenger-document-number').addClass('is-invalid');
+        isValid = false;
+        } else if (docNumber.length > 10) {
+        card.find('.passenger-document-number').addClass('is-invalid');
+        isValid = false;
+        } else {
+        card.find('.passenger-document-number').removeClass('is-invalid');
+        }
 
-                return isValid;
-            }
+        return isValid;
+        }
 
-            // ================= ИНИЦИАЛИЗАЦИЯ ВАЛИДАЦИИ ДЛЯ ПАССАЖИРА =================
-            function initPassengerValidation(card) {
-                card.find('.passenger-lastname, .passenger-firstname, .passenger-middlename, .passenger-nationality').on('input', function() {
-                    let val = $(this).val().trim();
-                    if (val && hasDigits(val)) {
-                        $(this).addClass('is-invalid');
-                    } else if (val && !isValidName(val)) {
-                        $(this).addClass('is-invalid');
-                    } else {
-                        $(this).removeClass('is-invalid');
-                    }
-                });
+        // ================= ИНИЦИАЛИЗАЦИЯ ВАЛИДАЦИИ ДЛЯ ПАССАЖИРА =================
+        function initPassengerValidation(card) {
+        card.find('.passenger-lastname, .passenger-firstname, .passenger-middlename, .passenger-nationality').on('input', function() {
+        let val = $(this).val().trim();
+        if (val && hasDigits(val)) {
+        $(this).addClass('is-invalid');
+        } else if (val && !isValidName(val)) {
+        $(this).addClass('is-invalid');
+        } else {
+        $(this).removeClass('is-invalid');
+        }
+        });
 
-                card.find('.passenger-birthdate').on('change', function() {
-                    let selectedDate = new Date($(this).val());
-                    let today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    if (selectedDate > today) {
-                        $(this).addClass('is-invalid');
-                    } else {
-                        $(this).removeClass('is-invalid');
-                    }
-                });
+        card.find('.passenger-birthdate').on('change', function() {
+        let selectedDate = new Date($(this).val());
+        let today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (selectedDate > today) {
+        $(this).addClass('is-invalid');
+        } else {
+        $(this).removeClass('is-invalid');
+        }
+        });
 
-                card.find('.passenger-gender, .passenger-document-type').on('change', function() {
-                    if ($(this).val()) {
-                        $(this).removeClass('is-invalid');
-                    } else {
-                        $(this).addClass('is-invalid');
-                    }
-                });
+        card.find('.passenger-gender, .passenger-document-type').on('change', function() {
+        if ($(this).val()) {
+        $(this).removeClass('is-invalid');
+        } else {
+        $(this).addClass('is-invalid');
+        }
+        });
 
-                card.find('.passenger-document-number').on('input', function() {
-                    let val = $(this).val().trim();
-                    if (!val || !/^\d+$/.test(val) || val.length < 4 || val.length > 10) {
-                        $(this).addClass('is-invalid');
-                    } else {
-                        $(this).removeClass('is-invalid');
-                    }
-                });
-            }
+        card.find('.passenger-document-number').on('input', function() {
+        let val = $(this).val().trim();
+        if (!val || !/^\d+$/.test(val) || val.length < 4 || val.length > 10) {
+        $(this).addClass('is-invalid');
+        } else {
+        $(this).removeClass('is-invalid');
+        }
+        });
+        }
 
-            // Применяем валидацию к существующим карточкам
-            $('.passenger-card').each(function() {
-                initPassengerValidation($(this));
-            });
-
-            // ================= ДОБАВЛЕНИЕ ПАССАЖИРА =================
-            $('#addPassengerBtn').click(function() {
-                // if (passengerCount >= totalPassengersLimit) {
-                //     showMessage('warning', `Максимальное количество пассажиров: ${totalPassengersLimit}`);
-                //     return;
-                // }
-
-                let i = passengerCount;
-                let html = `
-                    <div class="passenger-card mb-4 p-3 border rounded" data-passenger-index="${i}">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="mb-0 text-primary">Пассажир ${i + 1}</h5>
-                            <button type="button" class="btn btn-sm btn-outline-danger remove-passenger">
-                                <i class="fas fa-trash-alt me-1"></i>Удалить
-                            </button>
-                        </div>
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="form-label fw-semibold">Фамилия <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control passenger-lastname" name="Passengers[${i}].LastName" maxlength="100">
-                                    <div class="invalid-feedback">Введите фамилию (только буквы)</div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="form-label fw-semibold">Имя <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control passenger-firstname" name="Passengers[${i}].FirstName" maxlength="100">
-                                    <div class="invalid-feedback">Введите имя (только буквы)</div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="form-label fw-semibold">Отчество</label>
-                                    <input type="text" class="form-control passenger-middlename" name="Passengers[${i}].MiddleName" maxlength="100">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="form-label fw-semibold">Дата рождения <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control passenger-birthdate" name="Passengers[${i}].DateOfBirth">
-                                    <div class="invalid-feedback">Дата не может быть в будущем</div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="form-label fw-semibold">Пол <span class="text-danger">*</span></label>
-                                    <select class="form-select passenger-gender" name="Passengers[${i}].Gender">
-                                        <option value="">Выберите</option>
-                                        <option value="M">Мужской</option>
-                                        <option value="F">Женский</option>
-                                    </select>
-                                    <div class="invalid-feedback">Выберите пол</div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="form-label fw-semibold">Гражданство <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control passenger-nationality" name="Passengers[${i}].Nationality" maxlength="50" value="Россия">
-                                    <div class="invalid-feedback">Введите гражданство</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label fw-semibold">Тип документа <span class="text-danger">*</span></label>
-                                    <select class="form-select passenger-document-type" name="Passengers[${i}].DocumentType">
-                                        <option value="">Выберите</option>
-                                        <option value="passport">Паспорт РФ</option>
-                                        <option value="foreign_passport">Загранпаспорт</option>
-                                        <option value="birth_certificate">Свидетельство о рождении</option>
-                                    </select>
-                                    <div class="invalid-feedback">Выберите тип документа</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label fw-semibold">Номер документа <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control passenger-document-number" name="Passengers[${i}].DocumentNumber" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                                    <div class="invalid-feedback">Номер документа (только цифры, 4-10 символов)</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>`;
-
-                $('#passengers-container').append(html);
-                let newCard = $('#passengers-container .passenger-card').last();
-                initPassengerValidation(newCard);
-                passengerCount++;
-
-        $('#passengersCount').val(passengerCount);
-        updateTotalPrice();
-
-        newCard.find('.remove-passenger').click(function() {
+        // ================= ОБРАБОТЧИК ДЛЯ СУЩЕСТВУЮЩИХ КНОПОК УДАЛЕНИЯ =================
+        function initRemoveButtons() {
+        $('.remove-passenger').off('click').on('click', function() {
         const currentPassengerCount = $('.passenger-card').length;
 
         if (currentPassengerCount > 1) {
@@ -795,47 +700,136 @@
         $('#passengersCount').val(passengerCount);
         updateTotalPrice();
         } else {
-        // Показываем предупреждение, но НЕ БЛОКИРУЕМ
         showMessage('warning', 'Должен быть хотя бы один пассажир');
         }
         });
-            });
+        }
 
-        // ================= УДАЛЕНИЕ ПАССАЖИРА =================
-        $(document).on('click', '.remove-passenger', function() {
+        // Применяем валидацию к существующим карточкам
+        $('.passenger-card').each(function() {
+        initPassengerValidation($(this));
+        });
+
+        // Инициализируем кнопки удаления для существующих карточек
+        initRemoveButtons();
+
+        // ================= ФУНКЦИЯ ОБНОВЛЕНИЯ ЦЕНЫ =================
+        function updateTotalPrice() {
+        const pricePerPassenger = parseFloat($('#price').val()) || 0;
+        const currentPassengerCount = parseInt($('#passengersCount').val()) || 1;
+        const totalPrice = pricePerPassenger * currentPassengerCount;
+
+        // Обновляем отображение цены в блоке
+        $('.alert-success .fw-bold.fs-4').text(totalPrice.toLocaleString('ru-RU') + ' ₽');
+        }
+
+        // ================= ДОБАВЛЕНИЕ ПАССАЖИРА =================
+        $('#addPassengerBtn').click(function() {
+        let i = passengerCount;
+        let html = `
+        <div class="passenger-card mb-4 p-3 border rounded" data-passenger-index="${i}">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0 text-primary">Пассажир ${i + 1}</h5>
+        <button type="button" class="btn btn-sm btn-outline-danger remove-passenger">
+        <i class="fas fa-trash-alt me-1"></i>Удалить
+        </button>
+        </div>
+        <div class="row g-3">
+        <div class="col-md-4">
+        <div class="form-group">
+        <label class="form-label fw-semibold">Фамилия <span class="text-danger">*</span></label>
+        <input type="text" class="form-control passenger-lastname" name="Passengers[${i}].LastName" maxlength="100">
+        <div class="invalid-feedback">Введите фамилию (только буквы)</div>
+        </div>
+        </div>
+        <div class="col-md-4">
+        <div class="form-group">
+        <label class="form-label fw-semibold">Имя <span class="text-danger">*</span></label>
+        <input type="text" class="form-control passenger-firstname" name="Passengers[${i}].FirstName" maxlength="100">
+        <div class="invalid-feedback">Введите имя (только буквы)</div>
+        </div>
+        </div>
+        <div class="col-md-4">
+        <div class="form-group">
+        <label class="form-label fw-semibold">Отчество</label>
+        <input type="text" class="form-control passenger-middlename" name="Passengers[${i}].MiddleName" maxlength="100">
+        </div>
+        </div>
+        <div class="col-md-4">
+        <div class="form-group">
+        <label class="form-label fw-semibold">Дата рождения <span class="text-danger">*</span></label>
+        <input type="date" class="form-control passenger-birthdate" name="Passengers[${i}].DateOfBirth">
+        <div class="invalid-feedback">Дата не может быть в будущем</div>
+        </div>
+        </div>
+        <div class="col-md-4">
+        <div class="form-group">
+        <label class="form-label fw-semibold">Пол <span class="text-danger">*</span></label>
+        <select class="form-select passenger-gender" name="Passengers[${i}].Gender">
+        <option value="">Выберите</option>
+        <option value="M">Мужской</option>
+        <option value="F">Женский</option>
+        </select>
+        <div class="invalid-feedback">Выберите пол</div>
+        </div>
+        </div>
+        <div class="col-md-4">
+        <div class="form-group">
+        <label class="form-label fw-semibold">Гражданство <span class="text-danger">*</span></label>
+        <input type="text" class="form-control passenger-nationality" name="Passengers[${i}].Nationality" maxlength="50" value="Россия">
+        <div class="invalid-feedback">Введите гражданство</div>
+        </div>
+        </div>
+        <div class="col-md-6">
+        <div class="form-group">
+        <label class="form-label fw-semibold">Тип документа <span class="text-danger">*</span></label>
+        <select class="form-select passenger-document-type" name="Passengers[${i}].DocumentType">
+        <option value="">Выберите</option>
+        <option value="passport">Паспорт РФ</option>
+        <option value="foreign_passport">Загранпаспорт</option>
+        <option value="birth_certificate">Свидетельство о рождении</option>
+        </select>
+        <div class="invalid-feedback">Выберите тип документа</div>
+        </div>
+        </div>
+        <div class="col-md-6">
+        <div class="form-group">
+        <label class="form-label fw-semibold">Номер документа <span class="text-danger">*</span></label>
+        <input type="text" class="form-control passenger-document-number" name="Passengers[${i}].DocumentNumber" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+        <div class="invalid-feedback">Номер документа (только цифры, 4-10 символов)</div>
+        </div>
+        </div>
+        </div>
+        </div>`;
+
+        $('#passengers-container').append(html);
+        let newCard = $('#passengers-container .passenger-card').last();
+        initPassengerValidation(newCard);
+        passengerCount++;
+
+        $('#passengersCount').val(passengerCount);
+        updateTotalPrice();
+
+        // Обработчик для кнопки удаления нового пассажира
+        newCard.find('.remove-passenger').click(function() {
         const currentPassengerCount = $('.passenger-card').length;
 
         if (currentPassengerCount > 1) {
         $(this).closest('.passenger-card').remove();
         passengerCount--;
 
-        // Обновляем номера пассажиров
         $('.passenger-card').each(function(idx) {
         $(this).find('h5').text('Пассажир ' + (idx + 1));
         $(this).attr('data-passenger-index', idx);
         });
 
-        // Обновляем поле количества пассажиров
         $('#passengersCount').val(passengerCount);
-        updateTotalPrice();
-
-        // Обновляем отображение цены
         updateTotalPrice();
         } else {
         showMessage('warning', 'Должен быть хотя бы один пассажир');
-        // Не блокируем кнопку, просто показываем предупреждение
         }
         });
-
-        // Функция для обновления общей цены
-        function updateTotalPrice() {
-        const pricePerPassenger = parseFloat($('#price').val()) || 0;
-        const passengerCount = parseInt($('#passengersCount').val()) || 1;
-        const totalPrice = pricePerPassenger * passengerCount;
-
-        // Обновляем отображение цены в блоке
-        $('.alert-success .fw-bold.fs-4').text(totalPrice.toLocaleString('ru-RU') + ' ₽');
-        }
+        });
 
             // ================= ВАЛИДАЦИЯ КОНТАКТНЫХ ДАННЫХ =================
             function validateContact() {
