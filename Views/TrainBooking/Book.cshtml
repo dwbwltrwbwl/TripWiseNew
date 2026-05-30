@@ -775,19 +775,30 @@
                 initPassengerValidation(newCard);
                 passengerCount++;
 
-                newCard.find('.remove-passenger').click(function() {
-                    if ($('.passenger-card').length > 1) {
-                        $(this).closest('.passenger-card').remove();
-                        passengerCount--;
-                        // Обновляем номера пассажиров
-                        $('.passenger-card').each(function(idx) {
-                            $(this).find('h5').text('Пассажир ' + (idx + 1));
-                            $(this).attr('data-passenger-index', idx);
-                        });
-                    } else {
-                        showMessage('warning', 'Должен быть хотя бы один пассажир');
-                    }
-                });
+        $('#passengersCount').val(passengerCount);
+        updateTotalPrice();
+
+        newCard.find('.remove-passenger').click(function() {
+        const currentPassengerCount = $('.passenger-card').length;
+
+        if (currentPassengerCount > 1) {
+        $(this).closest('.passenger-card').remove();
+        passengerCount--;
+
+        // Обновляем номера пассажиров
+        $('.passenger-card').each(function(idx) {
+        $(this).find('h5').text('Пассажир ' + (idx + 1));
+        $(this).attr('data-passenger-index', idx);
+        });
+
+        // Обновляем поле количества пассажиров и цену
+        $('#passengersCount').val(passengerCount);
+        updateTotalPrice();
+        } else {
+        // Показываем предупреждение, но НЕ БЛОКИРУЕМ
+        showMessage('warning', 'Должен быть хотя бы один пассажир');
+        }
+        });
             });
 
         // ================= УДАЛЕНИЕ ПАССАЖИРА =================
