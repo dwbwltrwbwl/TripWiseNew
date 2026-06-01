@@ -31,50 +31,38 @@ namespace TripWise.Controllers
         // GET: /FlightBooking/Book
         [HttpGet]
         public IActionResult Book(
-    string flightId,
-    string airline,
-    string airlineCode,
-    string airlineLogo,
-    string flightNumber,
-    string departureCity,
-    string arrivalCity,
-    string departureAirport,
-    string arrivalAirport,
-    DateTime departureDateTime,
-    DateTime arrivalDateTime,
-    decimal price,
-    int duration,
-    int transfers,
-    string aircraft,
-    string baggage,
-    string handLuggage,
-    string meal,
-    string flightClass,
-    bool isRoundTrip,
-    int passengers,
-    // ✅ ДОБАВЬТЕ ПАРАМЕТРЫ ДЛЯ ОБРАТНОГО РЕЙСА (убедитесь, что они есть)
-    string returnFlightId = null,
-    string returnAirline = null,
-    string returnFlightNumber = null,
-    DateTime? returnDepartureDateTime = null,
-    DateTime? returnArrivalDateTime = null,
-    int? returnDuration = null,
-    int? returnTransfers = null)
+            string flightId,
+            string airline,
+            string airlineCode,
+            string airlineLogo,
+            string flightNumber,
+            string departureCity,
+            string arrivalCity,
+            string departureAirport,
+            string arrivalAirport,
+            DateTime departureDateTime,
+            DateTime arrivalDateTime,
+            decimal price,
+            int duration,
+            int transfers,
+            string aircraft,
+            string baggage,
+            string handLuggage,
+            string meal,
+            string flightClass,
+            bool isRoundTrip,
+            int passengers,
+            string returnFlightId = null,
+            string returnAirline = null,
+            string returnFlightNumber = null,
+            DateTime? returnDepartureDateTime = null,
+            DateTime? returnArrivalDateTime = null,
+            int? returnDuration = null,
+            int? returnTransfers = null)
         {
             _logger.LogInformation("=== GET BOOK METHOD CALLED ===");
             _logger.LogInformation($"isRoundTrip: {isRoundTrip}");
             _logger.LogInformation($"returnFlightNumber: {returnFlightNumber}");
-            _logger.LogInformation($"flightId: {flightId}");
-            _logger.LogInformation($"airline: {airline}");
-            _logger.LogInformation($"flightNumber: {flightNumber}");
-            _logger.LogInformation($"departureCity: {departureCity}");
-            _logger.LogInformation($"arrivalCity: {arrivalCity}");
-            _logger.LogInformation($"departureDateTime: {departureDateTime}");
-            _logger.LogInformation($"arrivalDateTime: {arrivalDateTime}");
-            _logger.LogInformation($"price: {price}");
-            _logger.LogInformation($"passengers: {passengers}");
-            _logger.LogInformation($"returnFlightId: {returnFlightId}");
-            _logger.LogInformation($"returnDepartureDateTime: {returnDepartureDateTime}");
 
             // Проверяем, что обязательные параметры есть
             if (string.IsNullOrEmpty(flightId) || string.IsNullOrEmpty(departureCity) || string.IsNullOrEmpty(arrivalCity))
@@ -82,6 +70,16 @@ namespace TripWise.Controllers
                 _logger.LogError("Обязательные параметры отсутствуют!");
                 return RedirectToAction("Index", "Flights");
             }
+
+            // ✅ ПРИНУДИТЕЛЬНО УСТАНАВЛИВАЕМ isRoundTrip = false,
+            // чтобы всегда бронировался только один рейс
+            bool actualIsRoundTrip = false;
+
+            // Если всё же нужно сохранить возможность бронирования туда-обратно,
+            // можно добавить проверку: если есть данные обратного рейса - бронируем оба
+            // bool actualIsRoundTrip = isRoundTrip && !string.IsNullOrEmpty(returnFlightNumber);
+
+            _logger.LogInformation($"Фактическое isRoundTrip (после обработки): {actualIsRoundTrip}");
 
             // Исправляем даты, если они приходят в формате UTC
             if (departureDateTime.Kind == DateTimeKind.Utc)
@@ -91,14 +89,6 @@ namespace TripWise.Controllers
             if (arrivalDateTime.Kind == DateTimeKind.Utc)
             {
                 arrivalDateTime = arrivalDateTime.ToLocalTime();
-            }
-            if (returnDepartureDateTime.HasValue && returnDepartureDateTime.Value.Kind == DateTimeKind.Utc)
-            {
-                returnDepartureDateTime = returnDepartureDateTime.Value.ToLocalTime();
-            }
-            if (returnArrivalDateTime.HasValue && returnArrivalDateTime.Value.Kind == DateTimeKind.Utc)
-            {
-                returnArrivalDateTime = returnArrivalDateTime.Value.ToLocalTime();
             }
 
             // Создаем модель для формы
@@ -125,17 +115,17 @@ namespace TripWise.Controllers
                     HandLuggage = handLuggage ?? "1x10кг",
                     Meal = meal ?? "Включено",
                     FlightClass = flightClass ?? "economy",
-                    IsRoundTrip = isRoundTrip,
+                    IsRoundTrip = actualIsRoundTrip,  // ✅ Используем исправленное значение
                     Passengers = passengers > 0 ? passengers : 1,
 
-                    // Данные обратного рейса
-                    ReturnFlightId = returnFlightId,
-                    ReturnAirline = returnAirline,
-                    ReturnFlightNumber = returnFlightNumber,
-                    ReturnDepartureDateTime = returnDepartureDateTime,
-                    ReturnArrivalDateTime = returnArrivalDateTime,
-                    ReturnDuration = returnDuration,
-                    ReturnTransfers = returnTransfers
+                    // ❌ ОБНУЛЯЕМ данные обратного рейса, чтобы они не отображались
+                    ReturnFlightId = null,
+                    ReturnAirline = null,
+                    ReturnFlightNumber = null,
+                    ReturnDepartureDateTime = null,
+                    ReturnArrivalDateTime = null,
+                    ReturnDuration = null,
+                    ReturnTransfers = null
                 },
                 Passengers = new List<FlightPassengerViewModel>(),
                 Contact = new FlightContactViewModel()
@@ -172,9 +162,7 @@ namespace TripWise.Controllers
                 }
             }
 
-            _logger.LogInformation($"Модель создана: Flight={viewModel.Flight.FlightNumber}, " +
-                                  $"IsRoundTrip={viewModel.Flight.IsRoundTrip}, " +
-                                  $"ReturnFlight={viewModel.Flight.ReturnFlightNumber ?? "нет"}");
+            _logger.LogInformation($"Модель создана: Flight={viewModel.Flight.FlightNumber}, IsRoundTrip={viewModel.Flight.IsRoundTrip}");
 
             return View(viewModel);
         }

@@ -87,9 +87,7 @@
                             @if (isRoundTrip && !string.IsNullOrEmpty(Model.Flight.ReturnFlightNumber))
                             {
                                 <div class="return-flight mt-4 pt-4 border-top">
-                                    <h5 class="text-success mb-3">
-                                        <i class="fas fa-plane-arrival me-2"></i>Обратный рейс @Model.Flight.ReturnFlightNumber
-                                    </h5>
+                                    @* Блок обратного рейса удален - теперь бронируется только один рейс *@
                                     <div class="row align-items-center">
                                         <div class="col-5 text-center">
                                             <div class="fw-bold fs-4 text-success">@Model.Flight.ReturnDepartureDateTime.Value.ToString("HH:mm")</div>
@@ -627,7 +625,7 @@
 
     <script>
         let passengerCount = Number('@(Model?.Passengers?.Count ?? 1)') || 1;
-        const isRoundTrip = '@(Model.Flight.IsRoundTrip.ToString().ToLower())' === 'true';
+        const isRoundTrip = false;
         const basePrice = Number('@(Model?.Flight?.Price ?? 1000)') || 1000;
 
         $(function () {
@@ -804,13 +802,10 @@
         function updateTotalPrice() {
         let count = $('.passenger-card').length;
         let total = basePrice * count;
-        let isRound = (isRoundTrip === true || isRoundTrip === "true");
-        if (isRound) total *= 2;
-            
+        // ✅ Всегда false - бронируем только один рейс
+        let isRound = false;
+
         let breakdownText = basePrice.toLocaleString('ru-RU') + ' ₽ × ' + count + ' пасс.';
-        if (isRound) {
-        breakdownText += ' × 2 (туда и обратно)';
-        }
         $('#priceBreakdown').html(breakdownText);
         $('#totalPrice').text(total.toLocaleString('ru-RU') + ' ₽');
         }
