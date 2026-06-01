@@ -795,18 +795,18 @@
                 const canPay = order.status === 'pending';
                 const canDownload = order.status === 'confirmed';
 
-                                if (order.type === 'flight') {
+                                        if (order.type === 'flight') {
             const departureDate = new Date(order.departureDateTime || order.date);
             const isRoundTrip = order.isRoundTrip === true ||
                                 order.isRoundTrip === 'true' ||
                                 order.isRoundTrip === 1 ||
                                 (order.returnFlightNumber && order.returnFlightNumber !== '' && order.returnFlightNumber !== 'null');
-    
+
             // Данные обратного рейса
             const returnFlightNumber = order.returnFlightNumber;
             const returnDepartureDate = order.returnDepartureDateTime ? new Date(order.returnDepartureDateTime) : null;
             const returnArrivalDate = order.returnArrivalDateTime ? new Date(order.returnArrivalDateTime) : null;
-    
+
             // Места для отображения
             let seatsDisplay = '—';
             if (order.seatNumbers && order.seatNumbers !== '—') {
@@ -815,7 +815,10 @@
                     seatsDisplay = seatsDisplay.substring(0, 27) + '...';
                 }
             }
-    
+
+            // ✅ ИСПРАВЛЕНО: используем totalPrice для общей суммы
+            const totalPrice = order.totalPrice || (order.price * (order.passengers || 1));
+
             html += `
                 <div class="order-card" data-order-id="${order.id}" data-order-type="flight">
                     <div class="order-header d-flex justify-content-between align-items-center flex-wrap">
@@ -846,7 +849,7 @@
                                 </div>
                             </div>
                         </div>
-                
+
                         <!-- Рейс ОБРАТНО (если есть) -->
                         ${isRoundTrip && returnFlightNumber ? `
                         <div class="trip-direction mb-3 pb-2">
@@ -864,20 +867,24 @@
                             </div>
                         </div>
                         ` : ''}
-                
+
                         <!-- Информация о пассажирах и цене -->
                         <div class="row mt-3">
                             <div class="col-12 col-md-8">
                                 <div class="text-muted small">Пассажиров: ${order.passengers || 1}</div>
+                                <div class="text-muted small mt-1">
+                                    Цена за билет: ${(order.price || 0).toLocaleString('ru-RU')} ${order.currency || 'RUB'}
+                                </div>
                                 ${isRoundTrip ? '<span class="badge bg-info mt-1">Туда и обратно</span>' : ''}
                             </div>
                             <div class="col-12 col-md-4 text-end">
                                 <div class="fs-4 fw-bold text-primary">
-                                    ${(order.price || order.totalPrice || 0).toLocaleString('ru-RU')} ${order.currency || 'RUB'}
+                                    ${totalPrice.toLocaleString('ru-RU')} ${order.currency || 'RUB'}
                                 </div>
+                                <div class="small text-muted">общая сумма</div>
                                 <div class="mt-2 d-flex flex-wrap gap-2 justify-content-end">
                                     ${canDownload ? `<button class="btn btn-sm btn-outline-primary" onclick="downloadTicket('${order.id}', 'flight')"><i class="fas fa-download me-1"></i>Скачать билет</button>` : ''}
-                                    ${canPay ? `<button class="btn btn-sm btn-success" onclick="payOrder('${order.id}', '${order.type}', ${order.price || order.totalPrice || 0}, '${order.currency || 'RUB'}')">Оплатить</button>` : ''}
+                                    ${canPay ? `<button class="btn btn-sm btn-success" onclick="payOrder('${order.id}', '${order.type}', ${totalPrice}, '${order.currency || 'RUB'}')">Оплатить</button>` : ''}
                                     ${canCancel ? `<button class="btn btn-sm btn-outline-danger" onclick="cancelOrder('${order.id}', '${order.type}')">Отменить</button>` : ''}
                                 </div>
                             </div>
