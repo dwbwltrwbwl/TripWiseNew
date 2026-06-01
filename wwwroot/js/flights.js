@@ -158,7 +158,7 @@ async function toggleFavorite(flightData) {
         }
     }
 }
-async function selectRealFlight(flightId, price, airline, isReturn) {
+function selectRealFlight(flightId, price, airline, isReturn) {
     console.log('========== НАЧАЛО БРОНИРОВАНИЯ ==========');
     console.log('Параметры вызова:', { flightId, price, airline, isReturn });
 
@@ -166,10 +166,27 @@ async function selectRealFlight(flightId, price, airline, isReturn) {
     const departureInput = document.getElementById('departureCity');
     const arrivalInput = document.getElementById('arrivalCity');
     const departureDateInput = document.getElementById('departureDate');
-    const returnDateInput = document.getElementById('returnDate');
     const passengersSelect = document.getElementById('passengers');
 
-    const isRoundTrip = returnDateInput && returnDateInput.value && returnDateInput.value.length > 0;
+    // Функция для форматирования даты для сервера
+    const formatDateTimeForServer = (date) => {
+        if (!date) return '';
+        const d = new Date(date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const hours = String(d.getHours()).padStart(2, '0');
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+        const seconds = String(d.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+    };
+
+    // Функция для парсинга города из строки "Город (CODE)"
+    const parseCity = (input) => {
+        if (!input) return '';
+        const match = input.match(/^([^(]+)/);
+        return match ? match[1].trim() : input;
+    };
 
     // Находим карточку текущего рейса
     let flightCard = null;
@@ -201,29 +218,10 @@ async function selectRealFlight(flightId, price, airline, isReturn) {
         const currentFlight = JSON.parse(flightDataStr.replace(/&apos;/g, "'"));
         console.log('✅ Текущий рейс:', currentFlight);
 
-        const extractCityName = (fullString) => {
-            if (!fullString) return '';
-            const match = fullString.match(/^([^(]+)/);
-            return match ? match[1].trim() : fullString;
-        };
+        const departureCity = parseCity(departureInput?.value || currentFlight.departureCity);
+        const arrivalCity = parseCity(arrivalInput?.value || currentFlight.arrivalCity);
 
-        const departureCity = extractCityName(departureInput?.value || currentFlight.departureCity);
-        const arrivalCity = extractCityName(arrivalInput?.value || currentFlight.arrivalCity);
-
-        // Функция форматирования даты для сервера
-        const formatDateTimeForServer = (date) => {
-            if (!date) return '';
-            const d = new Date(date);
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            const hours = String(d.getHours()).padStart(2, '0');
-            const minutes = String(d.getMinutes()).padStart(2, '0');
-            const seconds = String(d.getSeconds()).padStart(2, '0');
-            return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
-        };
-
-        // Форматируем даты текущего рейса
+        // Базовые данные для рейса
         let departureDateTime = currentFlight.departureTime;
         let arrivalDateTime = currentFlight.arrivalTime;
 
@@ -245,7 +243,7 @@ async function selectRealFlight(flightId, price, airline, isReturn) {
             arrivalDateTime.setMinutes(departureDateTime.getMinutes() + duration);
         }
 
-        // Базовый объект бронирования для рейса ТУДА
+        // ✅ Бронируем ТОЛЬКО текущий рейс (isRoundTrip = false)
         let bookingData = {
             flightId: currentFlight.flightId,
             airline: currentFlight.airline || airline,
@@ -266,8 +264,10 @@ async function selectRealFlight(flightId, price, airline, isReturn) {
             handLuggage: '1x10кг',
             meal: 'Включено',
             flightClass: 'economy',
-            isRoundTrip: isRoundTrip,
+            // ✅ ВАЖНО: всегда false - бронируем только один рейс
+            isRoundTrip: false,
             passengers: parseInt(passengersSelect?.value || '1'),
+            // Данные обратного рейса не нужны
             returnFlightId: null,
             returnAirline: null,
             returnFlightNumber: null,
@@ -277,129 +277,9 @@ async function selectRealFlight(flightId, price, airline, isReturn) {
             returnTransfers: null
         };
 
-        // Если это поездка ТУДА-ОБРАТНО, ищем парный рейс (обратный)
-        if (isRoundTrip) {
-            console.log('🔍 Поиск обратного рейса для поездки туда-обратно...');
+        console.log('✅ Итоговые данные для бронирования (только один рейс):', bookingData);
 
-            let partnerFlight = null;
-
-            // 1. Сначала ищем среди результатов поиска на странице
-            const allFlightCards = document.querySelectorAll('.flight-card');
-
-            for (const card of allFlightCards) {
-                if (card === flightCard) continue;
-
-                const isReturnCard = card.classList.contains('return-flight');
-                if (!isReturnCard) continue; // Ищем только обратные рейсы
-
-                const btn = card.querySelector('.favorite-btn');
-                if (btn) {
-                    const dataStr = btn.getAttribute('data-flight-data');
-                    if (dataStr) {
-                        try {
-                            const flight = JSON.parse(dataStr.replace(/&apos;/g, "'"));
-
-                            // Проверяем, что это обратный маршрут
-                            const isCorrectRoute = flight.departureCity === currentFlight.arrivalCity &&
-                                flight.arrivalCity === currentFlight.departureCity;
-
-                            // Проверяем дату (должна совпадать с датой возврата из формы)
-                            let flightDateMatch = true;
-                            if (returnDateInput && returnDateInput.value) {
-                                const flightDate = new Date(flight.departureTime).toISOString().split('T')[0];
-                                flightDateMatch = flightDate === returnDateInput.value;
-                            }
-
-                            if (isCorrectRoute && flightDateMatch) {
-                                partnerFlight = flight;
-                                console.log('✅ Найден обратный рейс на странице:', partnerFlight);
-                                break;
-                            }
-                        } catch (e) {
-                            console.error('Ошибка парсинга данных рейса:', e);
-                        }
-                    }
-                }
-            }
-
-            // 2. Если не нашли на странице, ищем в избранном пользователя
-            if (!partnerFlight && window.favoriteFlights && window.favoriteFlights.size > 0) {
-                console.log('🔍 Поиск обратного рейса в избранном...');
-
-                try {
-                    const favResponse = await fetch('/api/favorites/list', {
-                        credentials: 'include',
-                        headers: { 'Accept': 'application/json' }
-                    });
-
-                    if (favResponse.ok) {
-                        const favData = await favResponse.json();
-                        if (favData.success && favData.favoriteFlights) {
-                            // Ищем обратный рейс в избранном
-                            for (const favFlight of favData.favoriteFlights) {
-                                const isCorrectRoute = favFlight.departureCity === currentFlight.arrivalCity &&
-                                    favFlight.arrivalCity === currentFlight.departureCity;
-
-                                let flightDateMatch = true;
-                                if (returnDateInput && returnDateInput.value) {
-                                    const flightDate = new Date(favFlight.departureTime).toISOString().split('T')[0];
-                                    flightDateMatch = flightDate === returnDateInput.value;
-                                }
-
-                                if (isCorrectRoute && flightDateMatch) {
-                                    partnerFlight = favFlight;
-                                    console.log('✅ Найден обратный рейс в избранном:', partnerFlight);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                } catch (e) {
-                    console.error('Ошибка поиска в избранном:', e);
-                }
-            }
-
-            // Если нашли обратный рейс - добавляем его данные
-            if (partnerFlight) {
-                let returnDepartureDateTime = partnerFlight.departureTime;
-                let returnArrivalDateTime = partnerFlight.arrivalTime;
-
-                // Корректируем даты, если нужно
-                if (returnDateInput && returnDateInput.value && returnDepartureDateTime) {
-                    const returnDateStr = returnDateInput.value;
-                    const returnTimeStr = new Date(returnDepartureDateTime).toTimeString().slice(0, 5);
-                    returnDepartureDateTime = new Date(`${returnDateStr}T${returnTimeStr}`);
-
-                    const arrivalTimeStr = new Date(returnArrivalDateTime).toTimeString().slice(0, 5);
-                    returnArrivalDateTime = new Date(`${returnDateStr}T${arrivalTimeStr}`);
-                    // Если время прилета меньше времени вылета, значит это следующий день
-                    if (returnArrivalDateTime <= returnDepartureDateTime) {
-                        returnArrivalDateTime.setDate(returnArrivalDateTime.getDate() + 1);
-                    }
-                }
-
-                bookingData.returnFlightId = partnerFlight.flightId;
-                bookingData.returnAirline = partnerFlight.airline;
-                bookingData.returnFlightNumber = partnerFlight.flightNumber;
-                bookingData.returnDepartureDateTime = formatDateTimeForServer(returnDepartureDateTime);
-                bookingData.returnArrivalDateTime = formatDateTimeForServer(returnArrivalDateTime);
-                bookingData.returnDuration = partnerFlight.duration;
-                bookingData.returnTransfers = partnerFlight.transfers;
-
-                console.log('✅ Обратный рейс добавлен в бронирование');
-            } else {
-                console.warn('⚠️ Не найден обратный рейс!');
-                const proceed = confirm('Обратный рейс не найден. Вы хотите продолжить бронирование только рейса туда?');
-                if (!proceed) {
-                    return;
-                }
-                bookingData.isRoundTrip = false;
-            }
-        }
-
-        console.log('✅ Итоговые данные для бронирования:', bookingData);
-
-        // Формируем URL для перехода на страницу бронирования
+        // Формируем URL
         const params = new URLSearchParams();
         for (const [key, value] of Object.entries(bookingData)) {
             if (value !== null && value !== undefined && value !== '') {
@@ -546,7 +426,6 @@ function updateAllBuyButtons() {
         }
     });
 }
-
 // ==================== АВТОЗАПОЛНЕНИЕ ГОРОДОВ ====================
 async function searchCitiesFromTravelPayouts(query, dropdown) {
     if (query.length < 2) {
