@@ -188,8 +188,8 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="mb-1">Итоговая стоимость:</h6>
-                                    <p class="mb-0 small text-muted">
-                                        @Model.PricePerNight.ToString("N0") ₽ × <span id="nightsCount">@Model.Nights</span> ночей × @Model.Rooms комн.
+                                    <p class="mb-0 small text-muted" id="priceBreakdown">
+                                        @Model.PricePerNight.ToString("N0") ₽ × <span id="nightsCount">@Model.Nights</span> ночей × <span id="roomsCount">@Model.Rooms</span> комн.
                                     </p>
                                 </div>
                                 <span class="fw-bold fs-3 text-success" id="totalPrice">
@@ -534,24 +534,39 @@
             });
 
             // ================= РАСЧЕТ СТОИМОСТИ =================
-            function updateTotal() {
-                const checkIn = new Date($('#CheckInDate').val());
-                const checkOut = new Date($('#CheckOutDate').val());
+                            function updateTotal() {
+            const checkIn = new Date($('#CheckInDate').val());
+            const checkOut = new Date($('#CheckOutDate').val());
 
-                if (checkIn && checkOut && !isNaN(checkIn.getTime()) && !isNaN(checkOut.getTime()) && checkOut > checkIn) {
-                    const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
-                    const pricePerNight = parseFloat($('#PricePerNight').val());
-                    const rooms = parseInt($('#Rooms').val());
+            if (checkIn && checkOut && !isNaN(checkIn.getTime()) && !isNaN(checkOut.getTime()) && checkOut > checkIn) {
+                const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+                const pricePerNight = parseFloat($('#PricePerNight').val());
+                const rooms = parseInt($('#Rooms').val());
 
-                    $('#nightsCount').text(nights);
-                    const total = pricePerNight * nights * rooms;
-                    $('#totalPrice').text(total.toLocaleString('ru-RU') + ' ₽');
-                }
+                $('#nightsCount').text(nights);
+                $('#roomsCount').text(rooms);  // Обновляем количество комнат в тексте
+                const total = pricePerNight * nights * rooms;
+                $('#totalPrice').text(total.toLocaleString('ru-RU') + ' ₽');
             }
+        }
 
-            $('#Rooms').change(updateTotal);
-            updateMinCheckOut();
+        // Обработчики изменения
+        $('#CheckInDate, #CheckOutDate').on('change', function() {
             updateTotal();
+        });
+
+        $('#Rooms').on('change', function() {
+            updateTotal();
+        });
+
+        $('#Guests').on('change', function() {
+            // Если нужно обновить что-то зависящее от гостей
+            // updateTotal();
+        });
+
+        // Вызываем при загрузке
+        updateMinCheckOut();
+        updateTotal();
 
             // ================= ОТПРАВКА ФОРМЫ =================
             $('#bookingForm').submit(function(e) {
