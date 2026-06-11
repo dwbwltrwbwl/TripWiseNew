@@ -683,13 +683,13 @@
             const originalText = submitBtn.innerHTML;
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Загрузка...';
 
-            fetch('/Documents/QuickUpload', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
-                }
-            })
+                fetch('/Documents/QuickUpload', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+        }
+    })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {

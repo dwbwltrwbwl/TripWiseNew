@@ -572,7 +572,95 @@ namespace TripWise.Controllers
                 return Json(new { success = false, message = "Произошла ошибка при перемещении документа: " + ex.Message });
             }
         }
+        // POST: /Documents/QuickUpload
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> QuickUpload([FromForm] QuickUploadRequest request)
+        {
+            try
+            {
+                var userId = HttpContext.Session.GetInt32("UserId");
+                if (userId == null)
+                    return Json(new { success = false, message = "Сессия истекла. Пожалуйста, войдите заново." });
 
+                // Валидация названия
+                if (string.IsNullOrWhiteSpace(request.DocumentName))
+                    return Json(new { success = false, message = "Введите название документа" });
+
+                if (request.DocumentName.Length > 255)
+                    return Json(new { success = false, message = "Название документа не должно превышать 255 символов" });
+
+                // Валидация файла
+                if (request.DocumentFile == null)
+                    return Json(new { success = false, message = "Выберите файл для загрузки" });
+
+                if (request.DocumentFile.Length == 0)
+                    return Json(new { success = false, message = "Файл пуст. Выберите другой файл" });
+
+                // Проверка размера (10MB)
+                const long maxFileSize = 10 * 1024 * 1024;
+                if (request.DocumentFile.Length > maxFileSize)
+                    return Json(new { success = false, message = $"Размер файла не должен превышать 10 МБ" });
+
+                // Проверка расширения
+                var allowedExtensions = new[] { ".pdf", ".doc", ".docx", ".jpg", ".jpeg", ".png", ".txt", ".xls", ".xlsx" };
+                var fileExtension = Path.GetExtension(request.DocumentFile.FileName).ToLower();
+
+                if (!allowedExtensions.Contains(fileExtension))
+                    return Json(new { success = false, message = $"Недопустимый тип файла. Разрешены: {string.Join(", ", allowedExtensions)}" });
+
+                // Проверка папки (если указана)
+                if (request.FolderId.HasValue && request.FolderId.Value > 0)
+                {
+                    var folderExists = await _context.DocumentFolders
+                        .AnyAsync(f => f.IdFolder == request.FolderId && f.UserId == userId);
+
+                    if (!folderExists)
+                        return Json(new { success = false, message = "Выбранная папка не найдена" });
+                }
+
+                // Создаем директорию пользователя
+                var userFolder = Path.Combine(_environment.WebRootPath, "documents", userId.ToString());
+                if (!Directory.Exists(userFolder))
+                    Directory.CreateDirectory(userFolder);
+
+                // Генерируем уникальное имя файла
+                var fileName = Guid.NewGuid().ToString() + fileExtension;
+                var filePath = Path.Combine(userFolder, fileName);
+
+                // Сохраняем файл
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await request.DocumentFile.CopyToAsync(stream);
+                }
+
+                // Создаем запись в БД
+                var document = new UserDocument
+                {
+                    Name = request.DocumentName.Trim(),
+                    Description = "",
+                    FileType = fileExtension,
+                    FileSize = request.DocumentFile.Length,
+                    FilePath = $"/documents/{userId}/{fileName}",
+                    DocumentType = "other",
+                    DocumentNumber = "",
+                    DocumentDate = null,
+                    FolderId = request.FolderId > 0 ? request.FolderId : null,
+                    UserId = userId.Value,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.UserDocuments.Add(document);
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, message = "Документ успешно загружен" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при быстрой загрузке документа");
+                return Json(new { success = false, message = "Произошла ошибка при загрузке документа: " + ex.Message });
+            }
+        }
         // POST: /Documents/DeleteDocument/{id}
         [HttpPost]
         [Route("DeleteDocument/{id}")]
@@ -703,5 +791,11 @@ namespace TripWise.Controllers
     public class DeleteDocumentRequest
     {
         public int Id { get; set; }
+    }
+    public class QuickUploadRequest
+    {
+        public string DocumentName { get; set; }
+        public IFormFile DocumentFile { get; set; }
+        public int? FolderId { get; set; }
     }
 }
