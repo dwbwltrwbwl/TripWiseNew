@@ -965,7 +965,7 @@
         }
     }
 
-    async function uploadDocument() {
+        async function uploadDocument() {
         const form = document.getElementById('uploadDocumentForm');
         if (!form) return;
 
@@ -987,22 +987,25 @@
         if (name.length > 255) { showNotification('Название документа не может превышать 255 символов', 'warning'); return; }
         if (name.length < 2) { showNotification('Название документа должно содержать минимум 2 символа', 'warning'); return; }
         if (!file) { showNotification('Выберите файл для загрузки', 'warning'); return; }
-        if (file.size > 10 * 1024 * 1024) { showNotification('Размер файла не должен превышать 10 МБ', 'warning'); return; }
-        if (description.length > 500) { showNotification('Описание не может превышать 500 символов', 'warning'); return; }
-        if (docNumber.length > 100) { showNotification('Номер документа не может превышать 100 символов', 'warning'); return; }
-            if (docDate) {
-        const selectedDate = new Date(docDate);
-        const todayDate = new Date();
 
-        // Сбрасываем время у обеих дат для корректного сравнения
-        selectedDate.setHours(0, 0, 0, 0);
-        todayDate.setHours(0, 0, 0, 0);
-
-        if (selectedDate > todayDate) {
-            showNotification('Дата документа не может быть в будущем', 'warning');
+        // ✅ Проверка размера файла на клиенте
+        if (file.size > 10 * 1024 * 1024) {
+            showNotification(`❌ Файл "${file.name}" слишком большой (макс. 10 МБ)`, 'danger');
             return;
         }
-    }
+
+        if (description.length > 500) { showNotification('Описание не может превышать 500 символов', 'warning'); return; }
+        if (docNumber.length > 100) { showNotification('Номер документа не может превышать 100 символов', 'warning'); return; }
+        if (docDate) {
+            const selectedDate = new Date(docDate);
+            const todayDate = new Date();
+            selectedDate.setHours(0, 0, 0, 0);
+            todayDate.setHours(0, 0, 0, 0);
+            if (selectedDate > todayDate) {
+                showNotification('Дата документа не может быть в будущем', 'warning');
+                return;
+            }
+        }
 
         const formData = new FormData(form);
 
@@ -1018,12 +1021,20 @@
                     headers: { 'RequestVerificationToken': getAntiForgeryToken() }
                 });
 
+                // ✅ ОБРАБОТКА ОШИБКИ 413
+                if (response.status === 413) {
+                    showNotification(`❌ Файл "${file.name}" слишком большой для загрузки на сервер. Максимальный размер: 10 МБ`, 'danger');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                    return;
+                }
+
                 const result = await response.json();
+
                 if (result.success) {
                     const modal = bootstrap.Modal.getInstance(document.getElementById('uploadDocumentModal'));
                     if (modal) modal.hide();
                     form.reset();
-                    // Восстанавливаем дату по умолчанию
                     const todayInput = document.querySelector('input[name="documentDate"]');
                     if (todayInput) todayInput.value = new Date().toISOString().split('T')[0];
                     await loadDocuments();

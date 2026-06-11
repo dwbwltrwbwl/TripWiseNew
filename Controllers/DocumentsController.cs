@@ -192,9 +192,10 @@ namespace TripWise.Controllers
             }
         }
 
-        // POST: /Documents/UploadDocument
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [RequestSizeLimit(50_000_000)] // 50 MB
+        [RequestFormLimits(MultipartBodyLengthLimit = 50_000_000)]
         public async Task<IActionResult> UploadDocument([FromForm] UploadDocumentRequest request)
         {
             try
@@ -203,16 +204,13 @@ namespace TripWise.Controllers
                 if (userId == null)
                     return Json(new { success = false, message = "Сессия истекла. Пожалуйста, войдите заново." });
 
-                // ========== ВАЛИДАЦИЯ С ПОНЯТНЫМИ СООБЩЕНИЯМИ ==========
-
-                // Проверка названия документа
+                // ========== ВАЛИДАЦИЯ ==========
                 if (string.IsNullOrWhiteSpace(request.Name))
                     return Json(new { success = false, message = "Введите название документа" });
 
                 if (request.Name.Length > 255)
                     return Json(new { success = false, message = "Название документа не должно превышать 255 символов" });
 
-                // Проверка файла
                 if (request.File == null)
                     return Json(new { success = false, message = "Выберите файл для загрузки" });
 
@@ -241,7 +239,7 @@ namespace TripWise.Controllers
                         return Json(new { success = false, message = "Выбранная папка не найдена" });
                 }
 
-                // Создаем директорию для документов пользователя, если ее нет
+                // Создаем директорию для документов пользователя
                 var userFolder = Path.Combine(_environment.WebRootPath, "documents", userId.ToString());
                 if (!Directory.Exists(userFolder))
                     Directory.CreateDirectory(userFolder);
@@ -274,31 +272,12 @@ namespace TripWise.Controllers
                 _context.UserDocuments.Add(document);
                 await _context.SaveChangesAsync();
 
-                // Обновляем количество документов в папке (если папка выбрана)
-                if (document.FolderId.HasValue)
-                {
-                    // Можно добавить логику обновления счетчика, если нужно
-                }
-
                 return Json(new
                 {
                     success = true,
                     documentId = document.IdDocument,
                     message = "Документ успешно загружен"
                 });
-            }
-            catch (PathTooLongException)
-            {
-                return Json(new { success = false, message = "Путь к файлу слишком длинный" });
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return Json(new { success = false, message = "Нет прав доступа для сохранения файла" });
-            }
-            catch (IOException ex)
-            {
-                _logger.LogError(ex, "Ошибка ввода-вывода при загрузке документа");
-                return Json(new { success = false, message = "Ошибка при сохранении файла. Попробуйте позже." });
             }
             catch (Exception ex)
             {
@@ -572,9 +551,10 @@ namespace TripWise.Controllers
                 return Json(new { success = false, message = "Произошла ошибка при перемещении документа: " + ex.Message });
             }
         }
-        // POST: /Documents/QuickUpload
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [RequestSizeLimit(50_000_000)] // 50 MB
+        [RequestFormLimits(MultipartBodyLengthLimit = 50_000_000)]
         public async Task<IActionResult> QuickUpload([FromForm] QuickUploadRequest request)
         {
             try
