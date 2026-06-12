@@ -5174,55 +5174,69 @@ async function uploadFile(file) {
             }, 1000);
         }
 
-                async function handleChatAvatarSelect(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+                async function handleChatAvatarSelect(event, chatId) {
+    const file = event.target.files[0];
+    if (!file) return;
 
-            // Проверка размера (5 МБ)
-            if (file.size > 5 * 1024 * 1024) {
-                showNotification('Размер файла не должен превышать 5 МБ', 'danger');
-                return;
-            }
+    // Максимальный размер 1 МБ
+    const MAX_SIZE_MB = 1;
+    const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
+    
+    // Проверка размера
+    if (file.size > MAX_SIZE_BYTES) {
+        const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+        showNotification(`❌ Файл слишком большой (${sizeMB} МБ). Максимальный размер аватара - ${MAX_SIZE_MB} МБ`, 'warning');
+        return; // Просто выходим, не отправляем запрос
+    }
 
-            // Показываем индикатор загрузки
-            showNotification('Загрузка аватара...', 'info');
+    // Проверка типа файла
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+        showNotification('❌ Поддерживаются только изображения: JPG, PNG, GIF, WEBP', 'warning');
+        return;
+    }
 
-            const formData = new FormData();
-            formData.append('file', file);
-
-            try {
-                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
-
-                const response = await fetch(`/Chats/UploadChatAvatar?chatId=${currentChatId}`, {
-                    method: 'POST',
-                    headers: {
-                        'RequestVerificationToken': token
-                    },
-                    body: formData
-                });
-
-                const data = await response.json();
-                console.log('Результат загрузки аватара:', data);
-
-                if (data.success) {
-                    showNotification('Аватар чата обновлен', 'success');
-
-                    // Просто перезагружаем информацию о чате - она сама обновит аватар
-                    await loadChatInfo(currentChatId);
-
-                    // Также обновляем аватар в списке чатов
-                    updateChatAvatarInList(currentChatId, data.data);
-
-                    // Перезагружаем список чатов для синхронизации
-                    await loadUserChats();
-                } else {
-                    showNotification(data.message || 'Ошибка при загрузке аватара', 'danger');
-                }
-            } catch (error) {
-                console.error('Ошибка при загрузке аватара:', error);
-                showNotification('Не удалось загрузить аватар: ' + error.message, 'danger');
-            }
+    // Показываем загрузку
+    showNotification('⏳ Загрузка аватара...', 'info');
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+        
+        const response = await fetch(`/Chats/UploadChatAvatar?chatId=${chatId}`, {
+            method: 'POST',
+            headers: {
+                'RequestVerificationToken': token
+            },
+            body: formData
+        });
+        
+        // Обработка ошибки 413
+        if (response.status === 413) {
+            showNotification('❌ Файл слишком большой. Максимальный размер - 1 МБ', 'warning');
+            return;
         }
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('✅ Аватар чата обновлен', 'success');
+            await loadChatInfo(currentChatId);
+            await loadUserChats();
+        } else {
+            showNotification(data.message || 'Ошибка при загрузке аватара', 'danger');
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        showNotification('❌ Не удалось загрузить аватар', 'danger');
+    }
+}
 
                 async function deleteChatAvatar() {
             if (!currentChatId) return;
