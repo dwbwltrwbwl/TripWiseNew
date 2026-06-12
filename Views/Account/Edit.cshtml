@@ -702,7 +702,7 @@
                         const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
                         // Показываем пользователю сообщение
                         showNotification(
-                            `❌ Изображение слишком большое! Размер: ${fileSizeMB} МБ. Максимальный размер: 480 КБ`,
+                            `❌ Изображение слишком большое!`,
                             'danger'
                         );
                         // Очищаем input
@@ -905,7 +905,7 @@
                         e.preventDefault();
                         const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
                         showNotification(
-                            `❌ Изображение слишком большое! Размер: ${fileSizeMB} МБ. Максимальный размер: 480 КБ`,
+                            `❌ Изображение слишком большое!`,
                             'danger'
                         );
                         return;

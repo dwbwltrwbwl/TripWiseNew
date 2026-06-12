@@ -3065,11 +3065,11 @@ function renderChatsList(chats) {
     }
 }
         async function loadChatInfo(chatId) {
-    try {
+        try {
         // Добавьте проверку в самом начале
         if (!chatId || chatId === undefined || chatId === null) {
-            console.error('loadChatInfo: chatId не передан или равен null/undefined');
-            return { success: false, message: 'ID чата не указан' };
+        console.error('loadChatInfo: chatId не передан или равен null/undefined');
+        return { success: false, message: 'ID чата не указан' };
         }
 
         console.log('Загрузка информации о чате:', chatId, 'тип:', typeof chatId);
@@ -3077,56 +3077,90 @@ function renderChatsList(chats) {
         const response = await fetch(`/Chats/GetChatInfo?chatId=${chatId}`);
 
         if (!response.ok) {
-            throw new Error(`HTTP ошибка: ${response.status}`);
+        throw new Error(`HTTP ошибка: ${response.status}`);
         }
 
         const data = await response.json();
         console.log('Информация о чате:', data);
 
         if (data.success && data.data) {
-            document.getElementById('chatTitle').textContent = data.data.name || 'Чат';
+        // Обновляем заголовок чата
+        document.getElementById('chatTitle').textContent = data.data.name || 'Чат';
 
-            const memberNames = data.data.members ? data.data.members.map(m => m.fullName).join(', ') : '';
-            document.getElementById('chatMembers').textContent = memberNames;
+        // Обновляем список участников
+        const memberNames = data.data.members ? data.data.members.map(m => m.fullName).join(', ') : '';
+        document.getElementById('chatMembers').textContent = memberNames;
 
-            // ПОЛНОСТЬЮ ПЕРЕСОЗДАЕМ аватар, а не просто обновляем
-            const chatAvatarContainer = document.querySelector('#chatInfo .chat-avatar');
-            if (chatAvatarContainer) {
-                if (data.data.avatarPath) {
-                    // Если есть аватар - показываем изображение
-                    chatAvatarContainer.innerHTML = `<img src="${data.data.avatarPath}" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;">`;
-                } else {
-                    // Если нет аватара - показываем иконку по типу чата
-                    const chatType = data.data.type || 'group';
-                    chatAvatarContainer.innerHTML = `
-                        <div class="avatar-circle" style="background-color: ${getChatColor(chatType)};">
-                            <i class="fas ${getChatIcon(chatType)}"></i>
-                        </div>
-                    `;
-                }
-            }
-
-            // ОПРЕДЕЛЯЕМ isAdmin ЗДЕСЬ
-            const isAdmin = data.data.isAdmin || false;
-            
-            // Проверяем статус администратора и обновляем отображение кнопок
-            await checkAndUpdateAdminStatus(chatId);
-            
-            // Обновляем видимость пунктов меню (только если функция существует)
-            if (typeof updateChatMenuVisibility === 'function') {
-                updateChatMenuVisibility(data.data.type, isAdmin);
-            }
-
-            return { success: true, data: data.data };
+        // ПОЛНОСТЬЮ ПЕРЕСОЗДАЕМ аватар, а не просто обновляем
+        const chatAvatarContainer = document.querySelector('#chatInfo .chat-avatar');
+        if (chatAvatarContainer) {
+        if (data.data.avatarPath) {
+        // Если есть аватар - показываем изображение
+        chatAvatarContainer.innerHTML = `<img src="${data.data.avatarPath}" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;">`;
         } else {
-            console.error('Ошибка загрузки информации о чате:', data.message);
-            return { success: false, message: data.message };
+        // Если нет аватара - показываем иконку по типу чата
+        const chatType = data.data.type || 'group';
+        chatAvatarContainer.innerHTML = `
+        <div class="avatar-circle" style="background-color: ${getChatColor(chatType)};">
+        <i class="fas ${getChatIcon(chatType)}"></i>
+        </div>
+        `;
         }
-    } catch (error) {
+        }
+
+        // ОПРЕДЕЛЯЕМ isAdmin
+        const isAdmin = data.data.isAdmin || false;
+        const chatType = data.data.type || 'group';
+
+        console.log('Chat type:', chatType);
+        console.log('Is admin:', isAdmin);
+
+        // Проверяем статус администратора и обновляем отображение кнопок
+        await checkAndUpdateAdminStatus(chatId);
+
+        // Обновляем видимость пунктов меню
+        if (typeof updateChatMenuVisibility === 'function') {
+        updateChatMenuVisibility(chatType, isAdmin);
+        }
+
+        // ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ CSS КЛАССОВ admin-only
+        // Это решит проблему с исчезающими пунктами меню
+        setTimeout(() => {
+        const adminMenuItems = document.querySelectorAll('.admin-only');
+        console.log('Найдено admin-only элементов:', adminMenuItems.length);
+
+        if (adminMenuItems.length > 0) {
+        adminMenuItems.forEach(item => {
+        if (isAdmin && (chatType === 'group' || chatType === 'trip')) {
+        item.style.display = '';
+        item.style.removeProperty('display');
+        } else {
+        item.style.display = 'none';
+        }
+        });
+        }
+
+        // Дополнительно обновляем конкретные элементы
+        const addMembersMenuItem = document.querySelector('#addMembersMenuItem');
+        if (addMembersMenuItem) {
+        if (isAdmin && (chatType === 'group' || chatType === 'trip')) {
+        addMembersMenuItem.style.display = '';
+        } else {
+        addMembersMenuItem.style.display = 'none';
+        }
+        }
+        }, 50);
+
+        return { success: true, data: data.data };
+        } else {
+        console.error('Ошибка загрузки информации о чате:', data.message);
+        return { success: false, message: data.message };
+        }
+        } catch (error) {
         console.error('Ошибка загрузки информации о чате:', error);
         return { success: false, message: error.message };
-    }
-}
+        }
+        }
 
        function renderMessages(messages) {
     const messagesList = document.getElementById('messagesList');
@@ -5157,46 +5191,48 @@ async function uploadFile(file) {
                 // ==================== АВАТАР ЧАТА ====================
 
         async function changeChatAvatar() {
-            if (!currentChatId) return;
+    if (!currentChatId) return;
 
-            // Создаем input для выбора файла
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.style.display = 'none';
-            fileInput.accept = '.jpg,.jpeg,.png,.gif,.webp';
-            fileInput.onchange = handleChatAvatarSelect;
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.style.display = 'none';
+    fileInput.accept = '.jpg,.jpeg,.png,.gif,.webp';
+    fileInput.onchange = handleChatAvatarSelect; // НЕ передаем chatId!
 
-            document.body.appendChild(fileInput);
-            fileInput.click();
+    document.body.appendChild(fileInput);
+    fileInput.click();
 
-            setTimeout(() => {
-                document.body.removeChild(fileInput);
-            }, 1000);
-        }
+    setTimeout(() => {
+        document.body.removeChild(fileInput);
+    }, 1000);
+}
 
-                async function handleChatAvatarSelect(event, chatId) {
+                async function handleChatAvatarSelect(event) {
     const file = event.target.files[0];
     if (!file) return;
+
+    // ИСПОЛЬЗУЕМ currentChatId, а НЕ chatId из параметров
+    if (!currentChatId) {
+        showNotification('Чат не выбран', 'warning');
+        return;
+    }
 
     // Максимальный размер 1 МБ
     const MAX_SIZE_MB = 1;
     const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
     
-    // Проверка размера
     if (file.size > MAX_SIZE_BYTES) {
         const sizeMB = (file.size / 1024 / 1024).toFixed(1);
         showNotification(`❌ Файл слишком большой (${sizeMB} МБ). Максимальный размер аватара - ${MAX_SIZE_MB} МБ`, 'warning');
-        return; // Просто выходим, не отправляем запрос
+        return;
     }
 
-    // Проверка типа файла
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
         showNotification('❌ Поддерживаются только изображения: JPG, PNG, GIF, WEBP', 'warning');
         return;
     }
 
-    // Показываем загрузку
     showNotification('⏳ Загрузка аватара...', 'info');
     
     const formData = new FormData();
@@ -5205,7 +5241,8 @@ async function uploadFile(file) {
     try {
         const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
         
-        const response = await fetch(`/Chats/UploadChatAvatar?chatId=${chatId}`, {
+        // ИСПОЛЬЗУЕМ currentChatId, а НЕ chatId
+        const response = await fetch(`/Chats/UploadChatAvatar?chatId=${currentChatId}`, {
             method: 'POST',
             headers: {
                 'RequestVerificationToken': token
@@ -5213,7 +5250,6 @@ async function uploadFile(file) {
             body: formData
         });
         
-        // Обработка ошибки 413
         if (response.status === 413) {
             showNotification('❌ Файл слишком большой. Максимальный размер - 1 МБ', 'warning');
             return;
@@ -5784,11 +5820,22 @@ function updateChatTypeBasedUI(chatType) {
     }
 }
 // Функция для обновления видимости пунктов меню в зависимости от типа чата и прав
+// Функция для обновления видимости пунктов меню в зависимости от типа чата и прав
 function updateChatMenuVisibility(chatType, isAdmin) {
+    console.log('updateChatMenuVisibility called:', { chatType, isAdmin });
+    
+    // Ищем элементы в открытом меню и вообще все элементы
     const addMembersMenuItem = document.querySelector('.dropdown-item[onclick="addMembersToChat()"]');
     const renameMenuItem = document.querySelector('.dropdown-item[onclick="renameChat()"]');
     const avatarMenuItems = document.querySelectorAll('.dropdown-item[onclick*="ChatAvatar"]');
     const deleteChatMenuItem = document.querySelector('.dropdown-item[onclick="deleteChat()"]');
+    
+    console.log('Found menu items:', {
+        addMembers: !!addMembersMenuItem,
+        rename: !!renameMenuItem,
+        avatar: avatarMenuItems.length,
+        delete: !!deleteChatMenuItem
+    });
     
     // Для личных чатов скрываем админские пункты
     if (chatType === 'private') {
@@ -5796,12 +5843,24 @@ function updateChatMenuVisibility(chatType, isAdmin) {
         if (renameMenuItem) renameMenuItem.style.display = 'none';
         avatarMenuItems.forEach(item => item.style.display = 'none');
         if (deleteChatMenuItem) deleteChatMenuItem.style.display = 'none';
-    } else {
-        // Для групповых чатов показываем в зависимости от прав
-        if (addMembersMenuItem) addMembersMenuItem.style.display = isAdmin ? '' : 'none';
-        if (renameMenuItem) renameMenuItem.style.display = isAdmin ? '' : 'none';
-        avatarMenuItems.forEach(item => item.style.display = isAdmin ? '' : 'none');
-        if (deleteChatMenuItem) deleteChatMenuItem.style.display = isAdmin ? '' : 'none';
+    } 
+    // Для групповых чатов показываем в зависимости от прав
+    else if (chatType === 'group' || chatType === 'trip') {
+        const show = isAdmin ? '' : 'none';
+        if (addMembersMenuItem) addMembersMenuItem.style.display = show;
+        if (renameMenuItem) renameMenuItem.style.display = show;
+        avatarMenuItems.forEach(item => item.style.display = show);
+        if (deleteChatMenuItem) deleteChatMenuItem.style.display = show;
+    }
+    
+    // Дополнительно обновляем элемент с id
+    const addMembersMenuItemById = document.getElementById('addMembersMenuItem');
+    if (addMembersMenuItemById) {
+        if (chatType === 'private') {
+            addMembersMenuItemById.style.display = 'none';
+        } else if (chatType === 'group' || chatType === 'trip') {
+            addMembersMenuItemById.style.display = isAdmin ? '' : 'none';
+        }
     }
 }
                 async function removeMemberFromChat(chatId, userIdToRemove, userName) {
@@ -5856,7 +5915,6 @@ function updateChatMenuVisibility(chatType, isAdmin) {
 }
 
 // Функция для проверки и обновления статуса администратора
-// Функция для проверки и обновления статуса администратора
 async function checkAndUpdateAdminStatus(chatId) {
     try {
         const response = await fetch(`/Chats/CheckAdminStatus?chatId=${chatId}`);
@@ -5864,21 +5922,39 @@ async function checkAndUpdateAdminStatus(chatId) {
         
         if (data.success && data.data) {
             const isAdmin = data.data.isAdmin;
+            console.log('Admin status check result:', isAdmin);
+            
+            // Получаем тип чата из заголовка или сохраняем глобально
+            const chatType = document.getElementById('chatHeader')?.getAttribute('data-chat-type') || 'group';
             
             // Обновляем отображение кнопок в интерфейсе в зависимости от статуса
             const adminMenuItems = document.querySelectorAll('.admin-only');
             if (adminMenuItems.length > 0) {
                 adminMenuItems.forEach(item => {
-                    item.style.display = isAdmin ? '' : 'none';
+                    if (isAdmin) {
+                        item.style.display = '';
+                        item.style.removeProperty('display');
+                    } else {
+                        item.style.display = 'none';
+                    }
                 });
+            }
+            
+            // Обновляем через функцию меню
+            if (typeof updateChatMenuVisibility === 'function') {
+                updateChatMenuVisibility(chatType, isAdmin);
             }
             
             if (isAdmin) {
                 console.log('Вы администратор чата');
             }
+            
+            return isAdmin;
         }
+        return false;
     } catch (error) {
         console.error('Error checking admin status:', error);
+        return false;
     }
 }
                 function removeChatFromUrl() {
