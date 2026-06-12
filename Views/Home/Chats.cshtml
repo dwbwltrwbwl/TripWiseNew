@@ -2380,6 +2380,25 @@
         background: rgba(3, 121, 217, 0.9);
         color: white;
     }
+
+    /* Принудительное отображение админских элементов */
+    .admin-only {
+        display: flex !important;
+    }
+
+        .admin-only[style*="display: none"],
+        .admin-only.d-none {
+            display: none !important;
+        }
+
+    /* Для Bootstrap dropdown */
+    .dropdown-item.admin-only {
+        display: flex;
+    }
+
+        .dropdown-item.admin-only[style*="display: none"] {
+            display: none !important;
+        }
 </style>
 
 @section Scripts {
@@ -3065,11 +3084,11 @@ function renderChatsList(chats) {
     }
 }
         async function loadChatInfo(chatId) {
-        try {
+    try {
         // Добавьте проверку в самом начале
         if (!chatId || chatId === undefined || chatId === null) {
-        console.error('loadChatInfo: chatId не передан или равен null/undefined');
-        return { success: false, message: 'ID чата не указан' };
+            console.error('loadChatInfo: chatId не передан или равен null/undefined');
+            return { success: false, message: 'ID чата не указан' };
         }
 
         console.log('Загрузка информации о чате:', chatId, 'тип:', typeof chatId);
@@ -3077,90 +3096,111 @@ function renderChatsList(chats) {
         const response = await fetch(`/Chats/GetChatInfo?chatId=${chatId}`);
 
         if (!response.ok) {
-        throw new Error(`HTTP ошибка: ${response.status}`);
+            throw new Error(`HTTP ошибка: ${response.status}`);
         }
 
         const data = await response.json();
         console.log('Информация о чате:', data);
 
         if (data.success && data.data) {
-        // Обновляем заголовок чата
-        document.getElementById('chatTitle').textContent = data.data.name || 'Чат';
+            // Обновляем заголовок чата
+            document.getElementById('chatTitle').textContent = data.data.name || 'Чат';
 
-        // Обновляем список участников
-        const memberNames = data.data.members ? data.data.members.map(m => m.fullName).join(', ') : '';
-        document.getElementById('chatMembers').textContent = memberNames;
+            // Обновляем список участников
+            const memberNames = data.data.members ? data.data.members.map(m => m.fullName).join(', ') : '';
+            document.getElementById('chatMembers').textContent = memberNames;
 
-        // ПОЛНОСТЬЮ ПЕРЕСОЗДАЕМ аватар, а не просто обновляем
-        const chatAvatarContainer = document.querySelector('#chatInfo .chat-avatar');
-        if (chatAvatarContainer) {
-        if (data.data.avatarPath) {
-        // Если есть аватар - показываем изображение
-        chatAvatarContainer.innerHTML = `<img src="${data.data.avatarPath}" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;">`;
+            // ПОЛНОСТЬЮ ПЕРЕСОЗДАЕМ аватар, а не просто обновляем
+            const chatAvatarContainer = document.querySelector('#chatInfo .chat-avatar');
+            if (chatAvatarContainer) {
+                if (data.data.avatarPath) {
+                    // Если есть аватар - показываем изображение
+                    chatAvatarContainer.innerHTML = `<img src="${data.data.avatarPath}" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;">`;
+                } else {
+                    // Если нет аватара - показываем иконку по типу чата
+                    const chatType = data.data.type || 'group';
+                    chatAvatarContainer.innerHTML = `
+                        <div class="avatar-circle" style="background-color: ${getChatColor(chatType)};">
+                            <i class="fas ${getChatIcon(chatType)}"></i>
+                        </div>
+                    `;
+                }
+            }
+
+            // ОПРЕДЕЛЯЕМ isAdmin
+            const isAdmin = data.data.isAdmin || false;
+            const chatType = data.data.type || 'group';
+            const chatHeader = document.getElementById('chatHeader');
+if (chatHeader) {
+    chatHeader.setAttribute('data-chat-type', chatType);
+}
+            console.log('Chat type:', chatType);
+            console.log('Is admin:', isAdmin);
+
+            // ========== ГЛАВНОЕ: ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ МЕНЮ ==========
+            // ОБНОВЛЯЕМ ВСЕ АДМИНСКИЕ ЭЛЕМЕНТЫ НЕМЕДЛЕННО!
+            const adminMenuItems = document.querySelectorAll('.admin-only');
+            console.log('Найдено admin-only элементов:', adminMenuItems.length);
+            
+            if (adminMenuItems.length > 0) {
+                adminMenuItems.forEach(item => {
+                    if (isAdmin && (chatType === 'group' || chatType === 'trip')) {
+                        item.style.display = '';
+                        item.style.removeProperty('display');
+                        // Добавляем класс для видимости
+                        item.classList.remove('d-none');
+                    } else {
+                        item.style.display = 'none';
+                        item.classList.add('d-none');
+                    }
+                });
+            }
+            
+            // Обновляем конкретные элементы по ID
+            const addMembersMenuItem = document.getElementById('addMembersMenuItem');
+            if (addMembersMenuItem) {
+                if (isAdmin && (chatType === 'group' || chatType === 'trip')) {
+                    addMembersMenuItem.style.display = '';
+                    addMembersMenuItem.style.removeProperty('display');
+                } else {
+                    addMembersMenuItem.style.display = 'none';
+                }
+            }
+            
+            // Обновляем через функцию меню
+            if (typeof updateChatMenuVisibility === 'function') {
+                updateChatMenuVisibility(chatType, isAdmin);
+            }
+            
+            // Проверяем статус администратора через API
+            await checkAndUpdateAdminStatus(chatId);
+            
+            // Дополнительная задержка для Bootstrap dropdown (важно!)
+            setTimeout(() => {
+                // Если меню открыто, обновляем его содержимое
+                const dropdownMenu = document.querySelector('.dropdown-menu.show');
+                if (dropdownMenu) {
+                    const items = dropdownMenu.querySelectorAll('.admin-only');
+                    items.forEach(item => {
+                        if (isAdmin && (chatType === 'group' || chatType === 'trip')) {
+                            item.style.display = '';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                }
+            }, 100);
+
+            return { success: true, data: data.data };
         } else {
-        // Если нет аватара - показываем иконку по типу чата
-        const chatType = data.data.type || 'group';
-        chatAvatarContainer.innerHTML = `
-        <div class="avatar-circle" style="background-color: ${getChatColor(chatType)};">
-        <i class="fas ${getChatIcon(chatType)}"></i>
-        </div>
-        `;
+            console.error('Ошибка загрузки информации о чате:', data.message);
+            return { success: false, message: data.message };
         }
-        }
-
-        // ОПРЕДЕЛЯЕМ isAdmin
-        const isAdmin = data.data.isAdmin || false;
-        const chatType = data.data.type || 'group';
-
-        console.log('Chat type:', chatType);
-        console.log('Is admin:', isAdmin);
-
-        // Проверяем статус администратора и обновляем отображение кнопок
-        await checkAndUpdateAdminStatus(chatId);
-
-        // Обновляем видимость пунктов меню
-        if (typeof updateChatMenuVisibility === 'function') {
-        updateChatMenuVisibility(chatType, isAdmin);
-        }
-
-        // ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ CSS КЛАССОВ admin-only
-        // Это решит проблему с исчезающими пунктами меню
-        setTimeout(() => {
-        const adminMenuItems = document.querySelectorAll('.admin-only');
-        console.log('Найдено admin-only элементов:', adminMenuItems.length);
-
-        if (adminMenuItems.length > 0) {
-        adminMenuItems.forEach(item => {
-        if (isAdmin && (chatType === 'group' || chatType === 'trip')) {
-        item.style.display = '';
-        item.style.removeProperty('display');
-        } else {
-        item.style.display = 'none';
-        }
-        });
-        }
-
-        // Дополнительно обновляем конкретные элементы
-        const addMembersMenuItem = document.querySelector('#addMembersMenuItem');
-        if (addMembersMenuItem) {
-        if (isAdmin && (chatType === 'group' || chatType === 'trip')) {
-        addMembersMenuItem.style.display = '';
-        } else {
-        addMembersMenuItem.style.display = 'none';
-        }
-        }
-        }, 50);
-
-        return { success: true, data: data.data };
-        } else {
-        console.error('Ошибка загрузки информации о чате:', data.message);
-        return { success: false, message: data.message };
-        }
-        } catch (error) {
+    } catch (error) {
         console.error('Ошибка загрузки информации о чате:', error);
         return { success: false, message: error.message };
-        }
-        }
+    }
+}
 
        function renderMessages(messages) {
     const messagesList = document.getElementById('messagesList');
@@ -5924,18 +5964,24 @@ async function checkAndUpdateAdminStatus(chatId) {
             const isAdmin = data.data.isAdmin;
             console.log('Admin status check result:', isAdmin);
             
-            // Получаем тип чата из заголовка или сохраняем глобально
-            const chatType = document.getElementById('chatHeader')?.getAttribute('data-chat-type') || 'group';
+            // Получаем тип чата (можно сохранить глобально или получить из DOM)
+            let chatType = 'group';
+            const chatTitleElement = document.getElementById('chatTitle');
+            if (chatTitleElement && chatTitleElement.getAttribute('data-chat-type')) {
+                chatType = chatTitleElement.getAttribute('data-chat-type');
+            }
             
-            // Обновляем отображение кнопок в интерфейсе в зависимости от статуса
+            // ПРИНУДИТЕЛЬНО обновляем все админские элементы
             const adminMenuItems = document.querySelectorAll('.admin-only');
             if (adminMenuItems.length > 0) {
                 adminMenuItems.forEach(item => {
                     if (isAdmin) {
                         item.style.display = '';
                         item.style.removeProperty('display');
+                        item.classList.remove('d-none');
                     } else {
                         item.style.display = 'none';
+                        item.classList.add('d-none');
                     }
                 });
             }
