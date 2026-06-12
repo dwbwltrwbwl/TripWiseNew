@@ -554,8 +554,6 @@ namespace TripWise.Controllers
             // Обновляем сессию
             HttpContext.Session.SetString("UserName", GetFullUserName(user));
             HttpContext.Session.SetString("UserEmail", user.Email);
-
-            TempData["SuccessMessage"] = "Профиль успешно обновлен";
             return RedirectToAction("Profile");
         }
 

@@ -802,7 +802,7 @@
                 const file = avatarInput.files[0];
                 const maxSize = 480 * 1024;
                 if (file.size > maxSize) {
-                    showNotification(`❌ Изображение слишком большое! Максимальный размер 2 МБ`, 'danger');
+                    showNotification(`❌ Изображение слишком большое! Максимальный размер 480 КБ`, 'danger');
                     isValid = false;
                 }
             }
@@ -905,7 +905,7 @@
                         e.preventDefault();
                         const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
                         showNotification(
-                            `❌ Изображение слишком большое! Размер: ${fileSizeMB} МБ. Максимальный размер: 2 МБ`,
+                            `❌ Изображение слишком большое! Размер: ${fileSizeMB} МБ. Максимальный размер: 480 КБ`,
                             'danger'
                         );
                         return;

@@ -1386,7 +1386,78 @@
         if (t === 'xls' || t === 'xlsx') return 'file-excel';
         return 'file-alt';
     }
+        async function quickUpload() {
+        const nameInput = document.getElementById('quickDocumentName');
+        const fileInput = document.getElementById('quickDocumentFile');
+        const folderSelect = document.getElementById('quickFolderSelect');
+        const submitBtn = event?.target;
 
+        const name = nameInput?.value.trim() || '';
+        const file = fileInput?.files[0];
+        const folderId = folderSelect?.value ? parseInt(folderSelect.value) : null;
+
+        // Валидация
+        if (!name) { showNotification('Введите название документа', 'warning'); return; }
+        if (name.length > 255) { showNotification('Название документа не может превышать 255 символов', 'warning'); return; }
+        if (name.length < 2) { showNotification('Название документа должно содержать минимум 2 символа', 'warning'); return; }
+        if (!file) { showNotification('Выберите файл для загрузки', 'warning'); return; }
+
+        // ✅ ПРОВЕРКА РАЗМЕРА ФАЙЛА НА КЛИЕНТЕ
+        const maxSize = 10 * 1024 * 1024; // 10 MB
+        if (file.size > maxSize) {
+            const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            showNotification(`❌ Файл "${file.name}" слишком большой! Размер: ${fileSizeMB} МБ. Максимальный размер: 10 МБ`, 'danger');
+            if (fileInput) fileInput.value = ''; // Очищаем input
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('documentName', name);
+        formData.append('documentFile', file);
+        if (folderId) formData.append('folderId', folderId);
+
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Загрузка...';
+
+            try {
+                const response = await fetch('/Documents/QuickUpload', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'RequestVerificationToken': getAntiForgeryToken() }
+                });
+
+                // ✅ ОБРАБОТКА ОШИБКИ 413
+                if (response.status === 413) {
+                    showNotification(`❌ Файл "${file.name}" слишком большой для загрузки на сервер. Максимальный размер: 10 МБ`, 'danger');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                    return;
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('quickUploadModal'));
+                    if (modal) modal.hide();
+                    if (nameInput) nameInput.value = '';
+                    if (fileInput) fileInput.value = '';
+                    await loadDocuments();
+                    await loadFolders();
+                    showNotification('Документ успешно загружен', 'success');
+                } else {
+                    showNotification(result.message || 'Ошибка при загрузке', 'danger');
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+                showNotification('Произошла ошибка при загрузке', 'danger');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        }
+    }
     function formatFileSize(bytes) {
         if (bytes === 0) return '0 Bytes';
         const k = 1024;
