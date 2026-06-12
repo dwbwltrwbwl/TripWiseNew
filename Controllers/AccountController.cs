@@ -475,28 +475,37 @@ namespace TripWise.Controllers
                 return RedirectToAction("Login");
 
             _logger.LogInformation("=== НАЧАЛО РЕДАКТИРОВАНИЯ ПРОФИЛЯ ===");
-            _logger.LogInformation("UserId: {UserId}", userId);
-            _logger.LogInformation("RemoveAvatar: {RemoveAvatar}", model.RemoveAvatar);
-            _logger.LogInformation("Avatar файл получен: {HasFile}", model.Avatar != null);
 
+            // ========== ПРОВЕРКА РАЗМЕРА ФАЙЛА АВАТАРА ==========
             if (model.Avatar != null)
             {
-                _logger.LogInformation("Имя файла: {FileName}", model.Avatar.FileName);
-                _logger.LogInformation("Размер: {FileSize} байт", model.Avatar.Length);
-                _logger.LogInformation("ContentType: {ContentType}", model.Avatar.ContentType);
+                // Проверка размера (2MB максимум)
+                if (model.Avatar.Length > 2 * 1024 * 1024)
+                {
+                    ModelState.AddModelError("Avatar", "Размер файла не должен превышать 2 МБ. Ваш файл: " + FormatFileSize(model.Avatar.Length));
+                    TempData["ErrorMessage"] = "Файл слишком большой. Максимальный размер 2 МБ";
+                    return View(model);
+                }
+
+                // Проверка типа файла
+                var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp" };
+                if (!allowedTypes.Contains(model.Avatar.ContentType.ToLower()))
+                {
+                    ModelState.AddModelError("Avatar", "Неподдерживаемый тип файла. Разрешены: JPG, PNG, GIF, WEBP");
+                    TempData["ErrorMessage"] = "Неподдерживаемый тип файла. Загрузите изображение в формате JPG, PNG, GIF или WEBP";
+                    return View(model);
+                }
             }
 
-            // ========== ДОБАВЬТЕ ПРОВЕРКУ EMAIL ==========
+            // ========== ОСТАЛЬНАЯ ВАЛИДАЦИЯ ==========
             if (!string.IsNullOrEmpty(model.Email))
             {
-                // Проверка формата email
                 if (!IsValidEmail(model.Email))
                 {
                     ModelState.AddModelError("Email", "Введите корректный email адрес");
                     return View(model);
                 }
 
-                // Проверка на существование email у другого пользователя
                 if (await IsEmailTakenByOtherUser(model.Email.Trim().ToLower(), userId.Value))
                 {
                     ModelState.AddModelError("Email", "Пользователь с таким email уже существует");
@@ -506,16 +515,12 @@ namespace TripWise.Controllers
 
             if (!ModelState.IsValid)
             {
-                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-                _logger.LogWarning("Ошибки валидации: {Errors}", string.Join(", ", errors));
                 return View(model);
             }
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.IdUser == userId);
             if (user == null)
                 return RedirectToAction("Login");
-
-            _logger.LogInformation("Текущий AvatarPath пользователя: {AvatarPath}", user.AvatarPath);
 
             // Обновляем данные
             user.LastName = model.LastName?.Trim() ?? user.LastName;
@@ -527,46 +532,24 @@ namespace TripWise.Controllers
             // Обработка аватарки
             if (model.RemoveAvatar)
             {
-                _logger.LogInformation("Удаление аватарки");
                 if (!string.IsNullOrEmpty(user.AvatarPath))
                 {
                     _fileService.DeleteAvatar(user.AvatarPath);
                     user.AvatarPath = null;
-                    _logger.LogInformation("Аватарка удалена");
                 }
             }
             else if (model.Avatar != null && model.Avatar.Length > 0)
             {
-                _logger.LogInformation("Начинаем обработку новой аватарки");
-
-                var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif" };
-                if (!allowedTypes.Contains(model.Avatar.ContentType.ToLower()))
-                {
-                    _logger.LogWarning("Неподдерживаемый тип файла: {ContentType}", model.Avatar.ContentType);
-                    ModelState.AddModelError("Avatar", "Разрешены только изображения (JPEG, PNG, GIF)");
-                    return View(model);
-                }
-
-                if (model.Avatar.Length > 2 * 1024 * 1024)
-                {
-                    _logger.LogWarning("Файл слишком большой: {FileSize} байт", model.Avatar.Length);
-                    ModelState.AddModelError("Avatar", "Размер файла не должен превышать 2MB");
-                    return View(model);
-                }
-
+                // Удаляем старую аватарку
                 if (!string.IsNullOrEmpty(user.AvatarPath))
                 {
-                    _logger.LogInformation("Удаляем старую аватарку: {AvatarPath}", user.AvatarPath);
                     _fileService.DeleteAvatar(user.AvatarPath);
                 }
-
-                _logger.LogInformation("Сохраняем новую аватарку...");
+                // Сохраняем новую
                 user.AvatarPath = await _fileService.SaveAvatarAsync(model.Avatar, user.IdUser);
-                _logger.LogInformation("Новая аватарка сохранена: {AvatarPath}", user.AvatarPath);
             }
 
             await _context.SaveChangesAsync();
-            _logger.LogInformation("Изменения сохранены в БД. Новый AvatarPath: {AvatarPath}", user.AvatarPath);
 
             // Обновляем сессию
             HttpContext.Session.SetString("UserName", GetFullUserName(user));
@@ -574,6 +557,20 @@ namespace TripWise.Controllers
 
             TempData["SuccessMessage"] = "Профиль успешно обновлен";
             return RedirectToAction("Profile");
+        }
+
+        // Добавьте вспомогательный метод для форматирования размера файла
+        private string FormatFileSize(long bytes)
+        {
+            string[] sizes = { "Б", "КБ", "МБ", "ГБ" };
+            double len = bytes;
+            int order = 0;
+            while (len >= 1024 && order < sizes.Length - 1)
+            {
+                order++;
+                len = len / 1024;
+            }
+            return $"{len:0.##} {sizes[order]}";
         }
         // GET: /Account/CheckEmailExists
         [HttpGet]

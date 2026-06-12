@@ -4,6 +4,21 @@
 }
 <div class="mobile-header-spacer d-block d-lg-none" style="height: 70px;"></div>
 <div class="container mt-4">
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
     <!-- Заголовок страницы (остается как на десктопе) -->
     <div class="page-header-section mb-5">
         <div class="page-header-icon">
@@ -659,21 +674,22 @@
         const previewImage = document.getElementById('previewImage');
         const removeCheckbox = document.getElementById('RemoveAvatar');
 
-        if (avatarInput) {
+                if (avatarInput) {
             avatarInput.addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 if (file) {
                     // Проверка размера
                     if (file.size > 2 * 1024 * 1024) {
-                        alert('Файл слишком большой. Максимальный размер 2MB');
+                        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                        alert(`❌ Файл слишком большой! Размер: ${fileSizeMB} МБ. Максимальный размер: 2 МБ`);
                         this.value = '';
                         return;
                     }
 
                     // Проверка типа
-                    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
                     if (!allowedTypes.includes(file.type)) {
-                        alert('Неподдерживаемый тип файла. Разрешены: JPG, PNG, GIF');
+                        alert(`❌ Неподдерживаемый тип файла: ${file.type}. Разрешены: JPG, PNG, GIF, WEBP`);
                         this.value = '';
                         return;
                     }
@@ -686,7 +702,6 @@
                     }
                     reader.readAsDataURL(file);
 
-                    // Снимаем галочку удаления если была отмечена
                     if (removeCheckbox) {
                         removeCheckbox.checked = false;
                     }
