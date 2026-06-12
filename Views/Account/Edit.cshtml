@@ -87,7 +87,7 @@
                     <p class="text-muted small mb-0 mt-2">
                         <i class="fas fa-info-circle me-1"></i>
                         Поддерживаемые форматы: JPG, PNG, GIF, WEBP<br>
-                        Макс. размер: 2 MB
+                        Макс. размер: <strong class="text-danger">480 КБ</strong> (0.47 МБ)
                     </p>
                 </div>
             </div>
@@ -695,7 +695,7 @@
             avatarInput.addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 if (file) {
-                    const maxSize = 2 * 1024 * 1024; // 2MB
+                    const maxSize = 480 * 1024; // 2MB
 
                     // ПРОВЕРКА РАЗМЕРА ФАЙЛА
                     if (file.size > maxSize) {
@@ -800,7 +800,7 @@
             // Проверка размера файла перед отправкой (дополнительная защита)
             if (avatarInput && avatarInput.files.length > 0) {
                 const file = avatarInput.files[0];
-                const maxSize = 2 * 1024 * 1024;
+                const maxSize = 480 * 1024;
                 if (file.size > maxSize) {
                     showNotification(`❌ Изображение слишком большое! Максимальный размер 2 МБ`, 'danger');
                     isValid = false;
