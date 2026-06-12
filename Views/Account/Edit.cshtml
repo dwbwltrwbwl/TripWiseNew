@@ -19,7 +19,8 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
-    <!-- Заголовок страницы (остается как на десктопе) -->
+
+    <!-- Заголовок страницы -->
     <div class="page-header-section mb-5">
         <div class="page-header-icon">
             <i class="fas fa-user-edit text-white"></i>
@@ -85,7 +86,7 @@
 
                     <p class="text-muted small mb-0 mt-2">
                         <i class="fas fa-info-circle me-1"></i>
-                        Поддерживаемые форматы: JPG, PNG, GIF<br>
+                        Поддерживаемые форматы: JPG, PNG, GIF, WEBP<br>
                         Макс. размер: 2 MB
                     </p>
                 </div>
@@ -108,9 +109,9 @@
                                 Фамилия <span class="text-danger">*</span>
                             </label>
                             <input asp-for="LastName" class="form-control form-control-lg"
-                                   maxlength="100" placeholder="Иванов" />  <!-- Было 50, стало 100 -->
+                                   maxlength="100" placeholder="Иванов" />
                             <span asp-validation-for="LastName" class="text-danger small"></span>
-                            <small class="text-muted" id="lastNameCounter">0/100</small>  <!-- Было 0/50, стало 0/100 -->
+                            <small class="text-muted" id="lastNameCounter">0/100</small>
                         </div>
 
                         <div class="col-md-4 mb-3">
@@ -118,9 +119,9 @@
                                 Имя <span class="text-danger">*</span>
                             </label>
                             <input asp-for="FirstName" class="form-control form-control-lg"
-                                   maxlength="100" placeholder="Иван" />  <!-- Было 50, стало 100 -->
+                                   maxlength="100" placeholder="Иван" />
                             <span asp-validation-for="FirstName" class="text-danger small"></span>
-                            <small class="text-muted" id="firstNameCounter">0/100</small>  <!-- Было 0/50, стало 0/100 -->
+                            <small class="text-muted" id="firstNameCounter">0/100</small>
                         </div>
 
                         <div class="col-md-4 mb-3">
@@ -128,9 +129,9 @@
                                 Отчество
                             </label>
                             <input asp-for="MiddleName" class="form-control form-control-lg"
-                                   maxlength="100" placeholder="Иванович" />  <!-- Было 50, стало 100 -->
+                                   maxlength="100" placeholder="Иванович" />
                             <span asp-validation-for="MiddleName" class="text-danger small"></span>
-                            <small class="text-muted" id="middleNameCounter">0/100</small>  <!-- Было 0/50, стало 0/100 -->
+                            <small class="text-muted" id="middleNameCounter">0/100</small>
                         </div>
 
                         <div class="col-md-6 mb-3">
@@ -171,7 +172,7 @@
 </div>
 
 <style>
-    /* Стили для заголовка страницы (КАК НА ДЕСКТОПЕ - НЕ МЕНЯЕТСЯ) */
+    /* Стили для заголовка страницы */
     .page-header-section {
         display: flex;
         align-items: center;
@@ -427,156 +428,174 @@
         margin-top: 4px;
     }
 
-    /* ========== МОБИЛЬНАЯ АДАПТАЦИЯ (ШАПКА НЕ МЕНЯЕТСЯ) ========== */
+    /* Адаптация */
     @@media (max-width: 768px) {
-        /* Шапка ОСТАЕТСЯ как на десктопе - горизонтальной */
-        .page-header-section
+        .page-header-section {
+            flex-direction: row;
+            text-align: left;
+            padding: 20px;
+            gap: 15px;
+        }
 
-    {
-        flex-direction: row;
-        text-align: left;
-        padding: 20px;
-        gap: 15px;
-    }
+            .page-header-section::before {
+                width: 6px;
+                height: 100%;
+                top: 0;
+                left: 0;
+                background: linear-gradient(to bottom, #0379D9, #40B624);
+            }
 
-    .page-header-section::before {
-        width: 6px;
-        height: 100%;
-        top: 0;
-        left: 0;
-        background: linear-gradient(to bottom, #0379D9, #40B624);
-    }
+        .page-header-icon {
+            width: 55px;
+            height: 55px;
+            font-size: 1.5rem;
+        }
 
-    .page-header-icon {
-        width: 55px;
-        height: 55px;
-        font-size: 1.5rem;
-    }
+        .page-title {
+            font-size: 1.6rem;
+            margin-bottom: 4px;
+        }
 
-    .page-title {
-        font-size: 1.6rem;
-        margin-bottom: 4px;
-    }
+        .page-subtitle {
+            font-size: 0.95rem;
+        }
 
-    .page-subtitle {
-        font-size: 0.95rem;
-    }
+        .section-subtitle {
+            font-size: 1.2rem;
+        }
 
-    .section-subtitle {
-        font-size: 1.2rem;
-    }
+        .avatar-upload-container {
+            width: 120px;
+            height: 120px;
+        }
 
-    .avatar-upload-container {
-        width: 120px;
-        height: 120px;
-    }
+        .avatar-image {
+            width: 120px;
+            height: 120px;
+        }
 
-    .avatar-image {
-        width: 120px;
-        height: 120px;
-    }
+        .avatar-circle-lg {
+            width: 120px;
+            height: 120px;
+        }
 
-    .avatar-circle-lg {
-        width: 120px;
-        height: 120px;
-    }
+        .avatar-initials-lg {
+            font-size: 3rem;
+        }
 
-    .avatar-initials-lg {
-        font-size: 3rem;
-    }
+        .avatar-upload-btn {
+            width: 35px;
+            height: 35px;
+            bottom: 3px;
+            right: 3px;
+        }
 
-    .avatar-upload-btn {
-        width: 35px;
-        height: 35px;
-        bottom: 3px;
-        right: 3px;
-    }
-
-    .btn {
-        width: 100%;
-    }
-
-    .d-flex.flex-wrap {
-        flex-direction: column;
-    }
-
-        .d-flex.flex-wrap .btn {
+        .btn {
             width: 100%;
         }
 
-    .card-body {
-        padding: 20px !important;
-    }
+        .d-flex.flex-wrap {
+            flex-direction: column;
+        }
 
+            .d-flex.flex-wrap .btn {
+                width: 100%;
+            }
+
+        .card-body {
+            padding: 20px !important;
+        }
     }
 
     @@media (max-width: 576px) {
-        .page-header-section
+        .page-header-section {
+            padding: 15px;
+            gap: 12px;
+        }
 
-    {
-        padding: 15px;
-        gap: 12px;
-    }
+        .page-header-icon {
+            width: 48px;
+            height: 48px;
+            font-size: 1.3rem;
+        }
 
-    .page-header-icon {
-        width: 48px;
-        height: 48px;
-        font-size: 1.3rem;
-    }
+        .page-title {
+            font-size: 1.4rem;
+        }
 
-    .page-title {
-        font-size: 1.4rem;
-    }
+        .page-subtitle {
+            font-size: 0.85rem;
+        }
 
-    .page-subtitle {
-        font-size: 0.85rem;
-    }
+        .section-subtitle {
+            font-size: 1.1rem;
+        }
 
-    .section-subtitle {
-        font-size: 1.1rem;
-    }
+        .avatar-upload-container {
+            width: 100px;
+            height: 100px;
+        }
 
-    .avatar-upload-container {
-        width: 100px;
-        height: 100px;
-    }
+        .avatar-image {
+            width: 100px;
+            height: 100px;
+        }
 
-    .avatar-image {
-        width: 100px;
-        height: 100px;
-    }
+        .avatar-circle-lg {
+            width: 100px;
+            height: 100px;
+        }
 
-    .avatar-circle-lg {
-        width: 100px;
-        height: 100px;
-    }
+        .avatar-initials-lg {
+            font-size: 2.5rem;
+        }
 
-    .avatar-initials-lg {
-        font-size: 2.5rem;
-    }
+        .form-control-lg {
+            padding: 10px 14px;
+            font-size: 0.95rem;
+        }
 
-    .form-control-lg {
-        padding: 10px 14px;
-        font-size: 0.95rem;
-    }
+        .btn {
+            padding: 10px 20px;
+            font-size: 0.95rem;
+        }
 
-    .btn {
-        padding: 10px 20px;
-        font-size: 0.95rem;
-    }
-
-    .preview-badge {
-        font-size: 0.6rem;
-        bottom: -8px;
-    }
-
+        .preview-badge {
+            font-size: 0.6rem;
+            bottom: -8px;
+        }
     }
 </style>
 
 @section Scripts {
     <script>
         const currentUserId = @Json.Serialize(Context.Session.GetInt32("UserId"));
-                // Асинхронная проверка email в реальном времени
+
+        // Функция для показа уведомлений
+        function showNotification(message, type) {
+            // Удаляем старые уведомления
+            const oldNotifications = document.querySelectorAll('.custom-notification');
+            oldNotifications.forEach(n => n.remove());
+
+            const notification = document.createElement('div');
+            notification.className = `custom-notification alert alert-${type} alert-dismissible fade show`;
+            notification.style.cssText = 'position:fixed; top:20px; right:20px; z-index:9999; min-width:300px; max-width:400px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.2);';
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            notification.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas ${icon} me-2 fa-lg"></i>
+                    <div class="flex-grow-1">${message}</div>
+                    <button type="button" class="btn-close ms-2" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                if (notification && notification.remove) notification.remove();
+            }, 5000);
+        }
+
+        // Асинхронная проверка email в реальном времени
         let emailCheckTimeout;
         const emailInput = document.getElementById('Email');
 
@@ -590,17 +609,14 @@
                     return;
                 }
 
-                // Делаем паузу, чтобы пользователь закончил ввод
                 emailCheckTimeout = setTimeout(async () => {
                     const emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
 
-                    // Сначала проверяем формат
                     if (!emailRegex.test(email)) {
                         showFieldError(emailInput, 'Введите корректный email адрес');
                         return;
                     }
 
-                    // Проверяем на сервере
                     try {
                         const response = await fetch(`/Account/CheckEmailExists?email=${encodeURIComponent(email)}&userId=${currentUserId}`);
                         const data = await response.json();
@@ -616,30 +632,31 @@
                 }, 500);
             });
         }
-        // Счетчики символов (максимум 50 для ФИО)
-                function initCharCounters() {
+
+        // Счетчики символов
+        function initCharCounters() {
             const lastNameInput = document.getElementById('LastName');
             if (lastNameInput) {
                 lastNameInput.addEventListener('input', function() {
-                    updateCounter('LastName', 'lastNameCounter', 100);  // Было 50, стало 100
+                    updateCounter('LastName', 'lastNameCounter', 100);
                 });
-                updateCounter('LastName', 'lastNameCounter', 100);  // Было 50, стало 100
+                updateCounter('LastName', 'lastNameCounter', 100);
             }
 
             const firstNameInput = document.getElementById('FirstName');
             if (firstNameInput) {
                 firstNameInput.addEventListener('input', function() {
-                    updateCounter('FirstName', 'firstNameCounter', 100);  // Было 50, стало 100
+                    updateCounter('FirstName', 'firstNameCounter', 100);
                 });
-                updateCounter('FirstName', 'firstNameCounter', 100);  // Было 50, стало 100
+                updateCounter('FirstName', 'firstNameCounter', 100);
             }
 
             const middleNameInput = document.getElementById('MiddleName');
             if (middleNameInput) {
                 middleNameInput.addEventListener('input', function() {
-                    updateCounter('MiddleName', 'middleNameCounter', 100);  // Было 50, стало 100
+                    updateCounter('MiddleName', 'middleNameCounter', 100);
                 });
-                updateCounter('MiddleName', 'middleNameCounter', 100);  // Было 50, стало 100
+                updateCounter('MiddleName', 'middleNameCounter', 100);
             }
 
             const emailInput = document.getElementById('Email');
@@ -667,38 +684,64 @@
             }
         }
 
-        // Предпросмотр аватара
+        // ПРЕДПРОСМОТР АВАТАРА С ПРОВЕРКОЙ РАЗМЕРА
         const avatarInput = document.getElementById('avatarInput');
         const currentAvatarContainer = document.getElementById('currentAvatarContainer');
         const previewContainer = document.getElementById('avatarPreviewContainer');
         const previewImage = document.getElementById('previewImage');
         const removeCheckbox = document.getElementById('RemoveAvatar');
 
-                if (avatarInput) {
+        if (avatarInput) {
             avatarInput.addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 if (file) {
-                    // Проверка размера
-                    if (file.size > 2 * 1024 * 1024) {
+                    const maxSize = 2 * 1024 * 1024; // 2MB
+
+                    // ПРОВЕРКА РАЗМЕРА ФАЙЛА
+                    if (file.size > maxSize) {
                         const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-                        alert(`❌ Файл слишком большой! Размер: ${fileSizeMB} МБ. Максимальный размер: 2 МБ`);
+                        // Показываем пользователю сообщение
+                        showNotification(
+                            `❌ Изображение слишком большое! Размер: ${fileSizeMB} МБ. Максимальный размер: 2 МБ`,
+                            'danger'
+                        );
+                        // Очищаем input
                         this.value = '';
+
+                        // Скрываем предпросмотр если был показан
+                        if (previewContainer) {
+                            previewContainer.style.display = 'none';
+                        }
+                        if (currentAvatarContainer) {
+                            currentAvatarContainer.style.display = 'block';
+                        }
                         return;
                     }
 
-                    // Проверка типа
+                    // Проверка типа файла
                     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
                     if (!allowedTypes.includes(file.type)) {
-                        alert(`❌ Неподдерживаемый тип файла: ${file.type}. Разрешены: JPG, PNG, GIF, WEBP`);
+                        showNotification(
+                            `❌ Неподдерживаемый тип файла: ${file.type}. Разрешены: JPG, PNG, GIF, WEBP`,
+                            'danger'
+                        );
                         this.value = '';
+                        if (previewContainer) {
+                            previewContainer.style.display = 'none';
+                        }
+                        if (currentAvatarContainer) {
+                            currentAvatarContainer.style.display = 'block';
+                        }
                         return;
                     }
 
+                    // Если все проверки пройдены - показываем предпросмотр
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         previewImage.src = e.target.result;
                         currentAvatarContainer.style.display = 'none';
                         previewContainer.style.display = 'block';
+                        showNotification('✅ Изображение загружено! Нажмите "Сохранить изменения"', 'success');
                     }
                     reader.readAsDataURL(file);
 
@@ -724,12 +767,10 @@
         const form = document.querySelector('form');
         const submitBtn = document.getElementById('submitBtn');
 
-        // Функция для отображения ошибки под полем
         function showFieldError(inputElement, message) {
             if (!inputElement) return;
             inputElement.classList.add('is-invalid');
 
-            // Ищем или создаем элемент для ошибки
             let errorDiv = inputElement.parentElement.querySelector('.field-error');
             if (!errorDiv) {
                 errorDiv = document.createElement('div');
@@ -756,60 +797,70 @@
             const email = document.getElementById('Email');
             const age = document.getElementById('Age');
 
-                // Валидация фамилии
-        if (lastName) {
-            const lastNameValue = lastName.value.trim();
-            if (!lastNameValue) {
-                showFieldError(lastName, 'Фамилия обязательна для заполнения');
-                isValid = false;
-            } else if (lastNameValue.length < 2) {
-                showFieldError(lastName, 'Фамилия должна содержать минимум 2 символа');
-                isValid = false;
-            } else if (lastNameValue.length > 100) {  // Было 50, стало 100
-                showFieldError(lastName, 'Фамилия не может превышать 100 символов');
-                isValid = false;
-            } else if (!/^[а-яА-ЯёЁa-zA-Z\s\-]+$/.test(lastNameValue)) {
-                showFieldError(lastName, 'Фамилия может содержать только буквы, пробелы и дефис');
-                isValid = false;
-            } else {
-                clearFieldError(lastName);
+            // Проверка размера файла перед отправкой (дополнительная защита)
+            if (avatarInput && avatarInput.files.length > 0) {
+                const file = avatarInput.files[0];
+                const maxSize = 2 * 1024 * 1024;
+                if (file.size > maxSize) {
+                    showNotification(`❌ Изображение слишком большое! Максимальный размер 2 МБ`, 'danger');
+                    isValid = false;
+                }
             }
-        }
 
-        // Валидация имени
-        if (firstName) {
-            const firstNameValue = firstName.value.trim();
-            if (!firstNameValue) {
-                showFieldError(firstName, 'Имя обязательно для заполнения');
-                isValid = false;
-            } else if (firstNameValue.length < 2) {
-                showFieldError(firstName, 'Имя должно содержать минимум 2 символа');
-                isValid = false;
-            } else if (firstNameValue.length > 100) {  // Было 50, стало 100
-                showFieldError(firstName, 'Имя не может превышать 100 символов');
-                isValid = false;
-            } else if (!/^[а-яА-ЯёЁa-zA-Z\s\-]+$/.test(firstNameValue)) {
-                showFieldError(firstName, 'Имя может содержать только буквы, пробелы и дефис');
-                isValid = false;
-            } else {
-                clearFieldError(firstName);
+            // Валидация фамилии
+            if (lastName) {
+                const lastNameValue = lastName.value.trim();
+                if (!lastNameValue) {
+                    showFieldError(lastName, 'Фамилия обязательна для заполнения');
+                    isValid = false;
+                } else if (lastNameValue.length < 2) {
+                    showFieldError(lastName, 'Фамилия должна содержать минимум 2 символа');
+                    isValid = false;
+                } else if (lastNameValue.length > 100) {
+                    showFieldError(lastName, 'Фамилия не может превышать 100 символов');
+                    isValid = false;
+                } else if (!/^[а-яА-ЯёЁa-zA-Z\s\-]+$/.test(lastNameValue)) {
+                    showFieldError(lastName, 'Фамилия может содержать только буквы, пробелы и дефис');
+                    isValid = false;
+                } else {
+                    clearFieldError(lastName);
+                }
             }
-        }
 
-        // Валидация отчества (опционально)
-        const middleName = document.getElementById('MiddleName');
-        if (middleName) {
-            const middleNameValue = middleName.value.trim();
-            if (middleNameValue && middleNameValue.length > 100) {  // Было 50, стало 100
-                showFieldError(middleName, 'Отчество не может превышать 100 символов');
-                isValid = false;
-            } else if (middleNameValue && !/^[а-яА-ЯёЁa-zA-Z\s\-]+$/.test(middleNameValue)) {
-                showFieldError(middleName, 'Отчество может содержать только буквы, пробелы и дефис');
-                isValid = false;
-            } else {
-                clearFieldError(middleName);
+            // Валидация имени
+            if (firstName) {
+                const firstNameValue = firstName.value.trim();
+                if (!firstNameValue) {
+                    showFieldError(firstName, 'Имя обязательно для заполнения');
+                    isValid = false;
+                } else if (firstNameValue.length < 2) {
+                    showFieldError(firstName, 'Имя должно содержать минимум 2 символа');
+                    isValid = false;
+                } else if (firstNameValue.length > 100) {
+                    showFieldError(firstName, 'Имя не может превышать 100 символов');
+                    isValid = false;
+                } else if (!/^[а-яА-ЯёЁa-zA-Z\s\-]+$/.test(firstNameValue)) {
+                    showFieldError(firstName, 'Имя может содержать только буквы, пробелы и дефис');
+                    isValid = false;
+                } else {
+                    clearFieldError(firstName);
+                }
             }
-        }
+
+            // Валидация отчества (опционально)
+            const middleName = document.getElementById('MiddleName');
+            if (middleName) {
+                const middleNameValue = middleName.value.trim();
+                if (middleNameValue && middleNameValue.length > 100) {
+                    showFieldError(middleName, 'Отчество не может превышать 100 символов');
+                    isValid = false;
+                } else if (middleNameValue && !/^[а-яА-ЯёЁa-zA-Z\s\-]+$/.test(middleNameValue)) {
+                    showFieldError(middleName, 'Отчество может содержать только буквы, пробелы и дефис');
+                    isValid = false;
+                } else {
+                    clearFieldError(middleName);
+                }
+            }
 
             // Валидация email
             const emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
@@ -843,24 +894,29 @@
             return isValid;
         }
 
+        // Перехват отправки формы с проверкой размера файла
         if (form) {
             form.addEventListener('submit', function(e) {
+                // Дополнительная проверка размера файла перед отправкой
+                if (avatarInput && avatarInput.files.length > 0) {
+                    const file = avatarInput.files[0];
+                    const maxSize = 2 * 1024 * 1024;
+                    if (file.size > maxSize) {
+                        e.preventDefault();
+                        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                        showNotification(
+                            `❌ Изображение слишком большое! Размер: ${fileSizeMB} МБ. Максимальный размер: 2 МБ`,
+                            'danger'
+                        );
+                        return;
+                    }
+                }
+
                 if (!validateForm()) {
                     e.preventDefault();
                     showNotification('Пожалуйста, исправьте ошибки в форме', 'danger');
                 }
             });
-        }
-
-        // Уведомления
-        function showNotification(message, type) {
-            const notification = document.createElement('div');
-            notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-            notification.style.cssText = 'top:20px; right:20px; z-index:9999; min-width:280px; max-width:350px; border-radius:12px;';
-            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
-            notification.innerHTML = `<div class="d-flex align-items-center"><i class="fas ${icon} me-2"></i><div class="flex-grow-1">${message}</div><button type="button" class="btn-close ms-2" data-bs-dismiss="alert"></button></div>`;
-            document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), 5000);
         }
 
         // Инициализация
