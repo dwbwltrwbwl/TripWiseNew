@@ -17,53 +17,47 @@
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     }
 
-    /* Базовые стили для полей ввода */
     .form-control {
         border-radius: 10px;
         border: 2px solid #e9ecef;
         transition: all 0.3s ease;
     }
 
-        .form-control:focus {
-            border-color: #047bd6;
-            box-shadow: 0 0 0 0.2rem rgba(4, 123, 214, 0.25);
-        }
+    .form-control:focus {
+        border-color: #047bd6;
+        box-shadow: 0 0 0 0.2rem rgba(4, 123, 214, 0.25);
+    }
 
-    /* Группа поля с паролем */
     .password-input-group {
         position: relative;
         display: block;
     }
 
-    /* Контейнер для поля ввода и кнопки */
     .password-input-wrapper {
         position: relative;
         display: block;
     }
 
-        /* Стили для полей ввода внутри группы пароля */
-        .password-input-wrapper .form-control {
-            padding-right: 70px;
-        }
+    .password-input-wrapper .form-control {
+        padding-right: 70px;
+    }
 
-            /* Стили для иконок валидации (галочка/крестик) */
-            .password-input-wrapper .form-control.is-valid {
-                border-color: #28a745;
-                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
-                background-repeat: no-repeat;
-                background-position: right 55px center;
-                background-size: 0.75rem 0.75rem;
-            }
+    .password-input-wrapper .form-control.is-valid {
+        border-color: #28a745;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 55px center;
+        background-size: 0.75rem 0.75rem;
+    }
 
-            .password-input-wrapper .form-control.is-invalid {
-                border-color: #dc3545;
-                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
-                background-repeat: no-repeat;
-                background-position: right 55px center;
-                background-size: 0.75rem 0.75rem;
-            }
+    .password-input-wrapper .form-control.is-invalid {
+        border-color: #dc3545;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 55px center;
+        background-size: 0.75rem 0.75rem;
+    }
 
-    /* Кнопка переключения видимости пароля */
     .password-toggle {
         position: absolute;
         right: 15px;
@@ -84,23 +78,21 @@
         transition: all 0.2s ease;
     }
 
-        .password-toggle:hover {
-            background-color: #f8f9fa;
-            color: #047bd6;
-        }
+    .password-toggle:hover {
+        background-color: #f8f9fa;
+        color: #047bd6;
+    }
 
-        .password-toggle i {
-            font-size: 1rem;
-        }
+    .password-toggle i {
+        font-size: 1rem;
+    }
 
-    /* Сообщение об ошибке не влияет на позицию глаза */
     .invalid-feedback {
         display: block;
         width: 100%;
         margin-top: 0.25rem;
     }
 
-    /* Кнопка отправки */
     .btn {
         border-radius: 10px;
         padding: 12px;
@@ -108,12 +100,11 @@
         transition: all 0.3s ease;
     }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(4, 123, 214, 0.3);
-        }
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(4, 123, 214, 0.3);
+    }
 
-    /* Анимация успешного сообщения */
     .alert-success {
         animation: slideIn 0.5s ease-out;
         transform-origin: top center;
@@ -124,29 +115,26 @@
             opacity: 0;
             transform: translateY(-20px) scale(0.95);
         }
-
         to {
             opacity: 1;
             transform: translateY(0) scale(1);
         }
     }
 
-    /* Счетчики символов */
     .char-counter {
         font-size: 0.75rem;
         margin-top: 4px;
         transition: color 0.2s ease;
     }
 
-        .char-counter.warning {
-            color: #ffc107;
-        }
+    .char-counter.warning {
+        color: #ffc107;
+    }
 
-        .char-counter.danger {
-            color: #dc3545;
-        }
+    .char-counter.danger {
+        color: #dc3545;
+    }
 
-    /* Стили для обычных полей (не парольных) */
     .form-control.is-valid:not(.password-input-wrapper .form-control) {
         border-color: #28a745;
         background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
@@ -163,6 +151,66 @@
         background-position: right 0.75rem center;
         background-size: 0.75rem 0.75rem;
         padding-right: 2.25rem;
+    }
+
+    /* Требования к паролю */
+    .password-requirements {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 10px 12px;
+        margin-bottom: 12px;
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+
+    .password-requirements.active {
+        border-color: #047bd6;
+        background: #f0f7ff;
+    }
+
+    .password-requirements .title {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 4px;
+    }
+
+    .requirement-item {
+        font-size: 0.78rem;
+        padding: 2px 0;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+    }
+
+    .requirement-item i {
+        width: 18px;
+        text-align: center;
+        font-size: 0.6rem;
+        margin-right: 6px;
+        transition: all 0.3s ease;
+    }
+
+    .requirement-item .req-text {
+        color: #6c757d;
+        transition: all 0.3s ease;
+    }
+
+    .requirement-item.valid i {
+        color: #28a745 !important;
+    }
+
+    .requirement-item.valid .req-text {
+        color: #28a745 !important;
+        font-weight: 500;
+    }
+
+    .requirement-item.invalid i {
+        color: #dc3545 !important;
+    }
+
+    .requirement-item.invalid .req-text {
+        color: #dc3545 !important;
     }
 </style>
 
@@ -247,7 +295,7 @@
                             <div class="invalid-feedback" id="emailError"></div>
                         </div>
 
-                        <div class="mb-3 password-input-group">
+                        <div class="mb-2 password-input-group">
                             <label for="password" class="form-label">Пароль <span class="text-danger">*</span></label>
                             <div class="password-input-wrapper">
                                 <input type="password" class="form-control form-control-lg" id="password" name="password"
@@ -260,6 +308,27 @@
                             </div>
                             <div class="char-counter" id="passwordCounter">0/50 символов</div>
                             <div class="invalid-feedback" id="passwordError"></div>
+                        </div>
+
+                        <!-- Требования к паролю -->
+                        <div class="password-requirements" id="passwordRequirements">
+                            <div class="title">Пароль должен содержать:</div>
+                            <div class="requirement-item" id="reqLength">
+                                <i class="fas fa-circle"></i>
+                                <span class="req-text">минимум 6 символов</span>
+                            </div>
+                            <div class="requirement-item" id="reqUppercase">
+                                <i class="fas fa-circle"></i>
+                                <span class="req-text">хотя бы одну заглавную букву (A-Я)</span>
+                            </div>
+                            <div class="requirement-item" id="reqLowercase">
+                                <i class="fas fa-circle"></i>
+                                <span class="req-text">хотя бы одну строчную букву (a-я)</span>
+                            </div>
+                            <div class="requirement-item" id="reqSpecial">
+                                <i class="fas fa-circle"></i>
+                                <span class="req-text">хотя бы один специальный символ (!@@#$%^&*()_+-=[]{};':"|,.<>/? и т.д.)</span>
+                            </div>
                         </div>
 
                         <div class="mb-3 password-input-group">
@@ -436,6 +505,54 @@
         }
     }
 
+    // Проверка требований к паролю
+    function checkPasswordRequirements(password) {
+        const checks = {
+            length: password.length >= 6,
+            uppercase: /[A-ZА-Я]/.test(password),
+            lowercase: /[a-zа-я]/.test(password),
+            special: /[!@@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+        };
+
+        const reqLength = document.getElementById('reqLength');
+        const reqUppercase = document.getElementById('reqUppercase');
+        const reqLowercase = document.getElementById('reqLowercase');
+        const reqSpecial = document.getElementById('reqSpecial');
+        const reqContainer = document.getElementById('passwordRequirements');
+
+        updateRequirement(reqLength, checks.length);
+        updateRequirement(reqUppercase, checks.uppercase);
+        updateRequirement(reqLowercase, checks.lowercase);
+        updateRequirement(reqSpecial, checks.special);
+
+        // Подсветка контейнера при активном вводе
+        if (password.length > 0) {
+            reqContainer.classList.add('active');
+        } else {
+            reqContainer.classList.remove('active');
+        }
+
+        return Object.values(checks).every(v => v === true);
+    }
+
+    function updateRequirement(element, isValid) {
+        const icon = element.querySelector('i');
+        const text = element.querySelector('.req-text');
+        if (isValid) {
+            element.classList.remove('invalid');
+            element.classList.add('valid');
+            icon.className = 'fas fa-check-circle';
+            icon.style.color = '#28a745';
+            text.style.color = '#28a745';
+        } else {
+            element.classList.remove('valid');
+            element.classList.add('invalid');
+            icon.className = 'fas fa-circle';
+            icon.style.color = '#dc3545';
+            text.style.color = '#dc3545';
+        }
+    }
+
     // Проверка совпадения паролей
     function validatePasswordMatch() {
         const password = document.getElementById('password');
@@ -476,7 +593,6 @@
 
     // Инициализация всех валидаций
     document.addEventListener('DOMContentLoaded', function() {
-        // Получаем все поля
         const lastName = document.getElementById('lastName');
         const firstName = document.getElementById('firstName');
         const middleName = document.getElementById('middleName');
@@ -493,12 +609,18 @@
                 updateCounter(this, 'lastNameCounter', 100);
                 validateNameField(this, 'lastNameError', 'Фамилия');
             });
+            lastName.addEventListener('blur', function() {
+                validateNameField(this, 'lastNameError', 'Фамилия');
+            });
         }
 
         if (firstName) {
             updateCounter(firstName, 'firstNameCounter', 100);
             firstName.addEventListener('input', function() {
                 updateCounter(this, 'firstNameCounter', 100);
+                validateNameField(this, 'firstNameError', 'Имя');
+            });
+            firstName.addEventListener('blur', function() {
                 validateNameField(this, 'firstNameError', 'Имя');
             });
         }
@@ -511,6 +633,12 @@
                     validateNameField(this, 'middleNameError', 'Отчество');
                 } else {
                     this.classList.remove('is-invalid', 'is-valid');
+                    document.getElementById('middleNameError').textContent = '';
+                }
+            });
+            middleName.addEventListener('blur', function() {
+                if (this.value.length > 0) {
+                    validateNameField(this, 'middleNameError', 'Отчество');
                 }
             });
         }
@@ -521,6 +649,9 @@
                 updateCounter(this, 'emailCounter', 255);
                 validateEmail(this, 'emailError');
             });
+            email.addEventListener('blur', function() {
+                validateEmail(this, 'emailError');
+            });
         }
 
         if (password) {
@@ -528,15 +659,29 @@
             password.addEventListener('input', function() {
                 updateCounter(this, 'passwordCounter', 50);
                 validatePassword(this, 'passwordError');
+                checkPasswordRequirements(this.value);
                 if (confirmPassword.value) {
                     validatePasswordMatch();
                 }
+            });
+            password.addEventListener('blur', function() {
+                validatePassword(this, 'passwordError');
+                checkPasswordRequirements(this.value);
             });
         }
 
         if (confirmPassword) {
             confirmPassword.addEventListener('input', function() {
                 validatePasswordMatch();
+            });
+            confirmPassword.addEventListener('blur', function() {
+                validatePasswordMatch();
+            });
+        }
+
+        if (agreeTerms) {
+            agreeTerms.addEventListener('change', function() {
+                validateAgreeTerms(this, 'agreeTermsError');
             });
         }
 
@@ -565,7 +710,6 @@
                         }, 5000);
                     }
 
-                    // Прокрутка к первому ошибочному полю
                     const firstInvalid = document.querySelector('.is-invalid');
                     if (firstInvalid) {
                         firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -579,6 +723,11 @@
         const agreeTermsValue = "@ViewData["AgreeTerms"]";
         if (agreeTermsValue === "on" && agreeTerms) {
             agreeTerms.checked = true;
+        }
+
+        // Если есть предзаполненный пароль, проверяем требования
+        if (password && password.value) {
+            checkPasswordRequirements(password.value);
         }
     });
 </script>
