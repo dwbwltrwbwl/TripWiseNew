@@ -513,7 +513,7 @@ function checkPasswordRequirements(password) {
         length: password.length >= 6,
         uppercase: /[A-ZА-Я]/.test(password),
         lowercase: /[a-zа-я]/.test(password),
-        special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+        special: /[!@@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
     };
 
     const reqLength = document.getElementById('reqLength');
