@@ -163,17 +163,17 @@
         transition: all 0.3s ease;
     }
 
-    .password-requirements.active {
-        border-color: #047bd6;
-        background: #f0f7ff;
-    }
+        .password-requirements.active {
+            border-color: #047bd6;
+            background: #f0f7ff;
+        }
 
-    .password-requirements .title {
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: #495057;
-        margin-bottom: 4px;
-    }
+        .password-requirements .title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 4px;
+        }
 
     .requirement-item {
         font-size: 0.78rem;
@@ -181,37 +181,39 @@
         transition: all 0.3s ease;
         display: flex;
         align-items: center;
+        gap: 8px;
     }
 
-    .requirement-item i {
-        width: 18px;
-        text-align: center;
-        font-size: 0.6rem;
-        margin-right: 6px;
-        transition: all 0.3s ease;
-    }
+        .requirement-item .req-bullet {
+            color: #6c757d;
+            font-size: 0.7rem;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            width: 16px;
+            text-align: center;
+        }
 
-    .requirement-item .req-text {
-        color: #6c757d;
-        transition: all 0.3s ease;
-    }
+        .requirement-item .req-text {
+            color: #6c757d;
+            transition: all 0.3s ease;
+        }
 
-    .requirement-item.valid i {
-        color: #28a745 !important;
-    }
+        .requirement-item.valid .req-bullet {
+            color: #28a745 !important;
+        }
 
-    .requirement-item.valid .req-text {
-        color: #28a745 !important;
-        font-weight: 500;
-    }
+        .requirement-item.valid .req-text {
+            color: #28a745 !important;
+            font-weight: 500;
+        }
 
-    .requirement-item.invalid i {
-        color: #dc3545 !important;
-    }
+        .requirement-item.invalid .req-bullet {
+            color: #dc3545 !important;
+        }
 
-    .requirement-item.invalid .req-text {
-        color: #dc3545 !important;
-    }
+        .requirement-item.invalid .req-text {
+            color: #dc3545 !important;
+        }
 </style>
 
 <div class="container mt-5">
@@ -311,25 +313,25 @@
                         </div>
 
                         <!-- Требования к паролю -->
-                        <div class="password-requirements" id="passwordRequirements">
-                            <div class="title">Пароль должен содержать:</div>
-                            <div class="requirement-item" id="reqLength">
-                                <i class="fas fa-circle"></i>
-                                <span class="req-text">минимум 6 символов</span>
-                            </div>
-                            <div class="requirement-item" id="reqUppercase">
-                                <i class="fas fa-circle"></i>
-                                <span class="req-text">хотя бы одну заглавную букву (A-Я)</span>
-                            </div>
-                            <div class="requirement-item" id="reqLowercase">
-                                <i class="fas fa-circle"></i>
-                                <span class="req-text">хотя бы одну строчную букву (a-я)</span>
-                            </div>
-                            <div class="requirement-item" id="reqSpecial">
-                                <i class="fas fa-circle"></i>
-                                <span class="req-text">хотя бы один специальный символ (!@@#$%^&*()_+-=[]{};':"|,.<>/? и т.д.)</span>
-                            </div>
-                        </div>
+<div class="password-requirements" id="passwordRequirements">
+    <div class="title">Пароль должен содержать:</div>
+    <div class="requirement-item" id="reqLength">
+        <span class="req-bullet">—</span>
+        <span class="req-text">минимум 6 символов</span>
+    </div>
+    <div class="requirement-item" id="reqUppercase">
+        <span class="req-bullet">—</span>
+        <span class="req-text">хотя бы одну заглавную букву (A-Я)</span>
+    </div>
+    <div class="requirement-item" id="reqLowercase">
+        <span class="req-bullet">—</span>
+        <span class="req-text">хотя бы одну строчную букву (a-я)</span>
+    </div>
+    <div class="requirement-item" id="reqSpecial">
+        <span class="req-bullet">—</span>
+        <span class="req-text">хотя бы один специальный символ (!@@#$%^&*()_+-=[]{};':"|,.<>/? и т.д.)</span>
+    </div>
+</div>
 
                         <div class="mb-3 password-input-group">
                             <label for="confirmPassword" class="form-label">Подтверждение пароля <span class="text-danger">*</span></label>
@@ -506,52 +508,52 @@
     }
 
     // Проверка требований к паролю
-    function checkPasswordRequirements(password) {
-        const checks = {
-            length: password.length >= 6,
-            uppercase: /[A-ZА-Я]/.test(password),
-            lowercase: /[a-zа-я]/.test(password),
-            special: /[!@@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
-        };
+function checkPasswordRequirements(password) {
+    const checks = {
+        length: password.length >= 6,
+        uppercase: /[A-ZА-Я]/.test(password),
+        lowercase: /[a-zа-я]/.test(password),
+        special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+    };
 
-        const reqLength = document.getElementById('reqLength');
-        const reqUppercase = document.getElementById('reqUppercase');
-        const reqLowercase = document.getElementById('reqLowercase');
-        const reqSpecial = document.getElementById('reqSpecial');
-        const reqContainer = document.getElementById('passwordRequirements');
+    const reqLength = document.getElementById('reqLength');
+    const reqUppercase = document.getElementById('reqUppercase');
+    const reqLowercase = document.getElementById('reqLowercase');
+    const reqSpecial = document.getElementById('reqSpecial');
+    const reqContainer = document.getElementById('passwordRequirements');
 
-        updateRequirement(reqLength, checks.length);
-        updateRequirement(reqUppercase, checks.uppercase);
-        updateRequirement(reqLowercase, checks.lowercase);
-        updateRequirement(reqSpecial, checks.special);
+    updateRequirement(reqLength, checks.length);
+    updateRequirement(reqUppercase, checks.uppercase);
+    updateRequirement(reqLowercase, checks.lowercase);
+    updateRequirement(reqSpecial, checks.special);
 
-        // Подсветка контейнера при активном вводе
-        if (password.length > 0) {
-            reqContainer.classList.add('active');
-        } else {
-            reqContainer.classList.remove('active');
-        }
-
-        return Object.values(checks).every(v => v === true);
+    // Подсветка контейнера при активном вводе
+    if (password.length > 0) {
+        reqContainer.classList.add('active');
+    } else {
+        reqContainer.classList.remove('active');
     }
 
-    function updateRequirement(element, isValid) {
-        const icon = element.querySelector('i');
-        const text = element.querySelector('.req-text');
-        if (isValid) {
-            element.classList.remove('invalid');
-            element.classList.add('valid');
-            icon.className = 'fas fa-check-circle';
-            icon.style.color = '#28a745';
-            text.style.color = '#28a745';
-        } else {
-            element.classList.remove('valid');
-            element.classList.add('invalid');
-            icon.className = 'fas fa-circle';
-            icon.style.color = '#dc3545';
-            text.style.color = '#dc3545';
-        }
+    return Object.values(checks).every(v => v === true);
+}
+
+function updateRequirement(element, isValid) {
+    const bullet = element.querySelector('.req-bullet');
+    const text = element.querySelector('.req-text');
+    if (isValid) {
+        element.classList.remove('invalid');
+        element.classList.add('valid');
+        bullet.textContent = '—';
+        bullet.style.color = '#28a745';
+        text.style.color = '#28a745';
+    } else {
+        element.classList.remove('valid');
+        element.classList.add('invalid');
+        bullet.textContent = '—';
+        bullet.style.color = '#dc3545';
+        text.style.color = '#dc3545';
     }
+}
 
     // Проверка совпадения паролей
     function validatePasswordMatch() {
